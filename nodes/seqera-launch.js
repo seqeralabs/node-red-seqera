@@ -22,10 +22,48 @@ module.exports = function(RED) {
             const workspaceId = msg.workspaceId || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
             const sourceWorkspaceId = msg.sourceWorkspaceId || null;
 
-            // Request body – prefer msg.body then msg.payload then static config
-            const body = msg.body || msg.payload;
+            const launchpadName = msg.launchpadName || null;
+
+            let body = msg.body || msg.payload;
+
+            // If launchpadName is provided we need to query the launchpad APIs to build launch JSON
+            if (launchpadName) {
+                try {
+                    // Find pipeline by name
+                    const pipelinesUrl = `${baseUrl.replace(/\/$/, '')}/pipelines?workspaceId=${workspaceId}&max=50&offset=0&search=${encodeURIComponent(launchpadName)}&visibility=all`;
+                    const headersGet = { 'Accept': 'application/json' };
+                    const token = msg.token || (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) || (node.credentials && node.credentials.token);
+                    if (token) headersGet['Authorization'] = `Bearer ${token}`;
+
+                    const pipelinesResp = await axios.get(pipelinesUrl, { headers: headersGet });
+                    const pipelines = pipelinesResp.data && pipelinesResp.data.pipelines || [];
+                    const match = pipelines.find(p => p.name === launchpadName) || pipelines[0];
+                    if (!match) throw new Error(`No pipeline found for launchpadName '${launchpadName}'`);
+
+                    const launchConfigUrl = `${baseUrl.replace(/\/$/, '')}/pipelines/${match.pipelineId}/launch?workspaceId=${workspaceId}`;
+                    const launchResp = await axios.get(launchConfigUrl, { headers: headersGet });
+                    if (!launchResp.data || !launchResp.data.launch) {
+                        throw new Error('Invalid launch config response');
+                    }
+
+                    // Reformat launch JSON expected by submit endpoint
+                    const lp = { ...launchResp.data.launch };
+                    if (lp.computeEnv && lp.computeEnv.id) {
+                        lp.computeEnvId = lp.computeEnv.id;
+                        delete lp.computeEnv;
+                    }
+                    body = { launch: lp };
+                } catch (errFetch) {
+                    node.error(`Failed to resolve launchpad name '${launchpadName}': ${errFetch.message}`, msg);
+                    msg._seqera_error = errFetch;
+                    send(msg);
+                    if (done) done(errFetch);
+                    return;
+                }
+            }
+
             if (!body) {
-                done(new Error('No request body supplied. Provide JSON payload in msg.body or msg.payload'));
+                done(new Error('No request body supplied (and no launchpadName resolved). Provide JSON payload in msg.body/msg.payload or a valid msg.launchpadName.'));
                 return;
             }
 

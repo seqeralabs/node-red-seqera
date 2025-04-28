@@ -12,10 +12,17 @@
 <script type="text/html" data-help-name="seqera-launch">
     <p>Launches a new workflow execution via the Seqera Platform API.</p>
     <p>
-        Provide a <b>Seqera config</b> for the API base URL, workspace ID, and token. Supply the launch request <code>JSON</code> in <code>msg.payload</code> (or <code>msg.body</code>).
+        Provide a <b>Seqera config</b> for the API base URL, workspace ID, and token.
     </p>
     <p>
-        Optional overrides via incoming <code>msg</code>:
+        <b>Quick start:</b> set <code>msg.launchpadName</code> to the name of a Launchpad entry (for example <code>nf-core-fetchngs</code>). The node will automatically look up the pipeline, retrieve its Launchpad configuration and submit the launch for you.
+    </p>
+    <p>
+        <b>Advanced:</b> instead of <code>launchpadName</code> you may pass a fully-formed launch request object in <code>msg.payload</code> (or <code>msg.body</code>) together with optional overrides shown below.
+        See the <a href="https://docs.seqera.io/api/reference/api-workflows-launch.html">API documentation</a> for details.
+    </p>
+    <p>
+        <b>Additional overrides:</b> <em>(optional)</em> The following can be set via incoming <code>msg</code>:
         <ul>
             <li><code>msg.workspaceId</code> – Target workspace (numeric)</li>
             <li><code>msg.sourceWorkspaceId</code> – Source workspace (numeric)</li>

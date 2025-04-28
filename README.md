@@ -30,16 +30,21 @@ Create one of these nodes and reference it from the launch / workflow nodes inst
 
 Submits a new workflow execution.
 
-**Inputs**
+**Preferred usage**
 
-- `msg.payload` (or `msg.body`) – JSON matching the Seqera *SubmitWorkflowLaunchRequest* schema.
+Set `msg.launchpadName` to the name of a Launchpad entry. The node will automatically fetch the Launchpad configuration and submit the workflow.
 
-Optional overrides in the incoming `msg`:
+**Advanced / custom usage**
+
+You can instead supply a full launch request JSON in `msg.payload` (or `msg.body`) following the *SubmitWorkflowLaunchRequest* schema.
+
+Optional override properties in the incoming `msg`:
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `workspaceId` | number | Target workspace (defaults to value from config node). |
 | `sourceWorkspaceId` | number | Source workspace (optional). |
+| `launchpadName` | string | Name of Launchpad pipeline preset (preferred). |
 | `baseUrl` | string | Override Base URL. |
 | `token` | string | Override bearer token. |
 

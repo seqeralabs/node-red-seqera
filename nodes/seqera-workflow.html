@@ -16,9 +16,11 @@
         These settings will be reused by all Seqera nodes referencing the same config.
     </p>
     <p>
-        You can still override values via incoming <code>msg</code> if required:
+        <b>Required input:</b> <code>msg.workflowId</code> – the ID of the workflow to query.
+    </p>
+    <p>
+        <b>Optional overrides</b> (set via incoming <code>msg</code>):
         <ul>
-            <li><code>msg.workflowId</code> – Workflow ID to query</li>
             <li><code>msg.baseUrl</code> – Base URL override</li>
             <li><code>msg.token</code> – API token override</li>
             <li><code>msg.workspaceId</code> – Workspace numeric identifier</li>
