@@ -1,66 +1,66 @@
 <script type="text/html" data-template-name="seqera-workflow">
-    <div class="form-row">
-        <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
-        <input type="text" id="node-input-seqera" data-type="seqera-config">
-    </div>
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name">
-    </div>
+  <div class="form-row">
+    <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+    <input type="text" id="node-input-seqera" data-type="seqera-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
 </script>
 
 <script type="text/html" data-help-name="seqera-workflow">
-    <p>Retrieves information about a workflow from the Seqera Platform API.</p>
-    <p>
-        Configure the <b>Workflow ID</b> and select a <b>Seqera config</b> node that contains the instance URL and API token.
-        These settings will be reused by all Seqera nodes referencing the same config.
-    </p>
-    <p>
-        <b>Required input:</b> <code>msg.workflowId</code> – the ID of the workflow to query.
-    </p>
-    <p>
-        <b>Optional overrides</b> (set via incoming <code>msg</code>):
-        <ul>
-            <li><code>msg.baseUrl</code> – Base URL override</li>
-            <li><code>msg.token</code> – API token override</li>
-            <li><code>msg.workspaceId</code> – Workspace numeric identifier</li>
-        </ul>
-    </p>
+  <p>Retrieves information about a workflow from the Seqera Platform API.</p>
+  <p>
+      Configure the <b>Workflow ID</b> and select a <b>Seqera config</b> node that contains the instance URL and API token.
+      These settings will be reused by all Seqera nodes referencing the same config.
+  </p>
+  <p>
+      <b>Required input:</b> <code>msg.workflowId</code> – the ID of the workflow to query.
+  </p>
+  <p>
+      <b>Optional overrides</b> (set via incoming <code>msg</code>):
+      <ul>
+          <li><code>msg.baseUrl</code> – Base URL override</li>
+          <li><code>msg.token</code> – API token override</li>
+          <li><code>msg.workspaceId</code> – Workspace numeric identifier</li>
+      </ul>
+  </p>
 
-    <h4>Outputs (two wires)</h4>
-    <ol>
-        <li><b>Running / Submitted</b> – fired when <code>payload.workflow.status</code> matches <code>submitted</code> or <code>running</code>.</li>
-        <li><b>Other / Error</b> – fired for all other statuses or API failures.</li>
-    </ol>
-    <p>Each output message contains:</p>
-    <ul>
-        <li><code>msg.payload</code> – JSON object returned by the `/workflow/{id}` API call.</li>
-        <li><code>msg.workflowId</code> – Convenience copy of <code>payload.workflow.id</code>.</li>
-    </ul>
-    <p>
-        If the API returns an error (4xx/5xx), the message still propagates with:
-        <ul>
-            <li><code>msg._seqera_request</code> – details of the attempted request (method, URL, headers).</li>
-            <li><code>msg._seqera_error</code> – HTTP status and response body (if available).</li>
-        </ul>
-    </p>
+  <h4>Outputs (two wires)</h4>
+  <ol>
+      <li><b>Running / Submitted</b> – fired when <code>payload.workflow.status</code> matches <code>submitted</code> or <code>running</code>.</li>
+      <li><b>Other / Error</b> – fired for all other statuses or API failures.</li>
+  </ol>
+  <p>Each output message contains:</p>
+  <ul>
+      <li><code>msg.payload</code> – JSON object returned by the `/workflow/{id}` API call.</li>
+      <li><code>msg.workflowId</code> – Convenience copy of <code>payload.workflow.id</code>.</li>
+  </ul>
+  <p>
+      If the API returns an error (4xx/5xx), the message still propagates with:
+      <ul>
+          <li><code>msg._seqera_request</code> – details of the attempted request (method, URL, headers).</li>
+          <li><code>msg._seqera_error</code> – HTTP status and response body (if available).</li>
+      </ul>
+  </p>
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('seqera-workflow', {
-        category: 'seqera',
-        color: '#CBC6DD',
-        inputs: 1,
-        outputs: 2,
-        icon: 'bridge.svg',
-        align: 'right',
-        paletteLabel: 'Check workflow',
-        label: function() {
-            return this.name || 'Check workflow';
-        },
-        defaults: {
-            name: { value: "" },
-            seqera: { value: "", type: "seqera-config" }
-        }
-    });
+  RED.nodes.registerType("seqera-workflow", {
+    category: "seqera",
+    color: "#CBC6DD",
+    inputs: 1,
+    outputs: 2,
+    icon: "bridge.svg",
+    align: "right",
+    paletteLabel: "Check workflow",
+    label: function () {
+      return this.name || "Check workflow";
+    },
+    defaults: {
+      name: { value: "" },
+      seqera: { value: "", type: "seqera-config" },
+    },
+  });
 </script>

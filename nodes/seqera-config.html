@@ -1,36 +1,39 @@
 <script type="text/html" data-template-name="seqera-config">
-    <div class="form-row">
-        <label for="node-config-input-baseUrl"><i class="icon-globe"></i> Base URL</label>
-        <input type="text" id="node-config-input-baseUrl" placeholder="https://api.cloud.seqera.io">
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-workspaceId"><i class="icon-tasks"></i> Workspace&nbsp;ID</label>
-        <input type="number" id="node-config-input-workspaceId" placeholder="(optional)">
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-token"><i class="icon-lock"></i> API Token</label>
-        <input type="password" id="node-config-input-token" placeholder="Bearer token" autocomplete="off">
-    </div>
+  <div class="form-row">
+    <label for="node-config-input-baseUrl"><i class="icon-globe"></i> Base URL</label>
+    <input type="text" id="node-config-input-baseUrl" placeholder="https://api.cloud.seqera.io" />
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-workspaceId"><i class="icon-tasks"></i> Workspace&nbsp;ID</label>
+    <input type="number" id="node-config-input-workspaceId" placeholder="(optional)" />
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-token"><i class="icon-lock"></i> API Token</label>
+    <input type="password" id="node-config-input-token" placeholder="Bearer token" autocomplete="off" />
+  </div>
 </script>
 
 <script type="text/html" data-help-name="seqera-config">
-    <p>Global Seqera Platform configuration.</p>
-    <p>Specify the <b>Base URL</b> of your Seqera Platform instance (defaults to the public cloud) and an optional <b>API token</b> that will be used by all Seqera nodes referencing this config.</p>
+  <p>Global Seqera Platform configuration.</p>
+  <p>
+    Specify the <b>Base URL</b> of your Seqera Platform instance (defaults to the public cloud) and an optional
+    <b>API token</b> that will be used by all Seqera nodes referencing this config.
+  </p>
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('seqera-config', {
-        category: 'config',
-        defaults: {
-            baseUrl: { value: 'https://api.cloud.seqera.io' },
-            workspaceId: { value: null }
-        },
-        credentials: {
-            token: { type: 'password' }
-        },
-        label: function() {
-            const wsPart = this.workspaceId ? `, WS ${this.workspaceId}` : '';
-            return this.baseUrl ? `Seqera (${this.baseUrl}${wsPart})` : 'Seqera config';
-        }
-    });
+  RED.nodes.registerType("seqera-config", {
+    category: "config",
+    defaults: {
+      baseUrl: { value: "https://api.cloud.seqera.io" },
+      workspaceId: { value: null },
+    },
+    credentials: {
+      token: { type: "password" },
+    },
+    label: function () {
+      const wsPart = this.workspaceId ? `, WS ${this.workspaceId}` : "";
+      return this.baseUrl ? `Seqera (${this.baseUrl}${wsPart})` : "Seqera config";
+    },
+  });
 </script>
