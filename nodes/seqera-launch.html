@@ -15,7 +15,7 @@
       Provide a <b>Seqera config</b> for the API base URL, workspace ID, and token.
   </p>
   <p>
-      <b>Quick start:</b> set <code>msg.launchpadName</code> to the name of a Launchpad entry (for example <code>nf-core-fetchngs</code>). The node will automatically look up the pipeline, retrieve its Launchpad configuration and submit the launch for you.
+      <b>Quick start:</b> set <code>msg.launchpadName</code> to the name of a Launchpad entry (for example <code>nf-core-fetchngs</code>). Optionally pass <code>msg.params</code> with a JSON object of parameters to merge/override. The node will look up the Launchpad config, merge your parameters, and submit the launch.
   </p>
   <p>
       <b>Advanced:</b> instead of <code>launchpadName</code> you may pass a fully-formed launch request object in <code>msg.payload</code> (or <code>msg.body</code>) together with optional overrides shown below.
@@ -28,6 +28,8 @@
           <li><code>msg.sourceWorkspaceId</code> – Source workspace (numeric)</li>
           <li><code>msg.baseUrl</code> – Base URL override</li>
           <li><code>msg.token</code> – API token override</li>
+          <li><code>msg.launchpadName</code> – Name of a Launchpad pipeline preset to launch</li>
+          <li><code>msg.params</code> – JSON object of launch parameters to merge / override</li>
       </ul>
   </p>
   <h4>Outputs</h4>

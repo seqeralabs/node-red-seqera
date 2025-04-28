@@ -32,7 +32,7 @@ Submits a new workflow execution.
 
 **Preferred usage**
 
-Set `msg.launchpadName` to the name of a Launchpad entry. The node will automatically fetch the Launchpad configuration and submit the workflow.
+Set `msg.launchpadName` to the name of a Launchpad entry. Optionally add `msg.params` with a JSON object of parameters to merge/override. The node will fetch the Launchpad configuration, merge your parameters, and submit the workflow.
 
 **Advanced / custom usage**
 
@@ -40,13 +40,14 @@ You can instead supply a full launch request JSON in `msg.payload` (or `msg.body
 
 Optional override properties in the incoming `msg`:
 
-| Property            | Type   | Description                                            |
-| ------------------- | ------ | ------------------------------------------------------ |
-| `workspaceId`       | number | Target workspace (defaults to value from config node). |
-| `sourceWorkspaceId` | number | Source workspace (optional).                           |
-| `launchpadName`     | string | Name of Launchpad pipeline preset (preferred).         |
-| `baseUrl`           | string | Override Base URL.                                     |
-| `token`             | string | Override bearer token.                                 |
+| Property            | Type   | Description                                                                          |
+| ------------------- | ------ | ------------------------------------------------------------------------------------ |
+| `workspaceId`       | number | Target workspace (defaults to value from config node).                               |
+| `sourceWorkspaceId` | number | Source workspace (optional).                                                         |
+| `launchpadName`     | string | Name of Launchpad pipeline preset (preferred).                                       |
+| `params`            | object | JSON object of launch parameters to merge / override in the Launchpad configuration. |
+| `baseUrl`           | string | Override Base URL.                                                                   |
+| `token`             | string | Override bearer token.                                                               |
 
 **Outputs (one wire)**
 

@@ -81,6 +81,19 @@ module.exports = function (RED) {
         return;
       }
 
+      // Apply msg.params into paramsText string (override / merge)
+      if (msg.params && typeof msg.params === "object") {
+        body.launch = body.launch || {};
+        let existingParams = {};
+        if (body.launch.paramsText) {
+          try {
+            existingParams = JSON.parse(body.launch.paramsText);
+          } catch (_) {}
+        }
+        const merged = { ...existingParams, ...msg.params };
+        body.launch.paramsText = JSON.stringify(merged);
+      }
+
       // Build URL and query parameters
       let url = `${baseUrl.replace(/\/$/, "")}/workflow/launch`;
       const params = new URLSearchParams();
@@ -104,6 +117,11 @@ module.exports = function (RED) {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
+
+      // Store request details for downstream debugging (available on both success and error)
+      msg._seqera_request = { method: "POST", url: null, headers, body };
+
+      msg._seqera_request.url = `${baseUrl.replace(/\/$/, "")}/workflow/launch?workspaceId=${workspaceId}`; // update after params composed earlier
 
       try {
         const response = await axios.post(url, body, { headers });
