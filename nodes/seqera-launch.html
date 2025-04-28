@@ -1,0 +1,57 @@
+<script type="text/html" data-template-name="seqera-launch">
+    <div class="form-row">
+        <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+        <input type="text" id="node-input-seqera" data-type="seqera-config">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="seqera-launch">
+    <p>Launches a new workflow execution via the Seqera Platform API.</p>
+    <p>
+        Provide a <b>Seqera config</b> for the API base URL, workspace ID, and token. Supply the launch request <code>JSON</code> in <code>msg.payload</code> (or <code>msg.body</code>).
+    </p>
+    <p>
+        Optional overrides via incoming <code>msg</code>:
+        <ul>
+            <li><code>msg.workspaceId</code> – Target workspace (numeric)</li>
+            <li><code>msg.sourceWorkspaceId</code> – Source workspace (numeric)</li>
+            <li><code>msg.baseUrl</code> – Base URL override</li>
+            <li><code>msg.token</code> – API token override</li>
+        </ul>
+    </p>
+    <h4>Outputs</h4>
+    <ul>
+        <li><code>msg.payload</code> – JSON response from the <code>/workflow/launch</code> endpoint.</li>
+        <li><code>msg.workflowId</code> – Convenience copy of the newly launched workflow ID.</li>
+    </ul>
+    <p>
+        On API error (4xx/5xx) the message still flows with:
+        <ul>
+            <li><code>msg._seqera_request</code> – request details (method, URL, headers, body).</li>
+            <li><code>msg._seqera_error</code> – HTTP status and response payload (if any).</li>
+        </ul>
+    </p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('seqera-launch', {
+        category: 'seqera',
+        color: '#CBC6DD',
+        inputs: 1,
+        outputs: 1,
+        icon: 'rocket.svg',
+        align: 'right',
+        paletteLabel: 'Launch workflow',
+        label: function() {
+            return this.name || 'Launch workflow';
+        },
+        defaults: {
+            name: { value: "" },
+            seqera: { value: "", type: "seqera-config" }
+        }
+    });
+</script>
