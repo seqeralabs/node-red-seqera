@@ -1,0 +1,60 @@
+<script type="text/html" data-template-name="seqera-launch-monitor">
+  <div class="form-row">
+    <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+    <input type="text" id="node-input-seqera" data-type="seqera-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-poll"><i class="fa fa-clock-o"></i> Poll interval (s)</label>
+    <input type="number" id="node-input-poll" placeholder="5" min="1" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="seqera-launch-monitor">
+  <p>Launches a workflow and then periodically checks its status until completion.</p>
+
+  <p><b>Preferred usage</b>: set <code>msg.launchpadName</code> to a Launchpad entry. Optionally pass <code>msg.params</code> (JSON object) to merge / override parameters.</p>
+
+  <p>Advanced users can send a full launch request in <code>msg.payload</code>/<code>msg.body</code>.</p>
+
+  <p><b>Optional msg overrides</b>:
+      <ul>
+          <li><code>msg.workspaceId</code></li>
+          <li><code>msg.sourceWorkspaceId</code></li>
+          <li><code>msg.baseUrl</code></li>
+          <li><code>msg.token</code></li>
+          <li><code>msg.params</code></li>
+      </ul>
+  </p>
+
+  <h4>Outputs (three wires)</h4>
+  <ol>
+      <li>Sent on <em>every</em> status poll.</li>
+      <li>Sent once when the workflow completes successfully.</li>
+      <li>Sent once when the workflow fails, is cancelled, or any non-success terminal state.</li>
+  </ol>
+  <p>Each message contains <code>msg.payload</code> (workflow JSON) and <code>msg.workflowId</code>.</p>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("seqera-launch-monitor", {
+    category: "seqera",
+    color: "#CBC6DD",
+    inputs: 1,
+    outputs: 3,
+    icon: "rocket.svg",
+    align: "right",
+    paletteLabel: "Launch + monitor",
+    label: function () {
+      return this.name || "Launch + monitor";
+    },
+    defaults: {
+      name: { value: "" },
+      seqera: { value: "", type: "seqera-config" },
+      poll: { value: 5 },
+    },
+  });
+</script>

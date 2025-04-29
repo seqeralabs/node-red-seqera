@@ -18,7 +18,8 @@
     "nodes": {
       "seqera-workflow": "nodes/seqera-workflow.js",
       "seqera-config": "nodes/seqera-config.js",
-      "seqera-launch": "nodes/seqera-launch.js"
+      "seqera-launch": "nodes/seqera-launch.js",
+      "seqera-launch-monitor": "nodes/seqera-launch-monitor.js"
     }
   }
 }

@@ -81,6 +81,25 @@ Each output message contains:
 
 On error the message also carries `msg._seqera_request` and `msg._seqera_error` (see Debugging section).
 
+---
+
+### Launch + monitor (`seqera-launch-monitor`)
+
+Combines launch and status monitoring in one node.
+
+1. Performs the same behaviour as the <i>Launch workflow</i> node (Launchpad resolution, params merging, etc.).
+2. Polls the launched workflow every <b>poll interval</b> seconds (default 5). You can change this in the node properties panel ("Poll interval (s)").
+
+**Outputs (three wires)**
+
+| Wire  | Description                                                                                                               |
+| ----- | ------------------------------------------------------------------------------------------------------------------------- |
+| **1** | Emitted on <em>every</em> poll with the latest workflow JSON.                                                             |
+| **2** | Emitted once when the workflow completes successfully.                                                                    |
+| **3** | Emitted once when the workflow ends in any other terminal state (failed, cancelled, unknown, etc.) or if an error occurs. |
+
+Each output message contains `msg.payload` (workflow JSON) and `msg.workflowId`. Error messages also include `_seqera_request` / `_seqera_error` as described earlier.
+
 ## Authentication
 
 Create a **Seqera config** node and enter your bearer API token there. All Seqera nodes that reference this config will automatically reuse the token. The token is sent in an `Authorization: Bearer <token>` header.
