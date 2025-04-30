@@ -20,59 +20,17 @@ Create a Seqera Config node to store your API credentials and default settings.
 - **Workspace ID**: Your Seqera workspace ID
 - **Token**: Your Seqera API token
 
-### Seqera Workflow Node
-
-Fetches workflow details from the Seqera API.
-
-#### Inputs
-
-- **workflowId**: The ID of the workflow to fetch
-- **baseUrl**: Override the base URL from the config node
-- **workspaceId**: Override the workspace ID from the config node
-- **token**: Override the API token from the config node
-
-#### Outputs
-
-- **msg.payload**: The workflow details from the API
-- **msg.\_seqera_request**: The request details sent to the API
-- **msg.\_seqera_error**: Any error details if the request fails
-
-### Seqera Launch Node
-
-Launches a workflow using the Seqera API.
-
-#### Inputs
-
-- **launchpadName**: The name of the launchpad to use
-- **params**: A JSON object of parameters to merge with the launchpad's default parameters
-- **baseUrl**: Override the base URL from the config node
-- **workspaceId**: Override the workspace ID from the config node
-- **sourceWorkspaceId**: The source workspace ID
-- **token**: Override the API token from the config node
-
-Alternative input:
-
-- **msg.body**: A full launch request body (alternative to using launchpadName)
-
-#### Outputs
-
-- **msg.payload**: The launch response from the API
-- **msg.workflowId**: The ID of the launched workflow
-- **msg.\_seqera_request**: The request details sent to the API
-- **msg.\_seqera_error**: Any error details if the request fails
-
 ### Seqera Launch Monitor Node
 
-Launches a workflow and monitors its status until completion.
+Launches a workflow and then periodically checks its status until completion.
 
 #### Inputs
 
-- **launchpadName**: The name of the launchpad to use
-- **params**: A JSON object of parameters to merge with the launchpad's default parameters
-- **baseUrl**: Override the base URL from the config node
+- **pollInterval**: How frequently to check workflow status (in seconds)
+- **launchpadName**: The Human-readable name of a pipeline in the launchpad to use
+- **params**: JSON object containing parameters to merge with the launchpad's default parameters
 - **workspaceId**: Override the workspace ID from the config node
-- **sourceWorkspaceId**: The source workspace ID
-- **token**: Override the API token from the config node
+- **sourceWorkspaceId**: The source workspace ID (if a shared workflow and different to workspaceId)
 
 Alternative input:
 
@@ -80,7 +38,7 @@ Alternative input:
 
 #### Outputs (three wires)
 
-1. Sent on every status poll
+1. Sent on every status poll (only when workflow is active)
 2. Sent once when the workflow completes successfully
 3. Sent once when the workflow fails, is cancelled, or any non-success terminal state
 
@@ -88,7 +46,48 @@ Each message contains:
 
 - **msg.payload**: The workflow details from the API
 - **msg.workflowId**: The ID of the workflow
-- **msg.\_seqera_request**: The request details sent to the API
+- **msg.\_seqera_request**: The request details sent to the API (when error occurs)
+- **msg.\_seqera_error**: Any error details if the request fails
+
+### Seqera Workflow Node
+
+Queries the status of a workflow.
+
+#### Inputs
+
+- **workflowId**: The ID of the workflow to query
+- **workspaceId**: Override the workspace ID from the config node
+
+#### Outputs (two wires)
+
+1. Only receives messages when the workflow is active (submitted, running, or pending)
+
+   - Contains: `msg.payload` and `msg.workflowId`
+
+2. Receives messages when the workflow has completed (success or failure) OR when an API error occurs
+   - For completed workflows: Contains `msg.payload` and `msg.workflowId`
+   - For API errors: Also contains `msg._seqera_request` and `msg._seqera_error`
+
+### Seqera Launch Node
+
+Launches a workflow using the Seqera API.
+
+#### Inputs
+
+- **launchpadName**: The Human-readable name of a pipeline in the launchpad to use
+- **params**: JSON object containing parameters to merge with the launchpad's default parameters
+- **workspaceId**: Override the workspace ID from the config node
+- **sourceWorkspaceId**: The source workspace ID (if a shared workflow and different to workspaceId)
+
+Alternative input:
+
+- **msg.body**: A full launch request body (alternative to using launchpadName)
+
+#### Outputs (one wire)
+
+- **msg.payload**: The launch response from the API
+- **msg.workflowId**: The ID of the launched workflow
+- **msg.\_seqera_request**: The request details sent to the API (when error occurs)
 - **msg.\_seqera_error**: Any error details if the request fails
 
 ## License
