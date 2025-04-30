@@ -27,21 +27,20 @@
       </ul>
   </p>
 
-  <h4>Outputs (two wires)</h4>
+  <h4>Outputs (two outputs)</h4>
   <ol>
-      <li>Only receives messages when the workflow is active (submitted, running, or pending)</li>
-      <li>Receives messages when the workflow has completed (success or failure) OR when an API error occurs</li>
+    <li>Only receives messages when the workflow is active (submitted, running, or pending)
+      <ul>
+          <li><code>msg.payload</code> and <code>msg.workflowId</code></li>
+      </ul>
+    </li>
+    <li>Receives messages when the workflow has completed (success or failure) OR when an API error occurs
+      <ul>
+          <li><code>msg.payload</code> and <code>msg.workflowId</code>.</li>
+          <li>In case of an API error, also includes <code>msg._seqera_request</code> and <code>msg._seqera_error</code></li>
+      </ul>
+    </li>
   </ol>
-  <p>For active workflow statuses:</p>
-  <ul>
-      <li>First output receives a message with <code>msg.payload</code> and <code>msg.workflowId</code></li>
-  </ul>
-
-  <p>For completed workflow statuses:</p>
-  <ul>
-      <li>Second output receives a message with <code>msg.payload</code> and <code>msg.workflowId</code>.</li>
-      <li>In case of an API error, it will also include <code>msg._seqera_request</code> and <code>msg._seqera_error</code></li>
-  </ul>
 </script>
 
 <script type="text/javascript">
@@ -50,12 +49,13 @@
     color: "#CBC6DD",
     inputs: 1,
     outputs: 2,
-    icon: "workflow.svg",
-    align: "right",
+    icon: "bridge.svg",
+    align: "left",
     paletteLabel: "Check workflow",
     label: function () {
       return this.name || "Check workflow";
     },
+    outputLabels: ["active", "completed"],
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },

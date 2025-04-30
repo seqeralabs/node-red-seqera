@@ -39,7 +39,7 @@
 
   <p>Advanced users can send a full launch request in <code>msg.body</code>.</p>
 
-  <h4>Outputs (one wire)</h4>
+  <h4>Outputs (one output)</h4>
   <p>Each message contains:</p>
   <ul>
       <li><code>msg.payload</code> – The launch response from the API</li>
@@ -55,8 +55,8 @@
     color: "#CBC6DD",
     inputs: 1,
     outputs: 1,
-    icon: "rocket.svg",
-    align: "right",
+    icon: "font-awesome/fa-play",
+    align: "left",
     paletteLabel: "Launch workflow",
     label: function () {
       return this.name || "Launch workflow";

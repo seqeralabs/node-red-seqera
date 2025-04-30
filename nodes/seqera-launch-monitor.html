@@ -43,7 +43,7 @@
 
   <p>Advanced users can send a full launch request in <code>msg.body</code>.</p>
 
-  <h4>Outputs (three wires)</h4>
+  <h4>Outputs (three outputs)</h4>
   <ol>
       <li>Sent on <em>every</em> status poll.</li>
       <li>Sent once when the workflow completes successfully.</li>
@@ -64,12 +64,13 @@
     color: "#CBC6DD",
     inputs: 1,
     outputs: 3,
-    icon: "rocket.svg",
-    align: "right",
+    icon: "font-awesome/fa-play",
+    align: "left",
     paletteLabel: "Launch + monitor",
     label: function () {
       return this.name || "Launch + monitor";
     },
+    outputLabels: ["status", "success", "error"],
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },

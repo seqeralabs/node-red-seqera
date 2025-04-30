@@ -36,7 +36,7 @@ Alternative input:
 
 - **msg.body**: A full launch request body (alternative to using launchpadName)
 
-#### Outputs (three wires)
+#### Outputs (three outputs)
 
 1. Sent on every status poll (only when workflow is active)
 2. Sent once when the workflow completes successfully
@@ -58,7 +58,7 @@ Queries the status of a workflow.
 - **workflowId**: The ID of the workflow to query
 - **workspaceId**: Override the workspace ID from the config node
 
-#### Outputs (two wires)
+#### Outputs (two outputs)
 
 1. Only receives messages when the workflow is active (submitted, running, or pending)
 
@@ -83,7 +83,7 @@ Alternative input:
 
 - **msg.body**: A full launch request body (alternative to using launchpadName)
 
-#### Outputs (one wire)
+#### Outputs (one output)
 
 - **msg.payload**: The launch response from the API
 - **msg.workflowId**: The ID of the launched workflow
