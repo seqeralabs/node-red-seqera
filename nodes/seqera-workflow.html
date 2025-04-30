@@ -29,15 +29,18 @@
 
   <h4>Outputs (two wires)</h4>
   <ol>
-      <li>Sent when the workflow is still running or submitted.</li>
-      <li>Sent when the workflow has completed (success or failure).</li>
+      <li>Only receives messages when the workflow is active (submitted, running, or pending)</li>
+      <li>Receives messages when the workflow has completed (success or failure) OR when an API error occurs</li>
   </ol>
-  <p>Each message contains:</p>
+  <p>For active workflow statuses:</p>
   <ul>
-      <li><code>msg.payload</code> – The workflow details from the API</li>
-      <li><code>msg.workflowId</code> – The ID of the workflow</li>
-      <li><code>msg._seqera_request</code> – The request details sent to the API</li>
-      <li><code>msg._seqera_error</code> – Any error details if the request fails</li>
+      <li>First output receives a message with <code>msg.payload</code> and <code>msg.workflowId</code></li>
+  </ul>
+
+  <p>For completed workflow statuses:</p>
+  <ul>
+      <li>Second output receives a message with <code>msg.payload</code> and <code>msg.workflowId</code>.</li>
+      <li>In case of an API error, it will also include <code>msg._seqera_request</code> and <code>msg._seqera_error</code></li>
   </ul>
 </script>
 
@@ -49,9 +52,9 @@
     outputs: 2,
     icon: "workflow.svg",
     align: "right",
-    paletteLabel: "Workflow",
+    paletteLabel: "Check workflow",
     label: function () {
-      return this.name || "Workflow";
+      return this.name || "Check workflow";
     },
     defaults: {
       name: { value: "" },
