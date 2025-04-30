@@ -1,6 +1,6 @@
 # node-red-contrib-seqera
 
-Node-RED nodes for interacting with the [Seqera Platform](https://seqera.io/) REST API.
+A Node-RED node for interacting with the Seqera Platform API.
 
 ## Installation
 
@@ -10,113 +10,87 @@ Install via the Node-RED palette manager **or** from the command line inside you
 npm install node-red-contrib-seqera
 ```
 
-## Nodes
+## Usage
 
-### Seqera config (`seqera-config`)
+### Seqera Config Node
 
-Central store for connection settings that can be shared by every Seqera node in your flows:
+Create a Seqera Config node to store your API credentials and default settings.
 
-| Property         | Purpose                                                                                                         |
-| ---------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Base URL**     | URL of your Seqera Platform instance (defaults to the cloud `https://api.cloud.seqera.io`).                     |
-| **Workspace ID** | Numeric workspace identifier. Used by launch / query operations when provided (optional).                       |
-| **API token**    | Bearer token with the required permissions for the chosen workspace / instance (optional but usually required). |
+- **Base URL**: The base URL for the Seqera API (default: https://api.cloud.seqera.io)
+- **Workspace ID**: Your Seqera workspace ID
+- **Token**: Your Seqera API token
 
-Create one of these nodes and reference it from the launch / workflow nodes instead of duplicating credentials everywhere.
+### Seqera Workflow Node
 
----
+Fetches workflow details from the Seqera API.
 
-### Launch workflow (`seqera-launch`)
+#### Inputs
 
-Submits a new workflow execution.
+- **workflowId**: The ID of the workflow to fetch
+- **baseUrl**: Override the base URL from the config node
+- **workspaceId**: Override the workspace ID from the config node
+- **token**: Override the API token from the config node
 
-**Preferred usage**
+#### Outputs
 
-Set `msg.launchpadName` to the name of a Launchpad entry. Optionally add `msg.params` with a JSON object of parameters to merge/override. The node will fetch the Launchpad configuration, merge your parameters, and submit the workflow.
+- **msg.payload**: The workflow details from the API
+- **msg.\_seqera_request**: The request details sent to the API
+- **msg.\_seqera_error**: Any error details if the request fails
 
-**Advanced / custom usage**
+### Seqera Launch Node
 
-You can instead supply a full launch request JSON in `msg.payload` (or `msg.body`) following the _SubmitWorkflowLaunchRequest_ schema.
+Launches a workflow using the Seqera API.
 
-Optional override properties in the incoming `msg`:
+#### Inputs
 
-| Property            | Type   | Description                                                                          |
-| ------------------- | ------ | ------------------------------------------------------------------------------------ |
-| `workspaceId`       | number | Target workspace (defaults to value from config node).                               |
-| `sourceWorkspaceId` | number | Source workspace (optional).                                                         |
-| `launchpadName`     | string | Name of Launchpad pipeline preset (preferred).                                       |
-| `params`            | object | JSON object of launch parameters to merge / override in the Launchpad configuration. |
-| `baseUrl`           | string | Override Base URL.                                                                   |
-| `token`             | string | Override bearer token.                                                               |
+- **launchpadName**: The name of the launchpad to use
+- **params**: A JSON object of parameters to merge with the launchpad's default parameters
+- **baseUrl**: Override the base URL from the config node
+- **workspaceId**: Override the workspace ID from the config node
+- **sourceWorkspaceId**: The source workspace ID
+- **token**: Override the API token from the config node
 
-**Outputs (one wire)**
+Alternative input:
 
-`msg.payload` – API response JSON (SubmitWorkflowLaunchResponse). On success the node also sets `msg.workflowId` for downstream use.
+- **msg.body**: A full launch request body (alternative to using launchpadName)
 
-On error the message is still sent with `msg._seqera_request` and `msg._seqera_error` attached.
+#### Outputs
 
----
+- **msg.payload**: The launch response from the API
+- **msg.workflowId**: The ID of the launched workflow
+- **msg.\_seqera_request**: The request details sent to the API
+- **msg.\_seqera_error**: Any error details if the request fails
 
-### Check workflow (`seqera-workflow`)
+### Seqera Launch Monitor Node
 
-Retrieves details of an existing workflow execution.
+Launches a workflow and monitors its status until completion.
 
-**Inputs**
+#### Inputs
 
-- Any message containing `msg.workflowId`.
+- **launchpadName**: The name of the launchpad to use
+- **params**: A JSON object of parameters to merge with the launchpad's default parameters
+- **baseUrl**: Override the base URL from the config node
+- **workspaceId**: Override the workspace ID from the config node
+- **sourceWorkspaceId**: The source workspace ID
+- **token**: Override the API token from the config node
 
-Optional override properties are the same as the launch node (`workspaceId`, `baseUrl`, `token`).
+Alternative input:
 
-**Outputs (two wires)**
+- **msg.body**: A full launch request body (alternative to using launchpadName)
 
-| Wire  | Condition                                                                                     |
-| ----- | --------------------------------------------------------------------------------------------- |
-| **1** | Fired when `payload.workflow.status` matches **submitted** or **running** (case-insensitive). |
-| **2** | Fired for all other statuses, or when the API call fails.                                     |
+#### Outputs (three wires)
 
-Each output message contains:
+1. Sent on every status poll
+2. Sent once when the workflow completes successfully
+3. Sent once when the workflow fails, is cancelled, or any non-success terminal state
 
-- `msg.payload` – JSON response from the `/workflow/{id}` endpoint.
-- `msg.workflowId` – Convenience copy of `payload.workflow.id`.
+Each message contains:
 
-On error the message also carries `msg._seqera_request` and `msg._seqera_error` (see Debugging section).
+- **msg.payload**: The workflow details from the API
+- **msg.workflowId**: The ID of the workflow
+- **msg.\_seqera_request**: The request details sent to the API
+- **msg.\_seqera_error**: Any error details if the request fails
 
----
+## License
 
-### Launch + monitor (`seqera-launch-monitor`)
-
-Combines launch and status monitoring in one node.
-
-1. Performs the same behaviour as the <i>Launch workflow</i> node (Launchpad resolution, params merging, etc.).
-2. Polls the launched workflow every <b>poll interval</b> seconds (default 5). You can change this in the node properties panel ("Poll interval (s)").
-
-**Outputs (three wires)**
-
-| Wire  | Description                                                                                                               |
-| ----- | ------------------------------------------------------------------------------------------------------------------------- |
-| **1** | Emitted on <em>every</em> poll with the latest workflow JSON.                                                             |
-| **2** | Emitted once when the workflow completes successfully.                                                                    |
-| **3** | Emitted once when the workflow ends in any other terminal state (failed, cancelled, unknown, etc.) or if an error occurs. |
-
-Each output message contains `msg.payload` (workflow JSON) and `msg.workflowId`. Error messages also include `_seqera_request` / `_seqera_error` as described earlier.
-
-## Authentication
-
-Create a **Seqera config** node and enter your bearer API token there. All Seqera nodes that reference this config will automatically reuse the token. The token is sent in an `Authorization: Bearer <token>` header.
-
-## Debugging
-
-If a Seqera node receives a non-successful response (for example HTTP 4xx/5xx) or any other error, it will:
-
-1. Write a descriptive message to the Node-RED log / debug sidebar.
-2. Forward the original message so that downstream nodes can inspect it.
-3. Attach two helper properties to the message:
-
-   - `msg._seqera_request` – the HTTP request that was attempted (method, URL, headers and, for launches, the JSON body).
-   - `msg._seqera_error` – details of the error response (`status`, `data`) if available, or a simple error message.
-
-This means you can wire a **Debug** node (set to "complete msg") to the failure path and immediately see the full API request and response, which makes it much easier to spot authentication or payload issues.
-
----
-
-This is an early release. Pull requests and issues welcome!
+MIT

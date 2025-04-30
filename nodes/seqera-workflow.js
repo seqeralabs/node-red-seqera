@@ -3,64 +3,80 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     const node = this;
 
-    // Reference to shared Seqera configuration node (optional)
-    node.seqeraConfig = RED.nodes.getNode(config.seqera);
-    // Fallback base URL if no config provided
-    node.baseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || config.baseUrl || "https://api.cloud.seqera.io";
+    // Configurable typedInput properties
+    node.workflowIdProp = config.workflowId;
+    node.workflowIdPropType = config.workflowIdType;
+    node.workspaceIdProp = config.workspaceId;
+    node.workspaceIdPropType = config.workspaceIdType;
 
-    // Fallback credentials for backwards-compatibility (deprecated)
+    node.seqeraConfig = RED.nodes.getNode(config.seqera);
+    // Default base URL if no config provided
+    node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
+
+    // Credentials (deprecated local credentials, config node credentials still used)
     node.credentials = RED.nodes.getCredentials(node.id);
 
     const axios = require("axios");
 
-    node.on("input", async function (msg, send, done) {
-      // Show status: running
-      node.status({ fill: "blue", shape: "ring", text: `${new Date().toLocaleTimeString()} querying` });
+    // Helper to format date as yyyy-mm-dd HH:MM:SS
+    const formatDateTime = () => {
+      const d = new Date();
+      const pad = (n) => n.toString().padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
+    };
 
-      // Allow msg overrides and shared config
-      const baseUrl = msg.baseUrl || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.baseUrl;
-      const workflowId = msg.workflowId;
-      const workspaceId = msg.workspaceId || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
+    node.on("input", async function (msg, send, done) {
+      const workflowId = RED.util.evaluateNodeProperty(node.workflowIdProp, node.workflowIdPropType, node, msg);
+      const workspaceIdOverride = RED.util.evaluateNodeProperty(
+        node.workspaceIdProp,
+        node.workspaceIdPropType,
+        node,
+        msg,
+      );
 
       if (!workflowId) {
-        done(new Error("workflowId must be provided in msg.workflowId"));
+        done(new Error("workflowId not provided"));
         return;
       }
 
-      let url = `${baseUrl.replace(/\/$/, "")}/workflow/${workflowId}`;
-      if (workspaceId) {
-        url += `?workspaceId=${workspaceId}`;
-      }
+      // Get workspace ID from override, config node, or null as fallback
+      const workspaceId =
+        workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || msg.workspaceId || null;
+
+      let url = `${node.defaultBaseUrl.replace(/\/$/, "")}/workflow/${workflowId}`;
+      if (workspaceId) url += `?workspaceId=${workspaceId}`;
 
       const headers = {};
-      // Determine token priority: msg.token > config node > (deprecated) local credentials
       const token =
-        msg.token ||
         (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
         (node.credentials && node.credentials.token);
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
       try {
         const response = await axios.get(url, { headers });
         msg.payload = response.data;
-        // Convenience: expose workflowId at msg level for downstream nodes
-        if (response.data && response.data.workflow && response.data.workflow.id) {
-          msg.workflowId = response.data.workflow.id;
-        }
+        msg.workflowId = response.data?.workflow?.id || workflowId;
 
-        // Success status showing workflow status
-        const wfStatus = response.data && response.data.workflow && response.data.workflow.status;
-        node.status({ fill: "green", shape: "dot", text: `${new Date().toLocaleTimeString()} ${wfStatus || "ok"}` });
+        const wfStatus = response.data?.workflow?.status;
+        const statusLower = (wfStatus || "ok").toLowerCase();
 
-        // Determine output based on status regex
-        const re = /^(submitted|running)$/i;
-        if (re.test(wfStatus || "")) {
+        // Check if this is an active status or final status
+        const isActive = /^(submitted|running|pending)$/i.test(statusLower);
+        const statusShape = isActive ? "ring" : "dot";
+
+        node.status({
+          fill: mapColor(statusLower),
+          shape: statusShape,
+          text: `${statusLower}: ${formatDateTime()}`,
+        });
+
+        // Send to first output for active statuses, second for final statuses
+        if (isActive) {
           send([msg, null]);
         } else {
           send([null, msg]);
         }
+
         if (done) done();
       } catch (err) {
         msg._seqera_request = { method: "GET", url, headers };
@@ -68,17 +84,34 @@ module.exports = function (RED) {
           ? { status: err.response.status, data: err.response.data }
           : { message: err.message };
         node.error(`Seqera API request failed: ${err.message}\nRequest: GET ${url}`, msg);
-        node.status({ fill: "red", shape: "ring", text: `${new Date().toLocaleTimeString()} error` });
+        node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
         send([null, msg]);
         if (done) done(err);
       }
     });
   }
 
-  // Register with legacy credential support for backwards compatibility (token field hidden in UI)
+  // Helper to map status to color
+  function mapColor(stat) {
+    const s = (stat || "").toLowerCase();
+    if (/^(submitted|pending)$/.test(s)) return "yellow";
+    if (/^(running)$/.test(s)) return "blue";
+    if (/^(completed|succeeded|success)$/.test(s)) return "green";
+    if (/^(failed|error)$/.test(s)) return "red";
+    return "grey";
+  }
+
   RED.nodes.registerType("seqera-workflow", SeqeraWorkflowNode, {
     credentials: {
       token: { type: "password" },
+    },
+    defaults: {
+      name: { value: "" },
+      seqeraConfig: { value: "", type: "seqera-config", required: true },
+      workflowId: { value: "workflowId" },
+      workflowIdType: { value: "msg" },
+      workspaceId: { value: "workspaceId" },
+      workspaceIdType: { value: "msg" },
     },
   });
 };

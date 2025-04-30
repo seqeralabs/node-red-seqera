@@ -3,9 +3,24 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     const node = this;
 
+    // Store typedInput properties
+    node.launchpadNameProp = config.launchpadName;
+    node.launchpadNamePropType = config.launchpadNameType;
+    node.paramsProp = config.paramsKey;
+    node.paramsPropType = config.paramsKeyType;
+    node.baseUrlProp = config.baseUrl;
+    node.baseUrlPropType = config.baseUrlType;
+    node.workspaceIdProp = config.workspaceId;
+    node.workspaceIdPropType = config.workspaceIdType;
+    node.sourceWorkspaceIdProp = config.sourceWorkspaceId;
+    node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
+    node.tokenProp = config.token;
+    node.tokenPropType = config.tokenType;
+    node.pollIntervalProp = config.poll;
+    node.pollIntervalPropType = config.pollType;
+
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
-    node.baseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || config.baseUrl || "https://api.cloud.seqera.io";
-    node.pollIntervalSec = parseInt(config.poll || 5, 10) || 5;
+    node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
     node.credentials = RED.nodes.getCredentials(node.id);
     const axios = require("axios");
 
@@ -33,16 +48,27 @@ module.exports = function (RED) {
       clearAllIntervals();
       node.status({ fill: "blue", shape: "ring", text: `launching: ${formatDateTime()}` });
 
-      const baseUrl = msg.baseUrl || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.baseUrl;
-      const workspaceId = msg.workspaceId || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
-      const sourceWorkspaceId = msg.sourceWorkspaceId || null;
-      const launchpadName = msg.launchpadName || null;
+      const evalProp = (p, t) => RED.util.evaluateNodeProperty(p, t, node, msg);
+
+      const launchpadName = evalProp(node.launchpadNameProp, node.launchpadNamePropType);
+      const paramsObj = evalProp(node.paramsProp, node.paramsPropType);
+      const baseUrlOverride = evalProp(node.baseUrlProp, node.baseUrlPropType);
+      const workspaceIdOverride = evalProp(node.workspaceIdProp, node.workspaceIdPropType);
+      const sourceWorkspaceIdOverride = evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
+      const tokenOverride = evalProp(node.tokenProp, node.tokenPropType);
+      const pollInterval = evalProp(node.pollIntervalProp, node.pollIntervalPropType);
+
+      const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
+      const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
+      const sourceWorkspaceId = sourceWorkspaceIdOverride || null;
+      node.pollIntervalSec = parseInt(pollInterval, 10) || 5;
+
       let body = msg.body || msg.payload;
 
       const buildHeaders = () => {
         const headers = { "Content-Type": "application/json" };
         const token =
-          msg.token ||
+          tokenOverride ||
           (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
           (node.credentials && node.credentials.token);
         if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -78,7 +104,7 @@ module.exports = function (RED) {
         if (!body || !body.launch) throw new Error("No launch body specified");
 
         // merge paramsText
-        if (msg.params && typeof msg.params === "object") {
+        if (paramsObj && typeof paramsObj === "object") {
           body.launch = body.launch || {};
           let existing = {};
           if (body.launch.paramsText) {
@@ -86,7 +112,7 @@ module.exports = function (RED) {
               existing = JSON.parse(body.launch.paramsText);
             } catch (_) {}
           }
-          body.launch.paramsText = JSON.stringify({ ...existing, ...msg.params });
+          body.launch.paramsText = JSON.stringify({ ...existing, ...paramsObj });
         }
 
         // build POST url
@@ -169,5 +195,23 @@ module.exports = function (RED) {
 
   RED.nodes.registerType("seqera-launch-monitor", SeqeraLaunchMonitorNode, {
     credentials: { token: { type: "password" } },
+    defaults: {
+      name: { value: "" },
+      seqeraConfig: { value: "", type: "seqera-config", required: true },
+      pollInterval: { value: "5" },
+      pollIntervalType: { value: "num" },
+      launchpadName: { value: "launchpadName" },
+      launchpadNameType: { value: "str" },
+      paramsKey: { value: "params" },
+      paramsKeyType: { value: "str" },
+      baseUrl: { value: "baseUrl" },
+      baseUrlType: { value: "str" },
+      workspaceId: { value: "workspaceId" },
+      workspaceIdType: { value: "str" },
+      sourceWorkspaceId: { value: "sourceWorkspaceId" },
+      sourceWorkspaceIdType: { value: "str" },
+      token: { value: "token" },
+      tokenType: { value: "str" },
+    },
   });
 };

@@ -3,33 +3,55 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     const node = this;
 
-    // Reference to shared Seqera configuration node (optional)
-    node.seqeraConfig = RED.nodes.getNode(config.seqera);
-    // Base URL fallback
-    node.baseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || config.baseUrl || "https://api.cloud.seqera.io";
+    // Save typedInput property configs
+    node.launchpadNameProp = config.launchpadName;
+    node.launchpadNamePropType = config.launchpadNameType;
+    node.paramsProp = config.paramsKey;
+    node.paramsPropType = config.paramsKeyType;
+    node.baseUrlProp = config.baseUrl;
+    node.baseUrlPropType = config.baseUrlType;
+    node.workspaceIdProp = config.workspaceId;
+    node.workspaceIdPropType = config.workspaceIdType;
+    node.sourceWorkspaceIdProp = config.sourceWorkspaceId;
+    node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
+    node.tokenProp = config.token;
+    node.tokenPropType = config.tokenType;
 
-    // Legacy credentials fallback (deprecated)
+    node.seqeraConfig = RED.nodes.getNode(config.seqera);
+    node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
+
     node.credentials = RED.nodes.getCredentials(node.id);
 
     const axios = require("axios");
 
+    // Helper to format date as yyyy-mm-dd HH:MM:SS
+    const formatDateTime = () => {
+      const d = new Date();
+      const pad = (n) => n.toString().padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
+    };
+
     node.on("input", async function (msg, send, done) {
-      // Indicate launch starting
-      node.status({ fill: "blue", shape: "ring", text: `${new Date().toLocaleTimeString()} launching` });
+      node.status({ fill: "blue", shape: "ring", text: `launching: ${formatDateTime()}` });
 
-      // Resolve runtime values
-      const baseUrl = msg.baseUrl || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.baseUrl;
-      const workspaceId = msg.workspaceId || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
-      const sourceWorkspaceId = msg.sourceWorkspaceId || null;
+      // Helper to evaluate properties
+      const evalProp = (p, t) => RED.util.evaluateNodeProperty(p, t, node, msg);
 
-      const launchpadName = msg.launchpadName || null;
+      const launchpadName = evalProp(node.launchpadNameProp, node.launchpadNamePropType);
+      const paramsObj = evalProp(node.paramsProp, node.paramsPropType);
+      const baseUrlOverride = evalProp(node.baseUrlProp, node.baseUrlPropType);
+      const workspaceIdOverride = evalProp(node.workspaceIdProp, node.workspaceIdPropType);
+      const sourceWorkspaceIdOverride = evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
+      const tokenOverride = evalProp(node.tokenProp, node.tokenPropType);
+
+      const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
+      const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
+      const sourceWorkspaceId = sourceWorkspaceIdOverride || null;
 
       let body = msg.body || msg.payload;
 
-      // If launchpadName is provided we need to query the launchpad APIs to build launch JSON
       if (launchpadName) {
         try {
-          // Find pipeline by name
           const pipelinesUrl = `${baseUrl.replace(
             /\/$/,
             "",
@@ -38,27 +60,24 @@ module.exports = function (RED) {
           )}&visibility=all`;
           const headersGet = { Accept: "application/json" };
           const token =
-            msg.token ||
+            tokenOverride ||
             (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
             (node.credentials && node.credentials.token);
           if (token) headersGet["Authorization"] = `Bearer ${token}`;
 
           const pipelinesResp = await axios.get(pipelinesUrl, { headers: headersGet });
-          const pipelines = (pipelinesResp.data && pipelinesResp.data.pipelines) || [];
+          const pipelines = pipelinesResp.data?.pipelines || [];
           const match = pipelines.find((p) => p.name === launchpadName) || pipelines[0];
           if (!match) throw new Error(`No pipeline found for launchpadName '${launchpadName}'`);
 
-          const launchConfigUrl = `${baseUrl.replace(/\/$/, "")}/pipelines/${
+          const launchCfgUrl = `${baseUrl.replace(/\/$/, "")}/pipelines/${
             match.pipelineId
           }/launch?workspaceId=${workspaceId}`;
-          const launchResp = await axios.get(launchConfigUrl, { headers: headersGet });
-          if (!launchResp.data || !launchResp.data.launch) {
-            throw new Error("Invalid launch config response");
-          }
+          const launchResp = await axios.get(launchCfgUrl, { headers: headersGet });
+          if (!launchResp.data || !launchResp.data.launch) throw new Error("Invalid launch config response");
 
-          // Reformat launch JSON expected by submit endpoint
           const lp = { ...launchResp.data.launch };
-          if (lp.computeEnv && lp.computeEnv.id) {
+          if (lp.computeEnv?.id) {
             lp.computeEnvId = lp.computeEnv.id;
             delete lp.computeEnv;
           }
@@ -75,14 +94,14 @@ module.exports = function (RED) {
       if (!body) {
         done(
           new Error(
-            "No request body supplied (and no launchpadName resolved). Provide JSON payload in msg.body/msg.payload or a valid msg.launchpadName.",
+            "No request body supplied (and no launchpadName resolved). Provide JSON payload or configure launchpadName.",
           ),
         );
         return;
       }
 
-      // Apply msg.params into paramsText string (override / merge)
-      if (msg.params && typeof msg.params === "object") {
+      // Merge paramsObj into launch.paramsText
+      if (paramsObj && typeof paramsObj === "object") {
         body.launch = body.launch || {};
         let existingParams = {};
         if (body.launch.paramsText) {
@@ -90,77 +109,66 @@ module.exports = function (RED) {
             existingParams = JSON.parse(body.launch.paramsText);
           } catch (_) {}
         }
-        const merged = { ...existingParams, ...msg.params };
-        body.launch.paramsText = JSON.stringify(merged);
+        body.launch.paramsText = JSON.stringify({ ...existingParams, ...paramsObj });
       }
 
-      // Build URL and query parameters
+      // Build URL with query params
       let url = `${baseUrl.replace(/\/$/, "")}/workflow/launch`;
-      const params = new URLSearchParams();
-      if (workspaceId !== null && workspaceId !== undefined) {
-        params.append("workspaceId", workspaceId);
-      }
-      if (sourceWorkspaceId !== null && sourceWorkspaceId !== undefined) {
-        params.append("sourceWorkspaceId", sourceWorkspaceId);
-      }
-      const queryString = params.toString();
-      if (queryString.length) {
-        url += `?${queryString}`;
-      }
+      const qs = new URLSearchParams();
+      if (workspaceId != null) qs.append("workspaceId", workspaceId);
+      if (sourceWorkspaceId != null) qs.append("sourceWorkspaceId", sourceWorkspaceId);
+      if (qs.toString()) url += `?${qs.toString()}`;
 
-      // Prepare headers
+      // Headers
       const headers = { "Content-Type": "application/json" };
-      const token =
-        msg.token ||
+      const tokenHeader =
+        tokenOverride ||
         (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
         (node.credentials && node.credentials.token);
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
+      if (tokenHeader) headers["Authorization"] = `Bearer ${tokenHeader}`;
 
-      // Store request details for downstream debugging (available on both success and error)
-      msg._seqera_request = { method: "POST", url: null, headers, body };
-
-      msg._seqera_request.url = `${baseUrl.replace(/\/$/, "")}/workflow/launch?workspaceId=${workspaceId}`; // update after params composed earlier
+      msg._seqera_request = { method: "POST", url, headers, body };
 
       try {
         const response = await axios.post(url, body, { headers });
         msg.payload = response.data;
-        // Convenience: expose workflowId at msg level for downstream nodes
-        if (response.data) {
-          if (response.data.workflowId) {
-            msg.workflowId = response.data.workflowId;
-          } else if (response.data.workflow && response.data.workflow.id) {
-            msg.workflowId = response.data.workflow.id;
-          }
-        }
-        // Success status
-        node.status({ fill: "green", shape: "dot", text: `${new Date().toLocaleTimeString()} launched` });
+        msg.workflowId = response.data?.workflowId || response.data?.workflow?.id;
+        node.status({ fill: "green", shape: "dot", text: `launched: ${formatDateTime()}` });
         send(msg);
         if (done) done();
       } catch (err) {
-        // Attach request & error details for downstream debugging
-        msg._seqera_request = { method: "POST", url, headers, body };
         msg._seqera_error = err.response
           ? { status: err.response.status, data: err.response.data }
           : { message: err.message };
-
-        // Log error
         node.error(`Seqera API request failed: ${err.message}\nRequest: POST ${url}`, msg);
-        node.status({ fill: "red", shape: "ring", text: `${new Date().toLocaleTimeString()} error` });
-
-        // Forward the message so downstream debug nodes can inspect it
+        node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
         send(msg);
-
         if (done) done(err);
       }
     });
   }
 
-  // Register node – with legacy credential support for backwards compatibility (token field hidden in UI)
   RED.nodes.registerType("seqera-launch", SeqeraLaunchNode, {
-    credentials: {
-      token: { type: "password" },
+    credentials: { token: { type: "password" } },
+    defaults: {
+      name: { value: "" },
+      seqeraConfig: { value: "", type: "seqera-config", required: true },
+      workflowId: { value: "workflowId" },
+      workflowIdType: { value: "str" },
+      workspaceId: { value: "workspaceId" },
+      workspaceIdType: { value: "str" },
+      params: { value: "{}" },
+      paramsType: { value: "json" },
+      launchpadName: { value: "launchpadName" },
+      launchpadNameType: { value: "str" },
+      paramsKey: { value: "params" },
+      paramsKeyType: { value: "str" },
+      baseUrl: { value: "baseUrl" },
+      baseUrlType: { value: "str" },
+      sourceWorkspaceId: { value: "sourceWorkspaceId" },
+      sourceWorkspaceIdType: { value: "str" },
+      token: { value: "token" },
+      tokenType: { value: "str" },
     },
   });
 };

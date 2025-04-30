@@ -4,31 +4,44 @@
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
   </div>
   <div class="form-row">
-    <label for="node-input-poll"><i class="fa fa-clock-o"></i> Poll interval (s)</label>
-    <input type="number" id="node-input-poll" placeholder="5" min="1" />
+    <label for="node-input-poll"><i class="fa fa-clock-o"></i> Poll every (s)</label>
+    <input type="text" id="node-input-poll" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-launchpadName"><i class="fa fa-rocket"></i> Launchpad</label>
+    <input type="text" id="node-input-launchpadName" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-paramsKey"><i class="fa fa-code"></i> Params</label>
+    <input type="text" id="node-input-paramsKey" />
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-sourceWorkspaceId"><i class="icon-tasks"></i> Source WS ID</label>
+    <input type="text" id="node-input-sourceWorkspaceId" />
   </div>
 </script>
 
 <script type="text/html" data-help-name="seqera-launch-monitor">
   <p>Launches a workflow and then periodically checks its status until completion.</p>
 
-  <p><b>Preferred usage</b>: set <code>msg.launchpadName</code> to a Launchpad entry. Optionally pass <code>msg.params</code> (JSON object) to merge / override parameters.</p>
-
-  <p>Advanced users can send a full launch request in <code>msg.payload</code>/<code>msg.body</code>.</p>
-
-  <p><b>Optional msg overrides</b>:
+  <p><b>Inputs</b>:
       <ul>
-          <li><code>msg.workspaceId</code></li>
-          <li><code>msg.sourceWorkspaceId</code></li>
-          <li><code>msg.baseUrl</code></li>
-          <li><code>msg.token</code></li>
-          <li><code>msg.params</code></li>
+          <li><code>launchpadName</code>: The Human-readable name of a pipeline in the launchpad to use</li>
+          <li><code>params</code>: JSON object containing parameters to merge with the launchpad's default parameters (defaults to {})</li>
+          <li><code>workspaceId</code>: Override the workspace ID from the config node</li>
+          <li><code>sourceWorkspaceId</code>: The source workspace ID</li>
       </ul>
   </p>
+
+  <p>Advanced users can send a full launch request in <code>msg.body</code>.</p>
 
   <h4>Outputs (three wires)</h4>
   <ol>
@@ -36,7 +49,13 @@
       <li>Sent once when the workflow completes successfully.</li>
       <li>Sent once when the workflow fails, is cancelled, or any non-success terminal state.</li>
   </ol>
-  <p>Each message contains <code>msg.payload</code> (workflow JSON) and <code>msg.workflowId</code>.</p>
+  <p>Each message contains:</p>
+  <ul>
+      <li><code>msg.payload</code> – The workflow details from the API</li>
+      <li><code>msg.workflowId</code> – The ID of the workflow</li>
+      <li><code>msg._seqera_request</code> – The request details sent to the API</li>
+      <li><code>msg._seqera_error</code> – Any error details if the request fails</li>
+  </ul>
 </script>
 
 <script type="text/javascript">
@@ -55,6 +74,53 @@
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
       poll: { value: 5 },
+      pollType: { value: "num" },
+      launchpadName: { value: "" },
+      launchpadNameType: { value: "str" },
+      paramsKey: { value: "{}" },
+      paramsKeyType: { value: "json" },
+      workspaceId: { value: "" },
+      workspaceIdType: { value: "str" },
+      sourceWorkspaceId: { value: "" },
+      sourceWorkspaceIdType: { value: "str" },
+    },
+    oneditprepare: function () {
+      function ti(id, val, type) {
+        $(id).typedInput({ default: "str", types: ["str", "msg", "flow", "global", "env", "jsonata"] });
+        $(id).typedInput("value", val);
+        $(id).typedInput("type", type);
+      }
+
+      // Special case for poll interval - default to num type
+      $("#node-input-poll").typedInput({
+        default: "num",
+        types: ["num", "msg", "flow", "global", "env", "jsonata"],
+      });
+      $("#node-input-poll").typedInput("value", this.poll || 5);
+      $("#node-input-poll").typedInput("type", this.pollType || "num");
+
+      // Special case for params - default to json type
+      $("#node-input-paramsKey").typedInput({
+        default: "json",
+        types: ["json", "msg", "flow", "global", "str", "env", "jsonata"],
+      });
+      $("#node-input-paramsKey").typedInput("value", this.paramsKey || "{}");
+      $("#node-input-paramsKey").typedInput("type", this.paramsKeyType || "json");
+
+      ti("#node-input-launchpadName", this.launchpadName || "", this.launchpadNameType || "str");
+      ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+      ti("#node-input-sourceWorkspaceId", this.sourceWorkspaceId || "", this.sourceWorkspaceIdType || "str");
+    },
+    oneditsave: function () {
+      function save(id, prop, propType) {
+        this[prop] = $(id).typedInput("value");
+        this[propType] = $(id).typedInput("type");
+      }
+      save.call(this, "#node-input-poll", "poll", "pollType");
+      save.call(this, "#node-input-launchpadName", "launchpadName", "launchpadNameType");
+      save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
+      save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+      save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
     },
   });
 </script>
