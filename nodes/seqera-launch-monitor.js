@@ -77,28 +77,33 @@ module.exports = function (RED) {
 
       try {
         // resolve launchpad if needed
-        if (launchpadName) {
-          const headersGet = buildHeaders();
-          const pipelinesUrl = `${baseUrl.replace(
-            /\/$/,
-            "",
-          )}/pipelines?workspaceId=${workspaceId}&max=50&offset=0&search=${encodeURIComponent(
-            launchpadName,
-          )}&visibility=all`;
-          const pipelinesResp = await axios.get(pipelinesUrl, { headers: headersGet });
-          const pipelines = (pipelinesResp.data && pipelinesResp.data.pipelines) || [];
-          const match = pipelines.find((p) => p.name === launchpadName) || pipelines[0];
-          if (!match) throw new Error(`No pipeline found for ${launchpadName}`);
-          const launchCfgUrl = `${baseUrl.replace(/\/$/, "")}/pipelines/${
-            match.pipelineId
-          }/launch?workspaceId=${workspaceId}`;
-          const launchResp = await axios.get(launchCfgUrl, { headers: headersGet });
-          const lp = { ...launchResp.data.launch };
-          if (lp.computeEnv && lp.computeEnv.id) {
-            lp.computeEnvId = lp.computeEnv.id;
-            delete lp.computeEnv;
+        try {
+          if (launchpadName) {
+            const headersGet = buildHeaders();
+            const pipelinesUrl = `${baseUrl.replace(
+              /\/$/,
+              "",
+            )}/pipelines?workspaceId=${workspaceId}&max=50&offset=0&search=${encodeURIComponent(
+              launchpadName,
+            )}&visibility=all`;
+            const pipelinesResp = await axios.get(pipelinesUrl, { headers: headersGet });
+            const pipelines = (pipelinesResp.data && pipelinesResp.data.pipelines) || [];
+            const match = pipelines.find((p) => p.name === launchpadName) || pipelines[0];
+            if (!match) throw new Error(`No pipeline found for ${launchpadName}`);
+            const launchCfgUrl = `${baseUrl.replace(/\/$/, "")}/pipelines/${
+              match.pipelineId
+            }/launch?workspaceId=${workspaceId}`;
+            const launchResp = await axios.get(launchCfgUrl, { headers: headersGet });
+            const lp = { ...launchResp.data.launch };
+            if (lp.computeEnv && lp.computeEnv.id) {
+              lp.computeEnvId = lp.computeEnv.id;
+              delete lp.computeEnv;
+            }
+            body = { launch: lp };
           }
-          body = { launch: lp };
+        } catch (err) {
+          err.api_call = "Workflow fetch";
+          throw err;
         }
 
         if (!body || !body.launch) throw new Error("No launch body specified");
@@ -176,7 +181,8 @@ module.exports = function (RED) {
               send([null, null, wfMsg]); // Error/other output
             }
           } catch (err) {
-            node.error("Polling error: " + err.message);
+            err.api_call = "Polling";
+            throw err;
           }
         };
 
@@ -185,10 +191,13 @@ module.exports = function (RED) {
 
         if (done) done();
       } catch (err) {
+        if (!err.api_call) err.api_call = "launch";
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        msg._seqera_error = { message: err.message };
+        msg._seqera_error = err.response
+          ? { status: err.response.status, data: err.response.data }
+          : { message: err.message };
         send([null, null, msg]);
-        if (done) done(err);
+        if (done) done({ "Error type": err.api_call, error: msg._seqera_error });
       }
     });
   }
