@@ -192,8 +192,12 @@ module.exports = function (RED) {
               send([null, null, wfMsg]); // Error/other output
             }
           } catch (err) {
-            err.api_call = "Polling";
-            throw err;
+            // Within a async polling function, so can't throw the exception directly
+            error_msg = err.response
+              ? { status: err.response.status, data: err.response.data }
+              : { message: err.message };
+            node.error({ "Error type": "Polling API error", error: error_msg }, msg);
+            return;
           }
         };
 
