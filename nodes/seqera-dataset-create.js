@@ -34,7 +34,7 @@ module.exports = function (RED) {
 
     node.on("input", async function (msg, send, done) {
       // evaluate properties
-      const evalProp = (p, t) => RED.util.evaluateNodeProperty(p, t, node, msg);
+      const evalProp = (p, t) => RED.util.evaluateNodeProperty(p, t, node, msg, () => {});
 
       const datasetName = evalProp(node.datasetNameProp, node.datasetNamePropType);
       let fileContents = evalProp(node.fileContentsProp, node.fileContentsPropType);
@@ -129,13 +129,13 @@ module.exports = function (RED) {
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config", required: true },
-      datasetName: { value: "datasetName" },
+      datasetName: { value: "" },
       datasetNameType: { value: "str" },
       fileContents: { value: "payload" },
       fileContentsType: { value: "msg" },
       workspaceId: { value: "workspaceId" },
       workspaceIdType: { value: "str" },
-      description: { value: "description" },
+      description: { value: "" },
       descriptionType: { value: "str" },
       baseUrl: { value: "baseUrl" },
       baseUrlType: { value: "str" },

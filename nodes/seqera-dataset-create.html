@@ -4,7 +4,11 @@
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
   </div>
   <div class="form-row">
-    <label for="node-input-datasetName"><i class="fa fa-tag"></i> Name</label>
+    <label for="node-input-name"><i class="fa fa-tag"></i> Node label</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-datasetName"><i class="fa fa-database"></i> Dataset name</label>
     <input type="text" id="node-input-datasetName" />
   </div>
   <div class="form-row">
@@ -53,13 +57,13 @@
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
-      datasetName: { value: "datasetName" },
+      datasetName: { value: "" },
       datasetNameType: { value: "str" },
       fileContents: { value: "payload" },
       fileContentsType: { value: "msg" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
-      description: { value: "description" },
+      description: { value: "" },
       descriptionType: { value: "str" },
     },
     oneditprepare: function () {
@@ -68,14 +72,15 @@
         $(id).typedInput("value", val);
         $(id).typedInput("type", type);
       }
-      ti("#node-input-datasetName", this.datasetName || "datasetName", this.datasetNameType || "str");
+      $("#node-input-name").val(this.name || "");
+      ti("#node-input-datasetName", this.datasetName || "", this.datasetNameType || "str");
       $("#node-input-fileContents").typedInput({
         default: "msg",
         types: ["msg", "str", "flow", "global", "env", "jsonata", "json"],
       });
       $("#node-input-fileContents").typedInput("value", this.fileContents || "payload");
       $("#node-input-fileContents").typedInput("type", this.fileContentsType || "msg");
-      ti("#node-input-description", this.description || "description", this.descriptionType || "str");
+      ti("#node-input-description", this.description || "", this.descriptionType || "str");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
     },
     oneditsave: function () {
@@ -87,6 +92,7 @@
       save.call(this, "#node-input-fileContents", "fileContents", "fileContentsType");
       save.call(this, "#node-input-description", "description", "descriptionType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+      this.name = $("#node-input-name").val();
     },
   });
 </script>
