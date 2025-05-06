@@ -1,0 +1,92 @@
+<script type="text/html" data-template-name="seqera-dataset-create">
+  <div class="form-row">
+    <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+    <input type="text" id="node-input-seqera" data-type="seqera-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-datasetName"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-datasetName" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-description"><i class="fa fa-info-circle"></i> Description</label>
+    <input type="text" id="node-input-description" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-fileContents"><i class="fa fa-file-text-o"></i> File contents</label>
+    <input type="text" id="node-input-fileContents" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="seqera-dataset-create">
+  <p>Creates a new dataset and uploads its contents to Seqera Platform.</p>
+
+  <p><b>Inputs</b>:
+    <ul>
+      <li><code>datasetName</code>: String – Name of the dataset to create</li>
+      <li><code>fileContents</code>: CSV/TSV (string or Buffer) to upload. Defaults to `msg.payload`.</li>
+      <li><code>description</code>: Optional description for the dataset</li>
+      <li><code>workspaceId</code>: Override the workspace ID from the config node</li>
+    </ul>
+  </p>
+
+  <h4>Outputs (one output)</h4>
+  <p>Fired once when the upload completes successfully.</p>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("seqera-dataset-create", {
+    category: "seqera",
+    color: "#A9A1C6",
+    inputs: 1,
+    outputs: 1,
+    icon: "seqera.svg",
+    align: "left",
+    paletteLabel: "Create dataset",
+    label: function () {
+      return this.name || "Create dataset";
+    },
+    outputLabels: ["success"],
+    defaults: {
+      name: { value: "" },
+      seqera: { value: "", type: "seqera-config" },
+      datasetName: { value: "datasetName" },
+      datasetNameType: { value: "str" },
+      fileContents: { value: "payload" },
+      fileContentsType: { value: "msg" },
+      workspaceId: { value: "" },
+      workspaceIdType: { value: "str" },
+      description: { value: "description" },
+      descriptionType: { value: "str" },
+    },
+    oneditprepare: function () {
+      function ti(id, val, type, def = "str") {
+        $(id).typedInput({ default: def, types: ["str", "msg", "flow", "global", "env", "jsonata", "json"] });
+        $(id).typedInput("value", val);
+        $(id).typedInput("type", type);
+      }
+      ti("#node-input-datasetName", this.datasetName || "datasetName", this.datasetNameType || "str");
+      $("#node-input-fileContents").typedInput({
+        default: "msg",
+        types: ["msg", "str", "flow", "global", "env", "jsonata", "json"],
+      });
+      $("#node-input-fileContents").typedInput("value", this.fileContents || "payload");
+      $("#node-input-fileContents").typedInput("type", this.fileContentsType || "msg");
+      ti("#node-input-description", this.description || "description", this.descriptionType || "str");
+      ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+    },
+    oneditsave: function () {
+      function save(id, prop, propType) {
+        this[prop] = $(id).typedInput("value");
+        this[propType] = $(id).typedInput("type");
+      }
+      save.call(this, "#node-input-datasetName", "datasetName", "datasetNameType");
+      save.call(this, "#node-input-fileContents", "fileContents", "fileContentsType");
+      save.call(this, "#node-input-description", "description", "descriptionType");
+      save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+    },
+  });
+</script>

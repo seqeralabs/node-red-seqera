@@ -68,6 +68,26 @@ Queries the status of a workflow.
    - For completed workflows: Contains `msg.payload` and `msg.workflowId`
    - For API errors: Also contains `msg._seqera_request` and `msg._seqera_error`
 
+### Seqera Dataset Create Node
+
+Creates a new dataset and uploads its file contents in one step.
+
+#### Inputs
+
+- **datasetName**: Name of the dataset to create
+- **fileContents**: CSV/TSV (string or Buffer) to upload. Defaults to `msg.payload`.
+- **description**: Optional description string for the dataset
+- **workspaceId**: Override the workspace ID from the config node
+
+#### Outputs (one output)
+
+Fired once when the upload completes successfully.
+
+- **msg.payload**: Upload response from the API
+- **msg.datasetId**: The ID of the created dataset
+- **msg.\_seqera_request**: Details of the dataset creation request (for debugging)
+- **msg.\_seqera_upload_request**: Details of the file-upload request (for debugging)
+
 ### Seqera Launch Node
 
 Launches a workflow using the Seqera API.

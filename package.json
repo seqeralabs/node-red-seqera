@@ -12,14 +12,16 @@
     "api"
   ],
   "dependencies": {
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0"
   },
   "node-red": {
     "nodes": {
       "seqera-workflow": "nodes/seqera-workflow.js",
       "seqera-config": "nodes/seqera-config.js",
       "seqera-launch": "nodes/seqera-launch.js",
-      "seqera-launch-monitor": "nodes/seqera-launch-monitor.js"
+      "seqera-launch-monitor": "nodes/seqera-launch-monitor.js",
+      "seqera-dataset-create": "nodes/seqera-dataset-create.js"
     }
   }
 }
