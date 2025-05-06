@@ -76,6 +76,7 @@ Creates a new dataset and uploads its file contents in one step.
 
 - **datasetName**: Name of the dataset to create
 - **fileContents**: CSV/TSV (string or Buffer) to upload. Defaults to `msg.payload`.
+- **fileType**: _csv_ or _tsv_ – Select the MIME type for the upload (defaults to **csv**). This is required by Seqera Platform to validate the file contents.
 - **description**: Optional description string for the dataset
 - **workspaceId**: Override the workspace ID from the config node
 

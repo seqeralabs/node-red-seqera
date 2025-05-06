@@ -23,6 +23,13 @@
     <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
     <input type="text" id="node-input-workspaceId" />
   </div>
+  <div class="form-row">
+    <label for="node-input-fileType"><i class="fa fa-file"></i> Type</label>
+    <select id="node-input-fileType">
+      <option value="csv">CSV</option>
+      <option value="tsv">TSV</option>
+    </select>
+  </div>
 </script>
 
 <script type="text/html" data-help-name="seqera-dataset-create">
@@ -32,6 +39,7 @@
     <ul>
       <li><code>datasetName</code>: String – Name of the dataset to create</li>
       <li><code>fileContents</code>: CSV/TSV (string or Buffer) to upload. Defaults to `msg.payload`.</li>
+      <li><code>fileType</code>: File format / MIME type. Choose between <code>csv</code> (default) or <code>tsv</code>.</li>
       <li><code>description</code>: Optional description for the dataset</li>
       <li><code>workspaceId</code>: Override the workspace ID from the config node</li>
     </ul>
@@ -65,6 +73,7 @@
       workspaceIdType: { value: "str" },
       description: { value: "" },
       descriptionType: { value: "str" },
+      fileType: { value: "csv" },
     },
     oneditprepare: function () {
       function ti(id, val, type, def = "str") {
@@ -72,7 +81,6 @@
         $(id).typedInput("value", val);
         $(id).typedInput("type", type);
       }
-      $("#node-input-name").val(this.name || "");
       ti("#node-input-datasetName", this.datasetName || "", this.datasetNameType || "str");
       $("#node-input-fileContents").typedInput({
         default: "msg",
@@ -82,6 +90,7 @@
       $("#node-input-fileContents").typedInput("type", this.fileContentsType || "msg");
       ti("#node-input-description", this.description || "", this.descriptionType || "str");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+      $("#node-input-fileType").val(this.fileType || "csv");
     },
     oneditsave: function () {
       function save(id, prop, propType) {
@@ -92,7 +101,7 @@
       save.call(this, "#node-input-fileContents", "fileContents", "fileContentsType");
       save.call(this, "#node-input-description", "description", "descriptionType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
-      this.name = $("#node-input-name").val();
+      this.fileType = $("#node-input-fileType").val();
     },
   });
 </script>

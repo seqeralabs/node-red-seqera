@@ -35,14 +35,25 @@ module.exports = function (RED) {
       node.status({ fill: "blue", shape: "ring", text: `launching: ${formatDateTime()}` });
 
       // Helper to evaluate properties
-      const evalProp = (p, t) => RED.util.evaluateNodeProperty(p, t, node, msg);
+      const evalProp = async (p, t) => {
+        if (t === "jsonata") {
+          const expr = RED.util.prepareJSONataExpression(p, node);
+          return await new Promise((resolve, reject) => {
+            RED.util.evaluateJSONataExpression(expr, msg, (err, value) => {
+              if (err) return reject(err);
+              resolve(value);
+            });
+          });
+        }
+        return RED.util.evaluateNodeProperty(p, t, node, msg);
+      };
 
-      const launchpadName = evalProp(node.launchpadNameProp, node.launchpadNamePropType);
-      const paramsObj = evalProp(node.paramsProp, node.paramsPropType);
-      const baseUrlOverride = evalProp(node.baseUrlProp, node.baseUrlPropType);
-      const workspaceIdOverride = evalProp(node.workspaceIdProp, node.workspaceIdPropType);
-      const sourceWorkspaceIdOverride = evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
-      const tokenOverride = evalProp(node.tokenProp, node.tokenPropType);
+      const launchpadName = await evalProp(node.launchpadNameProp, node.launchpadNamePropType);
+      const paramsObj = await evalProp(node.paramsProp, node.paramsPropType);
+      const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
+      const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
+      const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
+      const tokenOverride = await evalProp(node.tokenProp, node.tokenPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;

@@ -8,6 +8,7 @@ module.exports = function (RED) {
     node.datasetNamePropType = config.datasetNameType;
     node.fileContentsProp = config.fileContents;
     node.fileContentsPropType = config.fileContentsType;
+    node.fileType = config.fileType || "csv";
     node.descriptionProp = config.description;
     node.descriptionPropType = config.descriptionType;
     node.baseUrlProp = config.baseUrl;
@@ -34,14 +35,25 @@ module.exports = function (RED) {
 
     node.on("input", async function (msg, send, done) {
       // evaluate properties
-      const evalProp = (p, t) => RED.util.evaluateNodeProperty(p, t, node, msg, () => {});
+      const evalProp = async (p, t) => {
+        if (t === "jsonata") {
+          const expr = RED.util.prepareJSONataExpression(p, node);
+          return await new Promise((resolve, reject) => {
+            RED.util.evaluateJSONataExpression(expr, msg, (err, value) => {
+              if (err) return reject(err);
+              resolve(value);
+            });
+          });
+        }
+        return RED.util.evaluateNodeProperty(p, t, node, msg);
+      };
 
-      const datasetName = evalProp(node.datasetNameProp, node.datasetNamePropType);
-      let fileContents = evalProp(node.fileContentsProp, node.fileContentsPropType);
-      const description = evalProp(node.descriptionProp, node.descriptionPropType);
-      const baseUrlOverride = evalProp(node.baseUrlProp, node.baseUrlPropType);
-      const workspaceIdOverride = evalProp(node.workspaceIdProp, node.workspaceIdPropType);
-      const tokenOverride = evalProp(node.tokenProp, node.tokenPropType);
+      const datasetName = await evalProp(node.datasetNameProp, node.datasetNamePropType);
+      let fileContents = await evalProp(node.fileContentsProp, node.fileContentsPropType);
+      const description = await evalProp(node.descriptionProp, node.descriptionPropType);
+      const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
+      const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
+      const tokenOverride = await evalProp(node.tokenProp, node.tokenPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -52,7 +64,12 @@ module.exports = function (RED) {
       }
 
       if (!datasetName) {
-        const err = new Error("datasetName not provided");
+        const err = new Error([
+          "datasetName not provided",
+          datasetName,
+          node.datasetNameProp,
+          node.datasetNamePropType,
+        ]);
         if (done) done(err);
         return;
       }
@@ -74,6 +91,7 @@ module.exports = function (RED) {
       };
 
       try {
+        let apiStep = "create";
         node.status({ fill: "blue", shape: "ring", text: `creating: ${formatDateTime()}` });
 
         // 1) Create dataset
@@ -96,6 +114,7 @@ module.exports = function (RED) {
         }
 
         // 2) Upload file
+        apiStep = "upload";
         node.status({ fill: "yellow", shape: "ring", text: `uploading: ${formatDateTime()}` });
 
         let uploadUrl = `${baseUrl.replace(/\/$/, "")}/datasets/${datasetId}/upload`;
@@ -105,7 +124,9 @@ module.exports = function (RED) {
         const buffer = Buffer.isBuffer(fileContents)
           ? fileContents
           : Buffer.from(typeof fileContents === "string" ? fileContents : JSON.stringify(fileContents));
-        form.append("file", buffer, { filename: `${datasetName}.csv`, contentType: "text/plain" });
+        // Determine MIME type based on selected fileType
+        const mime = node.fileType === "tsv" ? "text/tab-separated-values" : "text/csv";
+        form.append("file", buffer, { filename: `${datasetName}.${node.fileType}`, contentType: mime });
 
         const uploadHeaders = buildHeaders(form.getHeaders());
         msg._seqera_upload_request = { method: "POST", url: uploadUrl, headers: uploadHeaders };
@@ -118,8 +139,14 @@ module.exports = function (RED) {
         send(msg);
         if (done) done();
       } catch (err) {
+        if (!err.api_call)
+          err.api_call = err.config && err.config.url && /upload/.test(err.config.url) ? "upload" : "create";
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        if (done) done(err);
+        // Build error details
+        msg._seqera_error = err.response
+          ? { status: err.response.status, data: err.response.data }
+          : { message: err.message };
+        if (done) done({ "Error type": err.api_call, error: msg._seqera_error });
       }
     });
   }
@@ -129,18 +156,19 @@ module.exports = function (RED) {
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config", required: true },
-      datasetName: { value: "" },
+      datasetName: { value: "datasetName" },
       datasetNameType: { value: "str" },
       fileContents: { value: "payload" },
       fileContentsType: { value: "msg" },
       workspaceId: { value: "workspaceId" },
       workspaceIdType: { value: "str" },
-      description: { value: "" },
+      description: { value: "description" },
       descriptionType: { value: "str" },
       baseUrl: { value: "baseUrl" },
       baseUrlType: { value: "str" },
       token: { value: "token" },
       tokenType: { value: "str" },
+      fileType: { value: "csv" },
     },
   });
 };
