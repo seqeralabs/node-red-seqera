@@ -20,11 +20,18 @@ Also [Launch](#launch) and [Workflow](#workflow) nodes for more custom workflows
 
 # Installation
 
-Install via the Node-RED palette manager **or** from _ the command line inside your Node-RED user directory _ (`~/.node-red`):
+Install via the Node-RED palette manager _or_ from the command line inside your Node-RED user directory (`~/.node-red`):
 
 ```bash
 npm install node-red-contrib-seqera
 ```
+
+# Use cases
+
+- Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node))
+- Stack events and build automation logic using a graphical builder
+- Chain workflows, launching downstream automatically
+- Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
 
 # Usage
 
