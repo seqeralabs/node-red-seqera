@@ -1,4 +1,10 @@
-# node-red-contrib-seqera
+<h1>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/logo.svg">
+  <img src="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/logo.svg" alt="node-red-contrib-seqera">
+</picture>
+</h1>
 
 A Node-RED node for interacting with the Seqera Platform API.
 
