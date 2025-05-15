@@ -10,8 +10,11 @@ A Node-RED node for interacting with the Seqera Platform API.
 
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
-<img src="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes.png#gh-light-mode-only" alt="node-red-contrib-seqera nodes" align="right" width="400">
-<img src="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes-dark.png#gh-dark-mode-only" alt="node-red-contrib-seqera nodes" align="right" width="400">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes.png">
+  <img src="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes.png" alt="node-red-contrib-seqera" align="right" width="400" >
+</picture>
 
 - [Create Dataset](#create-dataset)
 - [Launch and Monitor a Run](#launch-and-monitor-a-run)
