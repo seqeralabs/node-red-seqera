@@ -1,8 +1,8 @@
 <h1>
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/logo-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/logo.svg">
-  <img src="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/logo.svg" alt="node-red-contrib-seqera">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/logo.svg">
+  <img src="https://github.com/ewels/node-red-seqera/raw/main/images/logo.svg" alt="@seqera/node-red-seqera">
 </picture>
 </h1>
 
@@ -11,9 +11,9 @@ A Node-RED node for interacting with the Seqera Platform API.
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes.png">
-  <img src="https://github.com/ewels/node-red-contrib-seqera/raw/main/images/nodes.png" alt="node-red-contrib-seqera" align="right" width="400" >
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/nodes-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/nodes.png">
+  <img src="https://github.com/ewels/node-red-seqera/raw/main/images/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
 </picture>
 
 - [Create Dataset](#create-dataset)
@@ -26,7 +26,7 @@ Also [Launch](#launch) and [Workflow](#workflow) nodes for more custom workflows
 Install via the Node-RED palette manager _or_ from the command line inside your Node-RED user directory (`~/.node-red`):
 
 ```bash
-npm install node-red-contrib-seqera
+npm install @seqera/node-red-seqera
 ```
 
 # Use cases
