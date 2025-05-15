@@ -1,0 +1,183 @@
+[
+  {
+    "id": "5ddebd1124f2b1c0",
+    "type": "tab",
+    "label": "Create dataset, launch + monitor",
+    "disabled": false,
+    "info": "# Create dataset, launch + monitor\n\nThis example demonstrates a typical workflow to create a new dataset in Seqera Platform, then use it to launch and monitor a workflow. These nodes could typically be combined with 3rd party integrations.\n\n1. Configure the Seqera Platform connection with your API token\n2. Edit the example node parameters\n3. Launch the workflow and monitor its execution",
+    "env": []
+  },
+  {
+    "id": "841b1de7f2520e91",
+    "type": "seqera-launch-monitor",
+    "z": "5ddebd1124f2b1c0",
+    "name": "nf-core/fetchngs",
+    "seqera": "",
+    "poll": "5",
+    "pollType": "num",
+    "launchpadName": "nf-core-fetchngs2",
+    "launchpadNameType": "str",
+    "paramsKey": "{\t   \"outdir\":\"s3://nf-core-awsmegatests/node-red-tests/\" & $flowContext(\"myRunName\") & \"/fetchngs/results\",\t   \"nf_core_pipeline\":\"rnaseq\",\t   \"input\": payload.version.url\t}",
+    "paramsKeyType": "jsonata",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "sourceWorkspaceId": "",
+    "sourceWorkspaceIdType": "str",
+    "x": 230,
+    "y": 320,
+    "wires": [[], ["5208d2bb907ddbf3"], ["23ee14a8fa7d2bc5"]]
+  },
+  {
+    "id": "af2c2073b4781f2c",
+    "type": "inject",
+    "z": "5ddebd1124f2b1c0",
+    "name": "Trigger launch",
+    "props": [
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 130,
+    "y": 240,
+    "wires": [["f1a41db5a7ed8618"]]
+  },
+  {
+    "id": "f1a41db5a7ed8618",
+    "type": "seqera-dataset-create",
+    "z": "5ddebd1124f2b1c0",
+    "name": "",
+    "seqera": "",
+    "datasetName": "myRunName",
+    "datasetNameType": "flow",
+    "fileContents": "\"SRR3192657\\nSRR3192658\\nSRR3192408\\nSRR3192409\"",
+    "fileContentsType": "json",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "description": "A test dataset containing some SRA ids for fetchngs to download",
+    "descriptionType": "str",
+    "fileType": "csv",
+    "x": 300,
+    "y": 240,
+    "wires": [["841b1de7f2520e91"]]
+  },
+  {
+    "id": "5208d2bb907ddbf3",
+    "type": "seqera-launch-monitor",
+    "z": "5ddebd1124f2b1c0",
+    "name": "nf-core/rnaseq",
+    "seqera": "",
+    "poll": "5",
+    "pollType": "num",
+    "launchpadName": " nf-core-rnaseq",
+    "launchpadNameType": "str",
+    "paramsKey": "{\t    \"input\": \"s3://nf-core-awsmegatests/node-red-tests/\" & $flowContext(\"myRunName\") & \"/fetchngs/results/samplesheet/samplesheet.csv\",\t    \"outdir\": \"s3://nf-core-awsmegatests/node-red-tests/\" & $flowContext(\"myRunName\") & \"/rnaseq/results\",\t    \"genome\": \"GRCh37\",\t    \"skip_alignment\": true\t}",
+    "paramsKeyType": "jsonata",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "sourceWorkspaceId": "",
+    "sourceWorkspaceIdType": "str",
+    "x": 440,
+    "y": 320,
+    "wires": [[], ["db48fac27ee50dbf"], ["13e5309682b3f6e2"]]
+  },
+  {
+    "id": "77c70ff42938bde1",
+    "type": "change",
+    "z": "5ddebd1124f2b1c0",
+    "name": "Set flow.myRunName",
+    "rules": [
+      {
+        "t": "set",
+        "p": "myRunName",
+        "pt": "flow",
+        "to": "test-2025-05-07-v2",
+        "tot": "str"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 420,
+    "y": 160,
+    "wires": [[]]
+  },
+  {
+    "id": "388cfb48567a7421",
+    "type": "inject",
+    "z": "5ddebd1124f2b1c0",
+    "name": "Trigger: Set dataset name",
+    "props": [
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 170,
+    "y": 160,
+    "wires": [["77c70ff42938bde1"]]
+  },
+  {
+    "id": "13e5309682b3f6e2",
+    "type": "debug",
+    "z": "5ddebd1124f2b1c0",
+    "name": "Workflow 2 - Fail",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 670,
+    "y": 340,
+    "wires": []
+  },
+  {
+    "id": "db48fac27ee50dbf",
+    "type": "debug",
+    "z": "5ddebd1124f2b1c0",
+    "name": "Workflow 2 - Success",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 680,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "23ee14a8fa7d2bc5",
+    "type": "debug",
+    "z": "5ddebd1124f2b1c0",
+    "name": "Workflow 1 - Fail",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 470,
+    "y": 400,
+    "wires": []
+  }
+]

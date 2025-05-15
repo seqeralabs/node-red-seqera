@@ -13,12 +13,22 @@
   </div>
 </script>
 
-<script type="text/html" data-help-name="seqera-config">
-  <p>Global Seqera Platform configuration.</p>
-  <p>
-    Specify the <b>Base URL</b> of your Seqera Platform instance (defaults to the public cloud) and an optional
-    <b>API token</b> that will be used by all Seqera nodes referencing this config.
-  </p>
+<script type="text/markdown" data-help-name="seqera-config">
+  Global Seqera Platform configuration node to store connection details.
+
+  ### Details
+
+  Configure the following options:
+
+  - **Base URL**: The base URL for the Seqera API (defaults to `https://api.cloud.seqera.io`)
+  - **Workspace ID**: Your Seqera workspace ID (optional)
+  - **API Token**: Your personal access token for authenticating with Seqera Platform
+
+  This configuration node is used by all other Seqera nodes to authenticate with the Seqera Platform API.
+
+  ### References
+
+  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information on how to get an API token
 </script>
 
 <script type="text/javascript">

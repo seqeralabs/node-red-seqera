@@ -6,6 +6,10 @@
   "license": "Apache-2.0",
   "homepage": "https://github.com/ewels/node-red-seqera#readme",
   "bugs": "https://github.com/ewels/node-red-seqera/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ewels/node-red-seqera"
+  },
   "keywords": [
     "node-red",
     "seqera",
@@ -31,6 +35,9 @@
       "seqera-launch": "nodes/seqera-launch.js",
       "seqera-launch-monitor": "nodes/seqera-launch-monitor.js",
       "seqera-dataset-create": "nodes/seqera-dataset-create.js"
+    },
+    "examples": {
+      "Seqera Platform": "examples"
     }
   }
 }

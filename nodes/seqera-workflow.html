@@ -17,30 +17,36 @@
   </div>
 </script>
 
-<script type="text/html" data-help-name="seqera-workflow">
-  <p>Queries the status of a workflow.</p>
+<script type="text/markdown" data-help-name="seqera-workflow">
+  Queries the status of a workflow in Seqera Platform.
 
-  <p><b>Inputs</b>:
-      <ul>
-          <li><code>workflowId</code>: The ID of the workflow to query</li>
-          <li><code>workspaceId</code>: Override the workspace ID from the config node</li>
-      </ul>
-  </p>
+  ### Inputs
 
-  <h4>Outputs (two outputs)</h4>
-  <ol>
-    <li>Only receives messages when the workflow is active (submitted, running, or pending)
-      <ul>
-          <li><code>msg.payload</code> and <code>msg.workflowId</code></li>
-      </ul>
-    </li>
-    <li>Receives messages when the workflow has completed (success or failure) OR when an API error occurs
-      <ul>
-          <li><code>msg.payload</code> and <code>msg.workflowId</code>.</li>
-          <li>In case of an API error, also includes <code>msg._seqera_request</code> and <code>msg._seqera_error</code></li>
-      </ul>
-    </li>
-  </ol>
+  : workflowId (string) : The ID of the workflow to query.
+  : workspaceId (string) : Override the workspace ID from the config node.
+
+  ### Outputs
+
+  1. Active workflows
+     : payload (object) : The workflow details from the API when workflow is active (submitted, running, or pending).
+     : workflowId (string) : The ID of the workflow.
+
+  2. Completed workflows / errors
+     : payload (object) : The workflow details from the API when workflow has completed (success or failure).
+     : workflowId (string) : The ID of the workflow.
+     : \_seqera_request (object) : The request details sent to the API (when error occurs).
+     : \_seqera_error (object) : Error details (when error occurs).
+
+  ### Details
+
+  This node checks the status of a workflow in Seqera Platform. It has two outputs:
+
+  1. First output: Only receives messages when the workflow is active (submitted, running, or pending)
+  2. Second output: Receives messages when the workflow has completed (success or failure) OR when an API error occurs
+
+  ### References
+
+  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about workflow status
 </script>
 
 <script type="text/javascript">

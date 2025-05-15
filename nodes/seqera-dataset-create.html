@@ -32,21 +32,37 @@
   </div>
 </script>
 
-<script type="text/html" data-help-name="seqera-dataset-create">
-  <p>Creates a new dataset and uploads its contents to Seqera Platform.</p>
+<script type="text/markdown" data-help-name="seqera-dataset-create">
+  Creates a new dataset and uploads its file contents to Seqera Platform.
 
-  <p><b>Inputs</b>:
-    <ul>
-      <li><code>datasetName</code>: String – Name of the dataset to create</li>
-      <li><code>fileContents</code>: CSV/TSV (string or Buffer) to upload. Defaults to `msg.payload`.</li>
-      <li><code>fileType</code>: File format / MIME type. Choose between <code>csv</code> (default) or <code>tsv</code>.</li>
-      <li><code>description</code>: Optional description for the dataset</li>
-      <li><code>workspaceId</code>: Override the workspace ID from the config node</li>
-    </ul>
-  </p>
+  ### Inputs
 
-  <h4>Outputs (one output)</h4>
-  <p>Fired once when the upload completes successfully.</p>
+  : datasetName (string) : Name of the dataset to create.
+  : fileContents (string | buffer) : CSV/TSV string or buffer to upload. Defaults to `msg.payload`.
+  : fileType (string) : File format / MIME type. Choose between 'csv' (default) or 'tsv'.
+  : description (string) : Optional description for the dataset.
+  : workspaceId (string) : Override the workspace ID from the config node.
+
+  ### Outputs
+
+  1. Standard output
+     : payload (object) : The dataset creation response from the API.
+     : datasetId (string) : The ID of the created dataset.
+     : \_seqera_request (object) : Details of the dataset creation request (for debugging).
+     : \_seqera_upload_request (object) : Details of the file-upload request (for debugging).
+
+  ### Details
+
+  This node creates a dataset in Seqera Platform and uploads its contents in one step.
+  Dataset file contents can be provided in `msg.payload` or via a configured property.
+
+  The node requires specifying the file format as either CSV or TSV as this is required
+  by Seqera Platform to validate the file contents.
+
+  ### References
+
+  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about datasets
+  - [CSV format](https://en.wikipedia.org/wiki/Comma-separated_values) - information about CSV format
 </script>
 
 <script type="text/javascript">

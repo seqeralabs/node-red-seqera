@@ -25,28 +25,37 @@
   </div>
 </script>
 
-<script type="text/html" data-help-name="seqera-launch">
-  <p>Launches a workflow using the Seqera API.</p>
+<script type="text/markdown" data-help-name="seqera-launch">
+  Launches a workflow using the Seqera Platform API.
 
-  <p><b>Inputs</b>:
-      <ul>
-          <li><code>launchpadName</code>: The Human-readable name of a pipeline in the launchpad to use</li>
-          <li><code>params</code>: A JSON object of parameters to merge with the launchpad's default parameters</li>
-          <li><code>workspaceId</code>: Override the workspace ID from the config node</li>
-          <li><code>sourceWorkspaceId</code>: The source workspace ID</li>
-      </ul>
-  </p>
+  ### Inputs
 
-  <p>Advanced users can send a full launch request in <code>msg.body</code>.</p>
+  : launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
+  : params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
+  : workspaceId (string) : Override the workspace ID from the config node.
+  : sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
+  : body (object) : A full launch request body (alternative to using launchpadName).
 
-  <h4>Outputs (one output)</h4>
-  <p>Each message contains:</p>
-  <ul>
-      <li><code>msg.payload</code> – The launch response from the API</li>
-      <li><code>msg.workflowId</code> – The ID of the launched workflow</li>
-      <li><code>msg._seqera_request</code> – The request details sent to the API</li>
-      <li><code>msg._seqera_error</code> – Any error details if the request fails</li>
-  </ul>
+  ### Outputs
+
+  1. Standard output
+     : payload (object) : The launch response from the API.
+     : workflowId (string) : The ID of the launched workflow.
+     : \_seqera_request (object) : The request details sent to the API (when error occurs).
+     : \_seqera_error (object) : Error details (when error occurs).
+
+  ### Details
+
+  This node launches a workflow using either:
+
+  1. A launchpad name - the node will automatically look up the launchpad configuration
+  2. A full launch request body provided in `msg.body`
+
+  Workflow parameters can be provided as a JSON object and will be merged with the default parameters from the launchpad.
+
+  ### References
+
+  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching workflows
 </script>
 
 <script type="text/javascript">

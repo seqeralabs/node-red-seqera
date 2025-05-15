@@ -29,33 +29,47 @@
   </div>
 </script>
 
-<script type="text/html" data-help-name="seqera-launch-monitor">
-  <p>Launches a workflow and then periodically checks its status until completion.</p>
+<script type="text/markdown" data-help-name="seqera-launch-monitor">
+  Launches a workflow and then periodically checks its status until completion.
 
-  <p><b>Inputs</b>:
-      <ul>
-          <li><code>launchpadName</code>: The Human-readable name of a pipeline in the launchpad to use</li>
-          <li><code>params</code>: JSON object containing parameters to merge with the launchpad's default parameters (defaults to {})</li>
-          <li><code>workspaceId</code>: Override the workspace ID from the config node</li>
-          <li><code>sourceWorkspaceId</code>: The source workspace ID</li>
-      </ul>
-  </p>
+  ### Inputs
 
-  <p>Advanced users can send a full launch request in <code>msg.body</code>.</p>
+  : launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
+  : params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
+  : pollInterval (number) : How frequently to check workflow status, in seconds (default `5`).
+  : workspaceId (string) : Override the workspace ID from the config node.
+  : sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
+  : body (object) : A full launch request body (alternative to using launchpadName).
 
-  <h4>Outputs (three outputs)</h4>
-  <ol>
-      <li>Sent on <em>every</em> status poll.</li>
-      <li>Sent once when the workflow completes successfully.</li>
-      <li>Sent once when the workflow fails, is cancelled, or any non-success terminal state.</li>
-  </ol>
-  <p>Each message contains:</p>
-  <ul>
-      <li><code>msg.payload</code> – The workflow details from the API</li>
-      <li><code>msg.workflowId</code> – The ID of the workflow</li>
-      <li><code>msg._seqera_request</code> – The request details sent to the API</li>
-      <li><code>msg._seqera_error</code> – Any error details if the request fails</li>
-  </ul>
+  ### Outputs
+
+  1. Status updates (active workflows)
+     : payload (object) : The workflow details from the API, sent on every status poll while workflow is active.
+     : workflowId (string) : The ID of the workflow.
+
+  2. Success
+     : payload (object) : The workflow details from the API, sent once when workflow completes successfully.
+     : workflowId (string) : The ID of the workflow.
+
+  3. Error
+     : payload (object) : The workflow details from the API, sent once when workflow fails or is cancelled.
+     : workflowId (string) : The ID of the workflow.
+     : \_seqera_request (object) : The request details sent to the API (when API error occurs).
+     : \_seqera_error (object) : Error details (when API error occurs).
+
+  ### Details
+
+  This node combines the functionality of the "Launch" and "Check Workflow" nodes:
+
+  1. First, it launches a workflow using the provided launchpad name or request body
+  2. Then it automatically polls for status updates at the specified interval
+  3. It sends status updates to the appropriate output based on workflow state
+
+  This is ideal for creating complete automation flows that take action when workflows complete.
+
+  ### References
+
+  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching and monitoring workflows
 </script>
 
 <script type="text/javascript">

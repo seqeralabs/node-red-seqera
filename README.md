@@ -29,6 +29,8 @@ Install via the Node-RED palette manager _or_ from the command line inside your 
 npm install @seqera/node-red-seqera
 ```
 
+Once installed, example flows are available in the Node-RED import menu under `Import > Examples > @seqera/node-red-seqera`.
+
 # Use cases
 
 - Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node))
