@@ -17,8 +17,8 @@
     "workflowIdType": "msg",
     "workspaceId": "",
     "workspaceIdType": "str",
-    "x": 540,
-    "y": 180,
+    "x": 560,
+    "y": 140,
     "wires": [["9b5d569d96130e41", "5fd3ea8f47740718"], ["cacbafa4ef558814"]]
   },
   {
@@ -34,8 +34,8 @@
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 740,
-    "y": 220,
+    "x": 760,
+    "y": 180,
     "wires": []
   },
   {
@@ -55,8 +55,8 @@
     "drop": false,
     "allowrate": false,
     "outputs": 1,
-    "x": 530,
-    "y": 100,
+    "x": 550,
+    "y": 60,
     "wires": [["4d2c2cd9108b8d5e"]]
   },
   {
@@ -73,8 +73,8 @@
     "workspaceIdType": "str",
     "sourceWorkspaceId": "",
     "sourceWorkspaceIdType": "str",
-    "x": 330,
-    "y": 180,
+    "x": 350,
+    "y": 140,
     "wires": [["4d2c2cd9108b8d5e"]]
   },
   {
@@ -88,8 +88,8 @@
     "once": false,
     "onceDelay": 0.1,
     "topic": "",
-    "x": 140,
-    "y": 180,
+    "x": 160,
+    "y": 140,
     "wires": [["a54852b97bd494e3"]]
   },
   {
@@ -105,8 +105,38 @@
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 760,
-    "y": 180,
+    "x": 780,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "f1f2f36308f18b06",
+    "type": "comment",
+    "z": "1edc5af797745943",
+    "name": "Triggering a launch",
+    "info": "This is an example node that you can simply\nclick on to trigger a workflow launch.\n\nYou can replace this with an automated trigger\nof your choice: a file being uploaded to AWS,\na Slack message, a time of day, a particular\nweather forecast - whatever you can think of!",
+    "x": 150,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "49b04d8e0e137398",
+    "type": "comment",
+    "z": "1edc5af797745943",
+    "name": "Launch",
+    "info": "This node launches a workflow on Seqera Platform.\nOnce launched, the node returns the response\nfrom Platform. It does not monitor the run status.\n\nFor convenience, it can take the name of a pipeline\nin your Seqera Platform Launchpad.\nIt fetches the pipeline details and uses this for launch.\nIf you prefer, you can also provide all of the workflow\ndetails to the node directly instead of fetching from\nthe launchpad.",
+    "x": 350,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "737060df462b1a1d",
+    "type": "comment",
+    "z": "1edc5af797745943",
+    "name": "Check",
+    "info": "This node checks a workflow status on Seqera Platform.\nIt returns the response and exits.\nThere are two outputs - one is used if the workflow\nstatus indicates that the run is ongoing.\nThe second is used if the status indicates that it has\nfinished.\n\n## Repeated checks\n\nFor the purposes of the demonstration, a delay\nnode has been attached to the status output which then\nfeeds back into the check node.\nThis means that the node will keep firing to check status\nevery 5 seconds.\n\nIf this is what you're after, check the other nodes -\nthere is one that launches and monitors which includes\na regular check within the node, so no loop is needed.",
+    "x": 550,
+    "y": 200,
     "wires": []
   }
 ]
