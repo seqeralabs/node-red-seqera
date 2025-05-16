@@ -21,7 +21,22 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 Also [Launch](#launch) and [Workflow](#workflow) nodes for more custom workflows where polling workflow status is not required and it's helpful to have full control.
 
+# Typical Use cases
+
+- Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
+- Link triggers and actions to build automation logic using a graphical builder
+- Chain workflows, launching downstream automatically
+- (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
+
 # Installation
+
+## Within Node-RED
+
+_File_ > _Manage Palette_, then the _Install_ tab.
+Search for `@seqera/node-red-seqera` (or just "seqera") and you
+should find this package. Click _Install_ and the nodes will be available.
+
+## Via the command line
 
 Install via the Node-RED palette manager _or_ from the command line inside your Node-RED user directory (`~/.node-red`):
 
@@ -29,14 +44,24 @@ Install via the Node-RED palette manager _or_ from the command line inside your 
 npm install @seqera/node-red-seqera
 ```
 
-Once installed, example flows are available in the Node-RED import menu under `Import > Examples > @seqera/node-red-seqera`.
+## Seqera Studios
 
-# Use cases
+This repository comes with a custom Docker image containing botth Node-RED and the Seqera nodes, designed to run within
+[Seqera Studios](https://docs.seqera.io/platform-cloud/studios/overview).
 
-- Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node))
-- Stack events and build automation logic using a graphical builder
-- Chain workflows, launching downstream automatically
-- Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
+Simply create a new Studio with the _Template_ set to _Prebuilt container image_ and enter `ewels/node-red-data-studios:latest`.
+Make sure that the studio is set to _Always keep the session running_.
+
+Your new Studio should launch with a complete Node-RED instance that's ready for you to customise and use with Seqera automation.
+
+> [!NOTE]
+> This image is designed to be a reference only to get you started only.
+> For production usage, please customise the `studios-template/Dockerfile` and `studios-template/settings.js` files
+> to meet your security and usage requirements.
+
+## Example Flows
+
+Once installed, example flows are available in the Node-RED import menu under _Import_ > _Examples_ > _@seqera/node-red-seqera_.
 
 # Usage
 
@@ -44,13 +69,16 @@ Once installed, example flows are available in the Node-RED import menu under `I
 
 Create a Seqera Config node to store your API credentials and default settings.
 
+This is used by all other Seqera Node-RED nodes, so that you only
+have to enter your Seqera credentials once.
+
 - **Base URL**: The base URL for the Seqera API (default: https://api.cloud.seqera.io)
 - **Workspace ID**: Your Seqera workspace ID
-- **Token**: Your Seqera API token
+- **Token**: Your Seqera API token. Create a Seqera access token via [_Your Tokens_](https://cloud.seqera.io/tokens) in the user menu.
 
 ## Create Dataset
 
-Creates a new dataset and uploads its file contents in one step.
+Creates a new Dataset and uploads its file contents in one step.
 
 ### Inputs
 
@@ -75,9 +103,9 @@ Launches a workflow and then periodically checks its status until completion.
 
 ### Inputs
 
-- `pollInterval`: How frequently to check workflow status (in seconds)
 - `launchpadName`: The Human-readable name of a pipeline in the launchpad to use
 - `params`: JSON object containing parameters to merge with the launchpad's default parameters
+- `pollInterval`: How frequently to check workflow status (in seconds)
 - `workspaceId`: Override the workspace ID from the \* config node
 - `sourceWorkspaceId`: The source workspace ID (if a shared workflow and different to workspaceId)
 
