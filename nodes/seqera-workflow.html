@@ -17,36 +17,37 @@
   </div>
 </script>
 
+<!-- prettier-ignore -->
 <script type="text/markdown" data-help-name="seqera-workflow">
-  Queries the status of a workflow in Seqera Platform.
+Queries the status of a workflow in Seqera Platform.
 
-  ### Inputs
+### Inputs
 
-  : workflowId (string) : The ID of the workflow to query.
-  : workspaceId (string) : Override the workspace ID from the config node.
+: workflowId (string) : The ID of the workflow to query.
+: workspaceId (string) : Override the workspace ID from the config node.
 
-  ### Outputs
+### Outputs
 
-  1. Active workflows
-     : payload (object) : The workflow details from the API when workflow is active (submitted, running, or pending).
-     : workflowId (string) : The ID of the workflow.
+1. Active workflows
+    : payload (object) : The workflow details from the API when workflow is active (submitted, running, or pending).
+    : workflowId (string) : The ID of the workflow.
 
-  2. Completed workflows / errors
-     : payload (object) : The workflow details from the API when workflow has completed (success or failure).
-     : workflowId (string) : The ID of the workflow.
-     : \_seqera_request (object) : The request details sent to the API (when error occurs).
-     : \_seqera_error (object) : Error details (when error occurs).
+2. Completed workflows / errors
+    : payload (object) : The workflow details from the API when workflow has completed (success or failure).
+    : workflowId (string) : The ID of the workflow.
+    : \_seqera_request (object) : The request details sent to the API (when error occurs).
+    : \_seqera_error (object) : Error details (when error occurs).
 
-  ### Details
+### Details
 
-  This node checks the status of a workflow in Seqera Platform. It has two outputs:
+This node checks the status of a workflow in Seqera Platform. It has two outputs:
 
-  1. First output: Only receives messages when the workflow is active (submitted, running, or pending)
-  2. Second output: Receives messages when the workflow has completed (success or failure) OR when an API error occurs
+1. First output: Only receives messages when the workflow is active (submitted, running, or pending)
+2. Second output: Receives messages when the workflow has completed (success or failure) OR when an API error occurs
 
-  ### References
+### References
 
-  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about workflow status
+- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about workflow status
 </script>
 
 <script type="text/javascript">

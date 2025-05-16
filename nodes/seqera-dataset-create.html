@@ -32,37 +32,38 @@
   </div>
 </script>
 
+<!-- prettier-ignore -->
 <script type="text/markdown" data-help-name="seqera-dataset-create">
-  Creates a new dataset and uploads its file contents to Seqera Platform.
+Creates a new dataset and uploads its file contents to Seqera Platform.
 
-  ### Inputs
+### Inputs
 
-  : datasetName (string) : Name of the dataset to create.
-  : fileContents (string | buffer) : CSV/TSV string or buffer to upload. Defaults to `msg.payload`.
-  : fileType (string) : File format / MIME type. Choose between 'csv' (default) or 'tsv'.
-  : description (string) : Optional description for the dataset.
-  : workspaceId (string) : Override the workspace ID from the config node.
+: datasetName (string) : Name of the dataset to create.
+: fileContents (string | buffer) : CSV/TSV string or buffer to upload. Defaults to `msg.payload`.
+: fileType (string) : File format / MIME type. Choose between 'csv' (default) or 'tsv'.
+: description (string) : Optional description for the dataset.
+: workspaceId (string) : Override the workspace ID from the config node.
 
-  ### Outputs
+### Outputs
 
-  1. Standard output
-     : payload (object) : The dataset creation response from the API.
-     : datasetId (string) : The ID of the created dataset.
-     : \_seqera_request (object) : Details of the dataset creation request (for debugging).
-     : \_seqera_upload_request (object) : Details of the file-upload request (for debugging).
+1. Standard output
+    : payload (object) : The dataset creation response from the API.
+    : datasetId (string) : The ID of the created dataset.
+    : \_seqera_request (object) : Details of the dataset creation request (for debugging).
+    : \_seqera_upload_request (object) : Details of the file-upload request (for debugging).
 
-  ### Details
+### Details
 
-  This node creates a dataset in Seqera Platform and uploads its contents in one step.
-  Dataset file contents can be provided in `msg.payload` or via a configured property.
+This node creates a dataset in Seqera Platform and uploads its contents in one step.
+Dataset file contents can be provided in `msg.payload` or via a configured property.
 
-  The node requires specifying the file format as either CSV or TSV as this is required
-  by Seqera Platform to validate the file contents.
+The node requires specifying the file format as either CSV or TSV as this is required
+by Seqera Platform to validate the file contents.
 
-  ### References
+### References
 
-  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about datasets
-  - [CSV format](https://en.wikipedia.org/wiki/Comma-separated_values) - information about CSV format
+- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about datasets
+- [CSV format](https://en.wikipedia.org/wiki/Comma-separated_values) - information about CSV format
 </script>
 
 <script type="text/javascript">

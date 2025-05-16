@@ -29,47 +29,48 @@
   </div>
 </script>
 
+<!-- prettier-ignore -->
 <script type="text/markdown" data-help-name="seqera-launch-monitor">
-  Launches a workflow and then periodically checks its status until completion.
+Launches a workflow and then periodically checks its status until completion.
 
-  ### Inputs
+### Inputs
 
-  : launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
-  : params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
-  : pollInterval (number) : How frequently to check workflow status, in seconds (default `5`).
-  : workspaceId (string) : Override the workspace ID from the config node.
-  : sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
-  : body (object) : A full launch request body (alternative to using launchpadName).
+: launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
+: params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
+: pollInterval (number) : How frequently to check workflow status, in seconds (default `5`).
+: workspaceId (string) : Override the workspace ID from the config node.
+: sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
+: body (object) : A full launch request body (alternative to using launchpadName).
 
-  ### Outputs
+### Outputs
 
-  1. Status updates (active workflows)
-     : payload (object) : The workflow details from the API, sent on every status poll while workflow is active.
-     : workflowId (string) : The ID of the workflow.
+1. Status updates (active workflows)
+    : payload (object) : The workflow details from the API, sent on every status poll while workflow is active.
+    : workflowId (string) : The ID of the workflow.
 
-  2. Success
-     : payload (object) : The workflow details from the API, sent once when workflow completes successfully.
-     : workflowId (string) : The ID of the workflow.
+2. Success
+    : payload (object) : The workflow details from the API, sent once when workflow completes successfully.
+    : workflowId (string) : The ID of the workflow.
 
-  3. Error
-     : payload (object) : The workflow details from the API, sent once when workflow fails or is cancelled.
-     : workflowId (string) : The ID of the workflow.
-     : \_seqera_request (object) : The request details sent to the API (when API error occurs).
-     : \_seqera_error (object) : Error details (when API error occurs).
+3. Error
+    : payload (object) : The workflow details from the API, sent once when workflow fails or is cancelled.
+    : workflowId (string) : The ID of the workflow.
+    : \_seqera_request (object) : The request details sent to the API (when API error occurs).
+    : \_seqera_error (object) : Error details (when API error occurs).
 
-  ### Details
+### Details
 
-  This node combines the functionality of the "Launch" and "Check Workflow" nodes:
+This node combines the functionality of the "Launch" and "Check Workflow" nodes:
 
-  1. First, it launches a workflow using the provided launchpad name or request body
-  2. Then it automatically polls for status updates at the specified interval
-  3. It sends status updates to the appropriate output based on workflow state
+1. First, it launches a workflow using the provided launchpad name or request body
+2. Then it automatically polls for status updates at the specified interval
+3. It sends status updates to the appropriate output based on workflow state
 
-  This is ideal for creating complete automation flows that take action when workflows complete.
+This is ideal for creating complete automation flows that take action when workflows complete.
 
-  ### References
+### References
 
-  - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching and monitoring workflows
+- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching and monitoring workflows
 </script>
 
 <script type="text/javascript">
