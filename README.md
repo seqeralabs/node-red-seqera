@@ -49,7 +49,7 @@ npm install @seqera/node-red-seqera
 This repository comes with a custom Docker image containing botth Node-RED and the Seqera nodes, designed to run within
 [Seqera Studios](https://docs.seqera.io/platform-cloud/studios/overview).
 
-Simply create a new Studio with the _Template_ set to _Prebuilt container image_ and enter `ewels/node-red-data-studios:latest`.
+Simply create a new Studio with the _Template_ set to _Prebuilt container image_ and enter `ghcr.io/ewels/node-red-seqera:latest`.
 Make sure that the studio is set to _Always keep the session running_.
 
 Your new Studio should launch with a complete Node-RED instance that's ready for you to customise and use with Seqera automation.
