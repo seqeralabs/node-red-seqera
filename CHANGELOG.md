@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2025-05-17
+
+- Added GitHub action to publish to npm from GitHub releases automatically
+- Added GitHub action to build and publish Docker images automatically
+
 ## [0.1.1] - 2025-05-17
 
 - Fixed bug: Prettier was indenting markdown which broke help text rendering.
