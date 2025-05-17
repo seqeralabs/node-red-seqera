@@ -1,6 +1,6 @@
 {
   "name": "@seqera/node-red-seqera",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Node-RED nodes for interacting with the Seqera Platform API",
   "author": "Phil Ewels <phil.ewels@seqera.io>",
   "license": "Apache-2.0",
