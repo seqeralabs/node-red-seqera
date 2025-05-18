@@ -11,6 +11,8 @@ module.exports = function (RED) {
     node.basePathPropType = config.basePathType;
     node.prefixProp = config.prefix;
     node.prefixPropType = config.prefixType;
+    node.patternProp = config.pattern;
+    node.patternPropType = config.patternType;
     node.maxResultsProp = config.maxResults;
     node.maxResultsPropType = config.maxResultsType;
     node.workspaceIdProp = config.workspaceId;
@@ -58,6 +60,7 @@ module.exports = function (RED) {
         const dataLinkName = await evalProp(node.dataLinkNameProp, node.dataLinkNamePropType);
         const basePathRaw = await evalProp(node.basePathProp, node.basePathPropType);
         const prefix = await evalProp(node.prefixProp, node.prefixPropType);
+        const patternRaw = await evalProp(node.patternProp, node.patternPropType);
         const maxResultsRaw = await evalProp(node.maxResultsProp, node.maxResultsPropType);
         const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
         const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
@@ -164,8 +167,19 @@ module.exports = function (RED) {
 
         await fetchPath(basePath, 0);
 
-        msg.payload = allItems;
-        node.status({ fill: "green", shape: "dot", text: `done: ${allItems.length} items` });
+        // Apply regex pattern filter if provided
+        let finalItems = allItems;
+        if (patternRaw && patternRaw !== "") {
+          try {
+            const regex = new RegExp(patternRaw);
+            finalItems = allItems.filter((it) => regex.test(it.name));
+          } catch (e) {
+            node.warn(`Invalid regex pattern: ${patternRaw}`);
+          }
+        }
+
+        msg.payload = finalItems;
+        node.status({ fill: "green", shape: "dot", text: `done: ${finalItems.length} items` });
         send(msg);
         if (done) done();
       } catch (err) {
@@ -191,6 +205,8 @@ module.exports = function (RED) {
       basePathType: { value: "str" },
       prefix: { value: "" },
       prefixType: { value: "str" },
+      pattern: { value: "" },
+      patternType: { value: "str" },
       maxResults: { value: "100" },
       maxResultsType: { value: "num" },
       workspaceId: { value: "workspaceId" },
