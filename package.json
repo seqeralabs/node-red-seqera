@@ -30,12 +30,12 @@
   "node-red": {
     "version": ">=2.0.0",
     "nodes": {
-      "seqera-workflow": "nodes/seqera-workflow.js",
-      "seqera-config": "nodes/seqera-config.js",
-      "seqera-launch": "nodes/seqera-launch.js",
-      "seqera-launch-monitor": "nodes/seqera-launch-monitor.js",
-      "seqera-dataset-create": "nodes/seqera-dataset-create.js",
-      "seqera-datalink-list": "nodes/seqera-datalink-list.js"
+      "seqera-workflow": "nodes/workflow.js",
+      "seqera-config": "nodes/config.js",
+      "seqera-launch": "nodes/launch.js",
+      "seqera-launch-monitor": "nodes/launch-monitor.js",
+      "seqera-dataset-create": "nodes/dataset-create.js",
+      "seqera-datalink-list": "nodes/datalink-list.js"
     },
     "examples": {
       "Seqera Platform": "examples"
