@@ -18,6 +18,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 - [Create Dataset](#create-dataset)
 - [Launch and Monitor a Run](#launch-and-monitor-a-run)
+- [List Files from Data Explorer](#list-data-link-files)
 
 Also [Launch](#launch) and [Workflow](#workflow) nodes for more custom workflows where polling workflow status is not required and it's helpful to have full control.
 
@@ -125,6 +126,28 @@ Each message contains:
 - `msg.workflowId`: The ID of the workflow
 - `msg._seqera_request`: The request details sent to the API (when error occurs)
 - `msg._seqera_error`: Error details (when error occurs)
+
+## List Data Link Files
+
+Lists files and folders from a Seqera Platform **Data Explorer** link.
+
+### Inputs
+
+- **dataLinkName** (string): The Data Explorer link to query.
+- **basePath** (string): Path within the data link to start browsing. Leave blank for the root.
+- **prefix** (string): Optional prefix filter (applies to files _and_ folders).
+- **pattern** (string): Optional regular-expression pattern filter (applies to **files** only).
+- **returnType** (string): Choose what to return: `files`, `folders`, or `all` (everything).
+- **maxResults** (number): Maximum number of results to return (default: 100).
+- **depth** (number): How many directory levels to recurse into (0 = current dir only).
+- **workspaceId** (string): Override the workspace ID from the Config node.
+
+### Outputs (one output)
+
+- `msg.payload` (array): Array of objects returned by the API after filtering.
+- `msg.files` (array): Convenience array containing only the file names.
+- `msg._seqera_request`: Details of the API request (useful for debugging).
+- `msg._seqera_error`: Error details if the request fails.
 
 ## Launch
 
