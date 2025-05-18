@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2025-05-18
+
+- Added new nodes for listing files in Data Explorer:
+  - `seqera-datalink-list`
+  - `seqera-datalink-poll`
+
 ## [0.1.2] - 2025-05-17
 
 - Added GitHub action to publish to npm from GitHub releases automatically

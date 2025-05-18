@@ -19,6 +19,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 - [Create Dataset](#create-dataset)
 - [Launch and Monitor a Run](#launch-and-monitor-a-run)
 - [List Files from Data Explorer](#list-data-link-files)
+- [Poll Data Link Files](#poll-data-link-files)
 
 Also [Launch](#launch) and [Workflow](#workflow) nodes for more custom workflows where polling workflow status is not required and it's helpful to have full control.
 
@@ -146,8 +147,25 @@ Lists files and folders from a Seqera Platform **Data Explorer** link.
 
 - `msg.payload` (array): Array of objects returned by the API after filtering.
 - `msg.files` (array): Convenience array containing only the file names.
-- `msg._seqera_request`: Details of the API request (useful for debugging).
-- `msg._seqera_error`: Error details if the request fails.
+
+## Poll Data Link Files
+
+Like **List Data Link Files**, but runs automatically on a timer so that you can trigger downstream automation whenever new data appears.
+
+This node has **no inputs** – it starts polling as soon as the Node-RED flow is deployed.
+
+### Inputs (typed-input fields)
+
+Same as _List Data Link Files_, plus:
+
+- **pollFrequency** (number): How often to poll, expressed in **minutes** (default: 15).
+
+### Outputs (two outputs)
+
+1. **All results** – Fired every poll with the full list returned from the API.
+2. **New results** – Fired only when at least one object is detected that wasn't present in the previous poll (will not send anything if there are no new objects).
+
+Each message contains the same properties as _List Data Link Files_ (`payload`, `files`).
 
 ## Launch
 

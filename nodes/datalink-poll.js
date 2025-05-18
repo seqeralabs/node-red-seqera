@@ -1,10 +1,11 @@
-// New node implementation for seqera-datalink-list
 module.exports = function (RED) {
-  function SeqeraDatalinkListNode(config) {
+  const datalinkUtils = require("./datalink-utils");
+
+  function SeqeraDatalinkPollNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
 
-    // Store typedInput properties
+    // ---- Store typedInput properties (mirrors datalink-list) ----
     node.dataLinkNameProp = config.dataLinkName;
     node.dataLinkNamePropType = config.dataLinkNameType;
     node.basePathProp = config.basePath;
@@ -25,47 +26,85 @@ module.exports = function (RED) {
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
 
-    // Reference Seqera config node
+    // Poll-specific property (minutes)
+    node.pollFrequencyMin = parseInt(config.pollFrequency, 10) || 15;
+
+    // Reference config node & defaults
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
     node.credentials = RED.nodes.getCredentials(node.id);
 
-    const datalinkUtils = require("./datalink-utils");
-
-    // Helper to format date as yyyy-mm-dd HH:MM:SS
+    // Helper to format date-time for status
     const formatDateTime = () => {
       const d = new Date();
       const pad = (n) => n.toString().padStart(2, "0");
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
     };
 
-    node.on("input", async function (msg, send, done) {
-      node.status({ fill: "blue", shape: "ring", text: `listing: ${formatDateTime()}` });
+    // Internal cache of previously seen object names
+    let previousNamesSet = null;
+
+    // Polling function
+    const executePoll = async () => {
+      const pollMsg = {};
+      node.status({ fill: "blue", shape: "ring", text: `polling: ${formatDateTime()}` });
 
       try {
-        const result = await datalinkUtils.listDataLink(RED, node, msg);
-        msg.payload = result.items;
-        msg.files = result.files;
+        const result = await datalinkUtils.listDataLink(RED, node, pollMsg);
+
+        // First output: all items every poll
+        const msgAll = {
+          ...pollMsg,
+          payload: result.items,
+          files: result.files,
+        };
+
+        // Second output: only new items since previous poll
+        let msgNew = null;
+        if (previousNamesSet) {
+          const newItems = result.items.filter((it) => !previousNamesSet.has(it.name));
+          if (newItems.length) {
+            msgNew = {
+              payload: newItems,
+              files: newItems.map((it) => it.name),
+            };
+          }
+        }
+
+        // Update cache
+        previousNamesSet = new Set(result.items.map((it) => it.name));
+
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
-        send(msg);
-        if (done) done();
+        node.send([msgAll, msgNew]);
       } catch (err) {
-        msg._seqera_error = err.response
-          ? { status: err.response.status, data: err.response.data }
-          : { message: err.message };
-        node.error(`Seqera datalink list failed: ${err.message}`, msg);
+        const errMsg = {
+          _seqera_error: err.response
+            ? { status: err.response.status, data: err.response.data }
+            : { message: err.message },
+        };
+        node.error(`Seqera datalink poll failed: ${err.message}`, errMsg);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        send(msg);
-        if (done) done(err);
+        node.send([errMsg, null]);
       }
+    };
+
+    // Start the polling interval immediately
+    const intervalMs = node.pollFrequencyMin * 60 * 1000;
+    const intervalId = setInterval(executePoll, intervalMs);
+    // run once immediately
+    executePoll();
+
+    node.on("close", () => {
+      clearInterval(intervalId);
     });
   }
 
-  RED.nodes.registerType("seqera-datalink-list", SeqeraDatalinkListNode, {
+  RED.nodes.registerType("seqera-datalink-poll", SeqeraDatalinkPollNode, {
     credentials: { token: { type: "password" } },
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config", required: true },
+      // shared
       dataLinkName: { value: "dataLinkName" },
       dataLinkNameType: { value: "str" },
       basePath: { value: "" },
@@ -85,6 +124,8 @@ module.exports = function (RED) {
       depth: { value: "0" },
       depthType: { value: "num" },
       returnType: { value: "files" },
+      // poll specific
+      pollFrequency: { value: "15" },
     },
   });
 };

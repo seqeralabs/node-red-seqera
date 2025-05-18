@@ -1,4 +1,5 @@
-<script type="text/html" data-template-name="seqera-datalink-list">
+<script type="text/html" data-template-name="seqera-datalink-poll">
+  <!-- Seqera config and node name -->
   <div class="form-row">
     <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
@@ -7,6 +8,14 @@
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" />
   </div>
+
+  <!-- Polling specific -->
+  <div class="form-row">
+    <label for="node-input-pollFrequency"><i class="fa fa-clock-o"></i> Poll frequency (min)</label>
+    <input type="text" id="node-input-pollFrequency" />
+  </div>
+
+  <!-- Data link parameters (same as list node) -->
   <div class="form-row">
     <label for="node-input-dataLinkName"><i class="fa fa-link"></i> Data link name</label>
     <input type="text" id="node-input-dataLinkName" />
@@ -46,11 +55,12 @@
 </script>
 
 <!-- prettier-ignore -->
-<script type="text/markdown" data-help-name="seqera-datalink-list">
-Lists files from a Seqera Platform Data Explorer link.
+<script type="text/markdown" data-help-name="seqera-datalink-poll">
+Polls a Seqera Platform Data Explorer link at a fixed interval.
 
 ### Inputs
 
+: pollFrequency (number) : The frequency of the poll in minutes (integer, minimum 1, default 15).
 : dataLinkName (string) : The name of the data explorer link.
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
 : prefix (string) : Optional prefix filter for results (applies to folders and files)
@@ -59,41 +69,36 @@ Lists files from a Seqera Platform Data Explorer link.
 : maxResults (number) : Maximum number of results to return (default 100).
 : workspaceId (string) : Override the workspace ID from the config node.
 
-All inputs support msg.*, flow.*, global.*, env, or JSONata expressions via the **typedInput**.
+All inputs support msg._, flow._, global.\*, env, or JSONata expressions via the **typedInput**.
 
 ### Outputs
 
-1. Standard output
-: payload (array) : Array of file objects aggregated from the API.
-: files (array) : Array of file names.
+The node has two outputs:
 
-### Details
+1. All results on every poll.
+2. New objects since the previous poll (nothing sent if no new objects).
 
-This node queries the Seqera Platform Data Explorer **list** API to find a data-link ID,
-then uses the **browse** API to fetch files and folders.
-It automatically handles pagination and listing nested files.
+Both outputs have the following properties:
 
-The node uses the **Seqera config** node for the base URL, workspace ID, and API token.
-Any of these can be overridden using the corresponding input properties.
+: payload (array) : Fle information aggregated from the API (array of objects).
+: files (array) : File names (array of strings).
 
-### References
-
-- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - Data Explorer endpoints
+All typed-input fields are identical to the _List files_ node with the addition of **poll frequency** (minutes).
 </script>
 
 <script type="text/javascript">
-  RED.nodes.registerType("seqera-datalink-list", {
+  RED.nodes.registerType("seqera-datalink-poll", {
     category: "seqera",
     color: "#A9A1C6",
-    inputs: 1,
-    outputs: 1,
+    inputs: 0,
+    outputs: 2,
     icon: "seqera.svg",
     align: "left",
-    paletteLabel: "List files",
+    paletteLabel: "Poll files",
     label: function () {
-      return this.name || "List files";
+      return this.name || "Poll files";
     },
-    outputLabels: ["files"],
+    outputLabels: ["All objects", "Only new objects"],
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
@@ -111,6 +116,7 @@ Any of these can be overridden using the corresponding input properties.
       depthType: { value: "num" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
+      pollFrequency: { value: "15" },
       returnType: { value: "files" },
     },
     oneditprepare: function () {
@@ -128,8 +134,8 @@ Any of these can be overridden using the corresponding input properties.
       ti("#node-input-maxResults", this.maxResults || "100", this.maxResultsType || "num", "num");
       ti("#node-input-depth", this.depth || "0", this.depthType || "num", "num");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+      ti("#node-input-pollFrequency", this.pollFrequency || "15", "num", "num");
 
-      // Set dropdown value for returnType
       $("#node-input-returnType").val(this.returnType || "files");
     },
     oneditsave: function () {
@@ -144,8 +150,7 @@ Any of these can be overridden using the corresponding input properties.
       save.call(this, "#node-input-maxResults", "maxResults", "maxResultsType");
       save.call(this, "#node-input-depth", "depth", "depthType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
-
-      // Save returnType dropdown
+      this.pollFrequency = $("#node-input-pollFrequency").typedInput("value");
       this.returnType = $("#node-input-returnType").val();
     },
   });
