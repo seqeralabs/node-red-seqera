@@ -12,6 +12,14 @@
     <input type="text" id="node-input-dataLinkName" />
   </div>
   <div class="form-row">
+    <label for="node-input-returnType"><i class="fa fa-filter"></i> Return type</label>
+    <select id="node-input-returnType">
+      <option value="files">Files only</option>
+      <option value="folders">Folders only</option>
+      <option value="all">Everything</option>
+    </select>
+  </div>
+  <div class="form-row">
     <label for="node-input-basePath"><i class="fa fa-folder-open-o"></i> Base path</label>
     <input type="text" id="node-input-basePath" />
   </div>
@@ -47,6 +55,7 @@ Lists files from a Seqera Platform Data Explorer link.
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
 : prefix (string) : Optional prefix filter for results (applies to folders and files)
 : pattern (string) : Optional regex pattern filter for results (applies to files only)
+: returnType (string) : Select whether to return files, folders or everything.
 : maxResults (number) : Maximum number of results to return (default 100).
 : workspaceId (string) : Override the workspace ID from the config node.
 
@@ -56,6 +65,7 @@ All inputs support msg.*, flow.*, global.*, env, or JSONata expressions via the 
 
 1. Standard output
 : payload (array) : Array of file objects aggregated from the API.
+: files (array) : Array of file names.
 : _seqera_request (object) : Details of the final API request (for debugging).
 
 ### Details
@@ -102,6 +112,7 @@ Any of these can be overridden using the corresponding input properties.
       depthType: { value: "num" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
+      returnType: { value: "files" },
     },
     oneditprepare: function () {
       function ti(id, val, type, def = "str") {
@@ -118,6 +129,9 @@ Any of these can be overridden using the corresponding input properties.
       ti("#node-input-maxResults", this.maxResults || "100", this.maxResultsType || "num", "num");
       ti("#node-input-depth", this.depth || "0", this.depthType || "num", "num");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+
+      // Set dropdown value for returnType
+      $("#node-input-returnType").val(this.returnType || "files");
     },
     oneditsave: function () {
       function save(id, prop, propType) {
@@ -131,6 +145,9 @@ Any of these can be overridden using the corresponding input properties.
       save.call(this, "#node-input-maxResults", "maxResults", "maxResultsType");
       save.call(this, "#node-input-depth", "depth", "depthType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+
+      // Save returnType dropdown
+      this.returnType = $("#node-input-returnType").val();
     },
   });
 </script>

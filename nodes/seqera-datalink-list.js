@@ -23,6 +23,7 @@ module.exports = function (RED) {
     node.tokenPropType = config.tokenType;
     node.depthProp = config.depth;
     node.depthPropType = config.depthType;
+    node.returnType = config.returnType || "files"; // files|folders|all
 
     // Reference Seqera config node
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
@@ -178,7 +179,15 @@ module.exports = function (RED) {
           }
         }
 
+        // Filter by returnType option
+        if (node.returnType === "files") {
+          finalItems = finalItems.filter((it) => (it.type || "").toUpperCase() === "FILE");
+        } else if (node.returnType === "folders") {
+          finalItems = finalItems.filter((it) => (it.type || "").toUpperCase() === "FOLDER");
+        }
+
         msg.payload = finalItems;
+        msg.files = finalItems.map((f) => f.name);
         node.status({ fill: "green", shape: "dot", text: `done: ${finalItems.length} items` });
         send(msg);
         if (done) done();
@@ -217,6 +226,7 @@ module.exports = function (RED) {
       tokenType: { value: "str" },
       depth: { value: "0" },
       depthType: { value: "num" },
+      returnType: { value: "files" },
     },
   });
 };
