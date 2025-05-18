@@ -16,8 +16,8 @@
     <input type="text" id="node-input-basePath" />
   </div>
   <div class="form-row">
-    <label for="node-input-search"><i class="fa fa-search"></i> Search</label>
-    <input type="text" id="node-input-search" />
+    <label for="node-input-prefix"><i class="fa fa-prefix"></i> Prefix</label>
+    <input type="text" id="node-input-prefix" />
   </div>
   <div class="form-row">
     <label for="node-input-maxResults"><i class="fa fa-sort-numeric-asc"></i> Max results</label>
@@ -41,7 +41,7 @@ Lists files from a Seqera Platform Data Explorer link.
 
 : dataLinkName (string) : The name of the data explorer link.
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
-: search (string) : Optional search string to filter file results.
+: prefix (string) : Optional prefix filter for results (applies to folders and files)
 : maxResults (number) : Maximum number of results to return (default 100).
 : workspaceId (string) : Override the workspace ID from the config node.
 
@@ -87,8 +87,8 @@ Any of these can be overridden using the corresponding input properties.
       dataLinkNameType: { value: "str" },
       basePath: { value: "" },
       basePathType: { value: "str" },
-      search: { value: "" },
-      searchType: { value: "str" },
+      prefix: { value: "" },
+      prefixType: { value: "str" },
       maxResults: { value: "100" },
       maxResultsType: { value: "num" },
       depth: { value: "0" },
@@ -106,7 +106,7 @@ Any of these can be overridden using the corresponding input properties.
       }
       ti("#node-input-dataLinkName", this.dataLinkName || "", this.dataLinkNameType || "str");
       ti("#node-input-basePath", this.basePath || "", this.basePathType || "str");
-      ti("#node-input-search", this.search || "", this.searchType || "str");
+      ti("#node-input-prefix", this.prefix || "", this.prefixType || "str");
       ti("#node-input-maxResults", this.maxResults || "100", this.maxResultsType || "num", "num");
       ti("#node-input-depth", this.depth || "0", this.depthType || "num", "num");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
@@ -118,7 +118,7 @@ Any of these can be overridden using the corresponding input properties.
       }
       save.call(this, "#node-input-dataLinkName", "dataLinkName", "dataLinkNameType");
       save.call(this, "#node-input-basePath", "basePath", "basePathType");
-      save.call(this, "#node-input-search", "search", "searchType");
+      save.call(this, "#node-input-prefix", "prefix", "prefixType");
       save.call(this, "#node-input-maxResults", "maxResults", "maxResultsType");
       save.call(this, "#node-input-depth", "depth", "depthType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");

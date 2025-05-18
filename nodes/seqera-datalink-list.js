@@ -9,8 +9,8 @@ module.exports = function (RED) {
     node.dataLinkNamePropType = config.dataLinkNameType;
     node.basePathProp = config.basePath;
     node.basePathPropType = config.basePathType;
-    node.searchProp = config.search;
-    node.searchPropType = config.searchType;
+    node.prefixProp = config.prefix;
+    node.prefixPropType = config.prefixType;
     node.maxResultsProp = config.maxResults;
     node.maxResultsPropType = config.maxResultsType;
     node.workspaceIdProp = config.workspaceId;
@@ -57,7 +57,7 @@ module.exports = function (RED) {
         // Evaluate all properties
         const dataLinkName = await evalProp(node.dataLinkNameProp, node.dataLinkNamePropType);
         const basePathRaw = await evalProp(node.basePathProp, node.basePathPropType);
-        const search = await evalProp(node.searchProp, node.searchPropType);
+        const prefix = await evalProp(node.prefixProp, node.prefixPropType);
         const maxResultsRaw = await evalProp(node.maxResultsProp, node.maxResultsPropType);
         const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
         const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
@@ -128,7 +128,7 @@ module.exports = function (RED) {
 
             const qs = new URLSearchParams();
             if (workspaceId != null) qs.append("workspaceId", workspaceId);
-            if (search != null && search !== "") qs.append("search", search);
+            if (prefix != null && prefix !== "") qs.append("search", prefix);
             if (credentialsId) qs.append("credentialsId", credentialsId);
             if (nextPage) qs.append("nextPageToken", nextPage);
             const qsStr = qs.toString();
@@ -189,8 +189,8 @@ module.exports = function (RED) {
       dataLinkNameType: { value: "str" },
       basePath: { value: "" },
       basePathType: { value: "str" },
-      search: { value: "" },
-      searchType: { value: "str" },
+      prefix: { value: "" },
+      prefixType: { value: "str" },
       maxResults: { value: "100" },
       maxResultsType: { value: "num" },
       workspaceId: { value: "workspaceId" },
