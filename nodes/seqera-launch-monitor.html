@@ -45,18 +45,18 @@ Launches a workflow and then periodically checks its status until completion.
 ### Outputs
 
 1. Status updates (active workflows)
-    : payload (object) : The workflow details from the API, sent on every status poll while workflow is active.
-    : workflowId (string) : The ID of the workflow.
+: payload (object) : The workflow details from the API, sent on every status poll while workflow is active.
+: workflowId (string) : The ID of the workflow.
 
 2. Success
-    : payload (object) : The workflow details from the API, sent once when workflow completes successfully.
-    : workflowId (string) : The ID of the workflow.
+: payload (object) : The workflow details from the API, sent once when workflow completes successfully.
+: workflowId (string) : The ID of the workflow.
 
 3. Error
-    : payload (object) : The workflow details from the API, sent once when workflow fails or is cancelled.
-    : workflowId (string) : The ID of the workflow.
-    : \_seqera_request (object) : The request details sent to the API (when API error occurs).
-    : \_seqera_error (object) : Error details (when API error occurs).
+: payload (object) : The workflow details from the API, sent once when workflow fails or is cancelled.
+: workflowId (string) : The ID of the workflow.
+: \_seqera_request (object) : The request details sent to the API (when API error occurs).
+: \_seqera_error (object) : Error details (when API error occurs).
 
 ### Details
 

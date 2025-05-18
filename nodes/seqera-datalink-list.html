@@ -1,0 +1,127 @@
+<script type="text/html" data-template-name="seqera-datalink-list">
+  <div class="form-row">
+    <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+    <input type="text" id="node-input-seqera" data-type="seqera-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-dataLinkName"><i class="fa fa-link"></i> Data link name</label>
+    <input type="text" id="node-input-dataLinkName" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-basePath"><i class="fa fa-folder-open-o"></i> Base path</label>
+    <input type="text" id="node-input-basePath" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-search"><i class="fa fa-search"></i> Search</label>
+    <input type="text" id="node-input-search" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-maxResults"><i class="fa fa-sort-numeric-asc"></i> Max results</label>
+    <input type="text" id="node-input-maxResults" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-depth"><i class="fa fa-level-down"></i> Depth</label>
+    <input type="text" id="node-input-depth" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+</script>
+
+<!-- prettier-ignore -->
+<script type="text/markdown" data-help-name="seqera-datalink-list">
+Lists files from a Seqera Platform Data Explorer link.
+
+### Inputs
+
+: dataLinkName (string) : The name of the data explorer link.
+: basePath (string) : Path within the data link to start browsing. Leave blank for the root.
+: search (string) : Optional search string to filter file results.
+: maxResults (number) : Maximum number of results to return (default 100).
+: workspaceId (string) : Override the workspace ID from the config node.
+
+All inputs support msg.*, flow.*, global.*, env, or JSONata expressions via the **typedInput**.
+
+### Outputs
+
+1. Standard output
+: payload (array) : Array of file objects aggregated from the API.
+: _seqera_request (object) : Details of the final API request (for debugging).
+
+### Details
+
+This node queries the Seqera Platform Data Explorer **list** API to find a data-link ID,
+then uses the **browse** API to fetch files and folders.
+It automatically handles pagination and listing nested files.
+
+The node uses the **Seqera config** node for the base URL, workspace ID, and API token.
+Any of these can be overridden using the corresponding input properties.
+
+### References
+
+- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - Data Explorer endpoints
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("seqera-datalink-list", {
+    category: "seqera",
+    color: "#A9A1C6",
+    inputs: 1,
+    outputs: 1,
+    icon: "seqera.svg",
+    align: "left",
+    paletteLabel: "List files",
+    label: function () {
+      return this.name || "List files";
+    },
+    outputLabels: ["files"],
+    defaults: {
+      name: { value: "" },
+      seqera: { value: "", type: "seqera-config" },
+      dataLinkName: { value: "" },
+      dataLinkNameType: { value: "str" },
+      basePath: { value: "" },
+      basePathType: { value: "str" },
+      search: { value: "" },
+      searchType: { value: "str" },
+      maxResults: { value: "100" },
+      maxResultsType: { value: "num" },
+      depth: { value: "0" },
+      depthType: { value: "num" },
+      workspaceId: { value: "" },
+      workspaceIdType: { value: "str" },
+    },
+    oneditprepare: function () {
+      function ti(id, val, type, def = "str") {
+        const types = ["str", "num", "msg", "flow", "global", "env", "jsonata"];
+        if (def === "num") types.splice(types.indexOf("str"), 1);
+        $(id).typedInput({ default: def, types });
+        $(id).typedInput("value", val);
+        $(id).typedInput("type", type);
+      }
+      ti("#node-input-dataLinkName", this.dataLinkName || "", this.dataLinkNameType || "str");
+      ti("#node-input-basePath", this.basePath || "", this.basePathType || "str");
+      ti("#node-input-search", this.search || "", this.searchType || "str");
+      ti("#node-input-maxResults", this.maxResults || "100", this.maxResultsType || "num", "num");
+      ti("#node-input-depth", this.depth || "0", this.depthType || "num", "num");
+      ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+    },
+    oneditsave: function () {
+      function save(id, prop, propType) {
+        this[prop] = $(id).typedInput("value");
+        this[propType] = $(id).typedInput("type");
+      }
+      save.call(this, "#node-input-dataLinkName", "dataLinkName", "dataLinkNameType");
+      save.call(this, "#node-input-basePath", "basePath", "basePathType");
+      save.call(this, "#node-input-search", "search", "searchType");
+      save.call(this, "#node-input-maxResults", "maxResults", "maxResultsType");
+      save.call(this, "#node-input-depth", "depth", "depthType");
+      save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+    },
+  });
+</script>

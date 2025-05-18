@@ -34,7 +34,8 @@
       "seqera-config": "nodes/seqera-config.js",
       "seqera-launch": "nodes/seqera-launch.js",
       "seqera-launch-monitor": "nodes/seqera-launch-monitor.js",
-      "seqera-dataset-create": "nodes/seqera-dataset-create.js"
+      "seqera-dataset-create": "nodes/seqera-dataset-create.js",
+      "seqera-datalink-list": "nodes/seqera-datalink-list.js"
     },
     "examples": {
       "Seqera Platform": "examples"
