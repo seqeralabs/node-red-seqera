@@ -48,7 +48,7 @@ npm install @seqera/node-red-seqera
 
 ## Seqera Studios
 
-This repository comes with a custom Docker image containing botth Node-RED and the Seqera nodes, designed to run within
+This repository comes with a custom Docker image containing both Node-RED and the Seqera nodes, designed to run within
 [Seqera Studios](https://docs.seqera.io/platform-cloud/studios/overview).
 
 Simply create a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
