@@ -4,6 +4,7 @@ on:
   # Build on every push to main
   push:
     branches: [main]
+    paths-ignore: ["**/*.{md,svg,png}"]
   # Build release
   release:
     types: [published]
