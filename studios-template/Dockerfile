@@ -30,7 +30,7 @@ RUN npm install --unsafe-perm --no-update-notifier --no-fund --only=production
 
 # Copy _your_ Node-RED project files into place
 COPY ./studios-template/settings.js /node-red-data/settings.js
-COPY ./examples/create_launch_monitor.json /node-red-data/flows.json
+# COPY ./examples/create_launch_monitor.json /node-red-data/flows.json
 
 # Default command to run node-red
 ENV LAST_MODIFIED="2025-05-16-01:55"
