@@ -87,8 +87,14 @@ module.exports = function (RED) {
         // First output: all items every poll
         const msgAll = {
           ...pollMsg,
-          payload: result.items,
-          files: result.files,
+          payload: {
+            files: result.items,
+            resourceType: result.resourceType,
+            resourceRef: result.resourceRef,
+            provider: result.provider,
+            nextPoll: new Date(Date.now() + node.pollFrequencySec * 1000).toISOString(),
+          },
+          files: result.files.map((it) => `${result.resourceRef}/${it}`),
         };
 
         // Second output: only new items since previous poll
@@ -97,8 +103,13 @@ module.exports = function (RED) {
           const newItems = result.items.filter((it) => !previousNamesSet.has(it.name));
           if (newItems.length) {
             msgNew = {
-              payload: newItems,
-              files: newItems.map((it) => it.name),
+              payload: {
+                files: newItems,
+                resourceType: result.resourceType,
+                resourceRef: result.resourceRef,
+                provider: result.provider,
+              },
+              files: newItems.map((it) => `${result.resourceRef}/${it.name}`),
             };
           }
         }

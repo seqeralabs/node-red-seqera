@@ -73,6 +73,9 @@ async function listDataLink(RED, node, msg = {}) {
 
   const dataLinkId = links[0].id;
   const credentialsId = links[0].credentials?.[0]?.id;
+  const resourceRef = links[0].resourceRef;
+  const resourceType = links[0].type;
+  const provider = links[0].provider;
 
   /* -----------------------------------------------------------
    * 2) Recursive browse of paths (depth & pagination aware)
@@ -144,7 +147,13 @@ async function listDataLink(RED, node, msg = {}) {
     finalItems = finalItems.filter((it) => (it.type || "").toUpperCase() === "FOLDER");
   }
 
-  return { items: finalItems, files: finalItems.map((f) => f.name) };
+  return {
+    items: finalItems,
+    files: finalItems.map((f) => f.name),
+    resourceType,
+    resourceRef,
+    provider,
+  };
 }
 
 module.exports = {

@@ -44,8 +44,13 @@ module.exports = function (RED) {
 
       try {
         const result = await datalinkUtils.listDataLink(RED, node, msg);
-        msg.payload = result.items;
-        msg.files = result.files;
+        msg.payload = {
+          files: result.items,
+          resourceType: result.resourceType,
+          resourceRef: result.resourceRef,
+          provider: result.provider,
+        };
+        msg.files = result.files.map((it) => `${result.resourceRef}/${it}`);
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
         send(msg);
         if (done) done();
