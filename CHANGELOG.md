@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2025-05-21
+
+- Updated Data Explorer nodes to include information about source bucket
+  - Detailed info in main `msg.payload`
+  - Prepended bucket name in `msg.files`
+
 ## [0.2.0] - 2025-05-18
 
 - Added new nodes for listing files in Data Explorer:
