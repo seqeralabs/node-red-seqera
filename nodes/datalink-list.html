@@ -97,7 +97,10 @@ Any of these can be overridden using the corresponding input properties.
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
-      dataLinkName: { value: "" },
+      dataLinkName: {
+        value: "",
+        required: true,
+      },
       dataLinkNameType: { value: "str" },
       basePath: { value: "" },
       basePathType: { value: "str" },

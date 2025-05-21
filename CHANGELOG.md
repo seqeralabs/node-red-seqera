@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2025-05-22
+
+- Set various node inputs to "required"
+
 ## [0.2.2] - 2025-05-21
 
 - Bugfix: Include package files in Docker image

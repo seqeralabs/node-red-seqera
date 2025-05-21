@@ -102,7 +102,10 @@ All typed-input fields are identical to the _List files_ node with the addition 
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
-      dataLinkName: { value: "" },
+      dataLinkName: {
+        value: "",
+        required: true,
+      },
       dataLinkNameType: { value: "str" },
       basePath: { value: "" },
       basePathType: { value: "str" },

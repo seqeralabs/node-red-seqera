@@ -37,7 +37,7 @@
   RED.nodes.registerType("seqera-config", {
     category: "config",
     defaults: {
-      baseUrl: { value: "https://api.cloud.seqera.io" },
+      baseUrl: { value: "https://api.cloud.seqera.io", required: true },
       workspaceId: { value: null },
     },
     credentials: {
