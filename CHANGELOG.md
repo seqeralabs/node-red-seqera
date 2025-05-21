@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2025-05-21
+
+- Bugfix: Include package files in Docker image
+
 ## [0.2.1] - 2025-05-21
 
 - Updated Data Explorer nodes to include information about source bucket

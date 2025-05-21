@@ -23,6 +23,9 @@ RUN /usr/bin/connect-client --install
 # Set connect as the entrypoint
 ENTRYPOINT ["/usr/bin/connect-client", "--entrypoint"]
 
+# Copy the local package first
+COPY ./ /node-red-seqera/
+
 # Copy package.json to the WORKDIR so npm builds all of your added nodes modules
 WORKDIR /node-red-data
 COPY ./studios-template/package.json /node-red-data
