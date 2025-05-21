@@ -162,7 +162,7 @@ This node has **no inputs** – it starts polling as soon as the Node-RED flow i
 
 Same as _List Data Link Files_, plus:
 
-- **pollFrequency** (number): How often to poll, expressed in **minutes** (default: 15).
+- **pollFrequency** (number): How often to poll (default: 15 minutes).
 
 ### Outputs (two outputs)
 

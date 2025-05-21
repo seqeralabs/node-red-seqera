@@ -26,8 +26,40 @@ module.exports = function (RED) {
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
 
-    // Poll-specific property (minutes)
-    node.pollFrequencyMin = parseInt(config.pollFrequency, 10) || 15;
+    // Poll-specific property (legacy minutes value retained for backward compatibility)
+    // This will be overridden by the new seconds-based duration parser below.
+
+    // Poll-specific property (seconds)
+    const parseDurationToSeconds = (value) => {
+      if (typeof value === "number") return value;
+      if (typeof value !== "string") return NaN;
+      const v = value.trim();
+      let m;
+      // DD-HH:MM:SS
+      if ((m = v.match(/^(\d+)-(\d{1,2}):(\d{1,2}):(\d{1,2})$/))) {
+        const [, dd, hh, mm, ss] = m.map(Number);
+        return dd * 86400 + hh * 3600 + mm * 60 + ss;
+      }
+      // HH:MM:SS
+      if ((m = v.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})$/))) {
+        const [, hh, mm, ss] = m.map(Number);
+        return hh * 3600 + mm * 60 + ss;
+      }
+      // MM:SS
+      if ((m = v.match(/^(\d{1,2}):(\d{1,2})$/))) {
+        const [, mm, ss] = m.map(Number);
+        return mm * 60 + ss;
+      }
+      // SS
+      if (/^\d+$/.test(v)) {
+        return parseInt(v, 10);
+      }
+      return NaN;
+    };
+
+    // Poll-specific property (seconds)
+    const pollSecs = parseDurationToSeconds(config.pollFrequency);
+    node.pollFrequencySec = !pollSecs || Number.isNaN(pollSecs) ? 15 * 60 : pollSecs;
 
     // Reference config node & defaults
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
@@ -89,7 +121,7 @@ module.exports = function (RED) {
     };
 
     // Start the polling interval immediately
-    const intervalMs = node.pollFrequencyMin * 60 * 1000;
+    const intervalMs = node.pollFrequencySec * 1000;
     const intervalId = setInterval(executePoll, intervalMs);
     // run once immediately
     executePoll();
@@ -125,7 +157,7 @@ module.exports = function (RED) {
       depthType: { value: "num" },
       returnType: { value: "files" },
       // poll specific
-      pollFrequency: { value: "15" },
+      pollFrequency: { value: "15:00" },
     },
   });
 };
