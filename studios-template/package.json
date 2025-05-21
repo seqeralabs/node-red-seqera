@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "axios": "^1.9.0",
-    "@seqera/node-red-seqera": "^0.2.0"
+    "@seqera/node-red-seqera": "file:../"
   }
 }
