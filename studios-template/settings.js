@@ -370,6 +370,14 @@ module.exports = {
    * for all available options.
    */
   editorTheme: {
+    header: {
+      title: "Node-RED + Seqera",
+      image: "/node-red-data/node-red-seqera.svg",
+      url: "https://seqera.io",
+    },
+    page: {
+      css: "/node-red-data/node-red-seqera.css",
+    },
     // theme: "github-dark-default",
 
     /** The following property can be used to set a custom theme for the editor.

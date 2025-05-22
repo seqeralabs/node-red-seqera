@@ -1,0 +1,7 @@
+:root {
+  --red-ui-header-background: #160f26;
+  --red-ui-header-accent: #6c5e9d;
+}
+#red-ui-header span.red-ui-header-logo img {
+  height: 24px;
+}
