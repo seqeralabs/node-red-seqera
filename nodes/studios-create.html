@@ -20,8 +20,8 @@
     <input type="text" id="node-input-computeEnvId" />
   </div>
   <div class="form-row">
-    <label for="node-input-mountData"><i class="fa fa-database"></i> Data link names (comma / newline)</label>
-    <input type="text" id="node-input-mountData" />
+    <label><i class="fa fa-database"></i> Data links</label>
+    <ol id="node-input-mountDataList"></ol>
   </div>
   <div class="form-row">
     <label for="node-input-cpu"><i class="fa fa-microchip"></i> CPUs</label>
@@ -40,7 +40,7 @@
     <input type="text" id="node-input-condaEnvironment" />
   </div>
   <div class="form-row">
-    <label for="node-input-lifespanHours"><i class="fa fa-clock-o"></i> Lifespan hours</label>
+    <label for="node-input-lifespanHours"><i class="fa fa-clock-o"></i> Lifespan</label>
     <input type="text" id="node-input-lifespanHours" />
   </div>
   <div class="form-row">
@@ -149,7 +149,6 @@ Creates a new Data Studio in Seqera Platform.
       ti("#node-input-description", this.description || "", this.descriptionType || "str");
       ti("#node-input-containerUri", this.containerUri || "", this.containerUriType || "str");
       ti("#node-input-computeEnvId", this.computeEnvId || "", this.computeEnvIdType || "str");
-      ti("#node-input-mountData", this.mountData || "", this.mountDataType || "str");
       ti("#node-input-cpu", this.cpu || "2", this.cpuType || "num", "num");
       ti("#node-input-memory", this.memory || "8192", this.memoryType || "num", "num");
       ti("#node-input-gpu", this.gpu || "0", this.gpuType || "num", "num");
@@ -159,6 +158,29 @@ Creates a new Data Studio in Seqera Platform.
       $("#node-input-isPrivate").prop("checked", this.isPrivate === true || this.isPrivate === "true");
       $("#node-input-spot").prop("checked", this.spot === true || this.spot === "true");
       $("#node-input-autoStart").prop("checked", this.autoStart !== false && this.autoStart !== "false");
+
+      // Build editable list for mount data links
+      const listInit = Array.isArray(this.mountData)
+        ? this.mountData
+        : (this.mountData || "")
+            .split(/[\n,]/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+
+      $("#node-input-mountDataList")
+        .css({ "max-height": "300px", overflow: "auto" })
+        .editableList({
+          addItem: function (container, i, data) {
+            const row = $('<input type="text" style="width: 100%">').appendTo(container);
+            row.val(data?.value || "");
+          },
+          removable: true,
+        });
+
+      if (listInit.length === 0) listInit.push("");
+      listInit.forEach((v) => {
+        $("#node-input-mountDataList").editableList("addItem", { value: v });
+      });
     },
     oneditsave: function () {
       function save(id, prop, propType) {
@@ -169,7 +191,6 @@ Creates a new Data Studio in Seqera Platform.
       save.call(this, "#node-input-description", "description", "descriptionType");
       save.call(this, "#node-input-containerUri", "containerUri", "containerUriType");
       save.call(this, "#node-input-computeEnvId", "computeEnvId", "computeEnvIdType");
-      save.call(this, "#node-input-mountData", "mountData", "mountDataType");
       save.call(this, "#node-input-cpu", "cpu", "cpuType");
       save.call(this, "#node-input-memory", "memory", "memoryType");
       save.call(this, "#node-input-gpu", "gpu", "gpuType");
@@ -179,6 +200,15 @@ Creates a new Data Studio in Seqera Platform.
       this.isPrivate = $("#node-input-isPrivate").prop("checked");
       this.spot = $("#node-input-spot").prop("checked");
       this.autoStart = $("#node-input-autoStart").prop("checked");
+
+      const vals = [];
+      $("#node-input-mountDataList")
+        .editableList("items")
+        .each(function () {
+          const v = $(this).find("input").val().trim();
+          if (v) vals.push(v);
+        });
+      this.mountData = vals;
     },
   });
 </script>

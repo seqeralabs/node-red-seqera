@@ -191,7 +191,7 @@ module.exports = function (RED) {
       containerUriType: { value: "str" },
       computeEnvId: { value: "" },
       computeEnvIdType: { value: "str" },
-      mountData: { value: "" },
+      mountData: { value: [] },
       mountDataType: { value: "str" },
       cpu: { value: "2" },
       cpuType: { value: "num" },
