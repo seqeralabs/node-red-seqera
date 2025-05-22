@@ -19,8 +19,6 @@ module.exports = function (RED) {
     node.workspaceIdPropType = config.workspaceIdType;
     node.baseUrlProp = config.baseUrl;
     node.baseUrlPropType = config.baseUrlType;
-    node.tokenProp = config.token;
-    node.tokenPropType = config.tokenType;
     node.depthProp = config.depth;
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
@@ -55,13 +53,9 @@ module.exports = function (RED) {
         send(msg);
         if (done) done();
       } catch (err) {
-        msg._seqera_error = err.response
-          ? { status: err.response.status, data: err.response.data }
-          : { message: err.message };
         node.error(`Seqera datalink list failed: ${err.message}`, msg);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        send(msg);
-        if (done) done(err);
+        return;
       }
     });
   }

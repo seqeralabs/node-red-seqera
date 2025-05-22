@@ -1,0 +1,184 @@
+<script type="text/html" data-template-name="seqera-studios-create">
+  <div class="form-row">
+    <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+    <input type="text" id="node-input-seqera" data-type="seqera-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Node label</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-studioName"><i class="fa fa-building"></i> Studio name</label>
+    <input type="text" id="node-input-studioName" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-containerUri"><i class="fa fa-docker"></i> Container URI</label>
+    <input type="text" id="node-input-containerUri" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-computeEnvId"><i class="fa fa-cogs"></i> Compute env ID</label>
+    <input type="text" id="node-input-computeEnvId" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-mountData"><i class="fa fa-database"></i> Data link names (comma / newline)</label>
+    <input type="text" id="node-input-mountData" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-cpu"><i class="fa fa-microchip"></i> CPUs</label>
+    <input type="text" id="node-input-cpu" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-memory"><i class="fa fa-memory"></i> Memory (MB)</label>
+    <input type="text" id="node-input-memory" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-gpu"><i class="fa fa-desktop"></i> GPUs</label>
+    <input type="text" id="node-input-gpu" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-condaEnvironment"><i class="fa fa-flask"></i> Conda env</label>
+    <input type="text" id="node-input-condaEnvironment" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-lifespanHours"><i class="fa fa-clock-o"></i> Lifespan hours</label>
+    <input type="text" id="node-input-lifespanHours" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-description"><i class="fa fa-info-circle"></i> Description</label>
+    <input type="text" id="node-input-description" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-isPrivate"><i class="fa fa-lock"></i> Private?</label>
+    <input type="checkbox" id="node-input-isPrivate" style="vertical-align:top; width:auto;" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-spot"><i class="fa fa-bolt"></i> Spot?</label>
+    <input type="checkbox" id="node-input-spot" style="vertical-align:top; width:auto;" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-autoStart"><i class="fa fa-play"></i> Auto-start?</label>
+    <input type="checkbox" id="node-input-autoStart" checked style="vertical-align:top; width:auto;" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+</script>
+
+<!-- prettier-ignore -->
+<script type="text/markdown" data-help-name="seqera-studios-create">
+Creates a new Data Studio in Seqera Platform.
+
+### Inputs
+
+: studioName (string) : Name of the studio.
+: containerUri (string) : Container URI of the tool image.
+: computeEnvId (string) : Compute environment ID to run in.
+: mountData (string | array) : One or more Data Link names to mount. Comma or newline separated when string.
+: cpu (number) : Number of CPUs (default 2).
+: memory (number) : Memory (MB) (default 8192).
+: gpu (number) : Number of GPUs (default 0).
+: condaEnvironment (string) : Conda environment name (optional).
+: lifespanHours (number) : Lifespan hours before shutdown (optional).
+: description (string) : Description text (optional).
+: isPrivate (bool) : If true, studio will be private (default false).
+: spot (bool) : If true, enable spot resources (default false).
+: autoStart (bool) : Whether to automatically start after creation (default true).
+: workspaceId (string) : Override workspace ID.
+
+### Outputs
+
+1. Standard output
+: payload (object) : API response from Seqera Platform.
+: studioId (string) : ID of the created studio.
+
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("seqera-studios-create", {
+    category: "seqera",
+    color: "#A9A1C6",
+    inputs: 1,
+    outputs: 1,
+    icon: "seqera.svg",
+    align: "left",
+    paletteLabel: "Create studio",
+    label: function () {
+      return this.name || "Create studio";
+    },
+    outputLabels: ["success"],
+    defaults: {
+      name: { value: "" },
+      seqera: { value: "", type: "seqera-config" },
+      studioName: { value: "", required: true },
+      studioNameType: { value: "str" },
+      description: { value: "" },
+      descriptionType: { value: "str" },
+      containerUri: { value: "" },
+      containerUriType: { value: "str" },
+      computeEnvId: { value: "" },
+      computeEnvIdType: { value: "str" },
+      mountData: { value: "" },
+      mountDataType: { value: "str" },
+      cpu: { value: "2" },
+      cpuType: { value: "num" },
+      memory: { value: "8192" },
+      memoryType: { value: "num" },
+      gpu: { value: "0" },
+      gpuType: { value: "num" },
+      condaEnvironment: { value: "" },
+      condaEnvironmentType: { value: "str" },
+      lifespanHours: { value: "" },
+      lifespanHoursType: { value: "num" },
+      isPrivate: { value: false },
+      isPrivateType: { value: "bool" },
+      spot: { value: false },
+      spotType: { value: "bool" },
+      autoStart: { value: true },
+      autoStartType: { value: "bool" },
+      workspaceId: { value: "" },
+      workspaceIdType: { value: "str" },
+    },
+    oneditprepare: function () {
+      function ti(id, val, type, def = "str") {
+        $(id).typedInput({ default: def, types: ["str", "num", "msg", "flow", "global", "env", "jsonata", "json"] });
+        $(id).typedInput("value", val);
+        $(id).typedInput("type", type);
+      }
+      ti("#node-input-studioName", this.studioName || "", this.studioNameType || "str");
+      ti("#node-input-description", this.description || "", this.descriptionType || "str");
+      ti("#node-input-containerUri", this.containerUri || "", this.containerUriType || "str");
+      ti("#node-input-computeEnvId", this.computeEnvId || "", this.computeEnvIdType || "str");
+      ti("#node-input-mountData", this.mountData || "", this.mountDataType || "str");
+      ti("#node-input-cpu", this.cpu || "2", this.cpuType || "num", "num");
+      ti("#node-input-memory", this.memory || "8192", this.memoryType || "num", "num");
+      ti("#node-input-gpu", this.gpu || "0", this.gpuType || "num", "num");
+      ti("#node-input-condaEnvironment", this.condaEnvironment || "", this.condaEnvironmentType || "str");
+      ti("#node-input-lifespanHours", this.lifespanHours || "", this.lifespanHoursType || "num", "num");
+      ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+      $("#node-input-isPrivate").prop("checked", this.isPrivate === true || this.isPrivate === "true");
+      $("#node-input-spot").prop("checked", this.spot === true || this.spot === "true");
+      $("#node-input-autoStart").prop("checked", this.autoStart !== false && this.autoStart !== "false");
+    },
+    oneditsave: function () {
+      function save(id, prop, propType) {
+        this[prop] = $(id).typedInput("value");
+        this[propType] = $(id).typedInput("type");
+      }
+      save.call(this, "#node-input-studioName", "studioName", "studioNameType");
+      save.call(this, "#node-input-description", "description", "descriptionType");
+      save.call(this, "#node-input-containerUri", "containerUri", "containerUriType");
+      save.call(this, "#node-input-computeEnvId", "computeEnvId", "computeEnvIdType");
+      save.call(this, "#node-input-mountData", "mountData", "mountDataType");
+      save.call(this, "#node-input-cpu", "cpu", "cpuType");
+      save.call(this, "#node-input-memory", "memory", "memoryType");
+      save.call(this, "#node-input-gpu", "gpu", "gpuType");
+      save.call(this, "#node-input-condaEnvironment", "condaEnvironment", "condaEnvironmentType");
+      save.call(this, "#node-input-lifespanHours", "lifespanHours", "lifespanHoursType");
+      save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+      this.isPrivate = $("#node-input-isPrivate").prop("checked");
+      this.spot = $("#node-input-spot").prop("checked");
+      this.autoStart = $("#node-input-autoStart").prop("checked");
+    },
+  });
+</script>

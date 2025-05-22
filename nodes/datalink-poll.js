@@ -20,8 +20,6 @@ module.exports = function (RED) {
     node.workspaceIdPropType = config.workspaceIdType;
     node.baseUrlProp = config.baseUrl;
     node.baseUrlPropType = config.baseUrlType;
-    node.tokenProp = config.token;
-    node.tokenPropType = config.tokenType;
     node.depthProp = config.depth;
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
@@ -120,14 +118,8 @@ module.exports = function (RED) {
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
         node.send([msgAll, msgNew]);
       } catch (err) {
-        const errMsg = {
-          _seqera_error: err.response
-            ? { status: err.response.status, data: err.response.data }
-            : { message: err.message },
-        };
         node.error(`Seqera datalink poll failed: ${err.message}`, errMsg);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        node.send([errMsg, null]);
       }
     };
 

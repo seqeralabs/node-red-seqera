@@ -2,7 +2,12 @@
 
 ## [0.2.3] - 2025-05-22
 
+- New nodes for Data Studios:
+  - `seqera-studios-create`
 - Set various node inputs to "required"
+- Improved common library of functions for calling API endpoints
+- Better error handling and reporting to the debug console
+- Removed `_seqera_request` and `_seqera_error` outputs
 
 ## [0.2.2] - 2025-05-21
 

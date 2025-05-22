@@ -14,8 +14,6 @@ module.exports = function (RED) {
     node.workspaceIdPropType = config.workspaceIdType;
     node.sourceWorkspaceIdProp = config.sourceWorkspaceId;
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
-    node.tokenProp = config.token;
-    node.tokenPropType = config.tokenType;
     node.pollIntervalProp = config.poll;
     node.pollIntervalPropType = config.pollType;
 
@@ -23,6 +21,7 @@ module.exports = function (RED) {
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
     node.credentials = RED.nodes.getCredentials(node.id);
     const axios = require("axios");
+    const { apiCall } = require("./_utils");
 
     // Helper to format date as yyyy-mm-dd HH:MM:SS
     const formatDateTime = () => {
@@ -66,7 +65,6 @@ module.exports = function (RED) {
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
-      const tokenOverride = await evalProp(node.tokenProp, node.tokenPropType);
       const pollInterval = await evalProp(node.pollIntervalProp, node.pollIntervalPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
@@ -76,35 +74,25 @@ module.exports = function (RED) {
 
       let body = msg.body || msg.payload;
 
-      const buildHeaders = () => {
-        const headers = { "Content-Type": "application/json" };
-        const token =
-          tokenOverride ||
-          (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
-          (node.credentials && node.credentials.token);
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        return headers;
-      };
-
       try {
         // resolve launchpad if needed
         try {
           if (launchpadName) {
-            const headersGet = buildHeaders();
+            const headersGet = { Accept: "application/json" };
             const pipelinesUrl = `${baseUrl.replace(
               /\/$/,
               "",
             )}/pipelines?workspaceId=${workspaceId}&max=50&offset=0&search=${encodeURIComponent(
               launchpadName,
             )}&visibility=all`;
-            const pipelinesResp = await axios.get(pipelinesUrl, { headers: headersGet });
+            const pipelinesResp = await apiCall(node, "get", pipelinesUrl, { headers: headersGet });
             const pipelines = (pipelinesResp.data && pipelinesResp.data.pipelines) || [];
             const match = pipelines.find((p) => p.name === launchpadName) || pipelines[0];
             if (!match) throw new Error(`No pipeline found for ${launchpadName}`);
             const launchCfgUrl = `${baseUrl.replace(/\/$/, "")}/pipelines/${
               match.pipelineId
             }/launch?workspaceId=${workspaceId}`;
-            const launchResp = await axios.get(launchCfgUrl, { headers: headersGet });
+            const launchResp = await apiCall(node, "get", launchCfgUrl, { headers: headersGet });
             const lp = { ...launchResp.data.launch };
             if (lp.computeEnv && lp.computeEnv.id) {
               lp.computeEnvId = lp.computeEnv.id;
@@ -138,9 +126,10 @@ module.exports = function (RED) {
         if (sourceWorkspaceId != null) qs.append("sourceWorkspaceId", sourceWorkspaceId);
         if (qs.toString().length) postUrl += `?${qs.toString()}`;
 
-        msg._seqera_request = { method: "POST", url: postUrl, headers: buildHeaders(), body };
-
-        const postResp = await axios.post(postUrl, body, { headers: buildHeaders() });
+        const postResp = await apiCall(node, "post", postUrl, {
+          headers: { "Content-Type": "application/json" },
+          data: body,
+        });
         msg.payload = postResp.data;
         msg.workflowId = postResp.data.workflowId || (postResp.data.workflow && postResp.data.workflow.id);
         node.status({ fill: "yellow", shape: "ring", text: `submitted: ${formatDateTime()}` });
@@ -166,7 +155,7 @@ module.exports = function (RED) {
           try {
             const wfUrlBase = `${baseUrl.replace(/\/$/, "")}/workflow/${msg.workflowId}`;
             const wfUrl = workspaceId ? `${wfUrlBase}?workspaceId=${workspaceId}` : wfUrlBase;
-            const wfResp = await axios.get(wfUrl, { headers: buildHeaders() });
+            const wfResp = await apiCall(node, "get", wfUrl, { headers: { Accept: "application/json" } });
             const wfMsg = {
               ...msg,
               payload: wfResp.data,
@@ -193,10 +182,7 @@ module.exports = function (RED) {
             }
           } catch (err) {
             // Within a async polling function, so can't throw the exception directly
-            error_msg = err.response
-              ? { status: err.response.status, data: err.response.data }
-              : { message: err.message };
-            node.error({ "Error type": "Polling API error", error: error_msg }, msg);
+            node.error({ "Error type": "Polling API error", error: err.message }, msg);
             return;
           }
         };
@@ -206,13 +192,9 @@ module.exports = function (RED) {
 
         if (done) done();
       } catch (err) {
-        if (!err.api_call) err.api_call = "launch";
+        node.error({ "Error type": "Launch API error", error: err.message }, msg);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        msg._seqera_error = err.response
-          ? { status: err.response.status, data: err.response.data }
-          : { message: err.message };
-        send([null, null, msg]);
-        if (done) done({ "Error type": err.api_call, error: msg._seqera_error });
+        return;
       }
     });
   }

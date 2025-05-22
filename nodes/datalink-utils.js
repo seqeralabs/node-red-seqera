@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { apiCall } = require("./_utils");
 
 /**
  * Helper to evaluate a typed-input property value, supporting JSONata.
@@ -15,6 +16,36 @@ async function evalProp(RED, node, msg, value, type) {
     });
   }
   return RED.util.evaluateNodeProperty(value, type, node, msg);
+}
+
+/**
+ * Resolve a Seqera Platform Data Link by name. Returns an object containing
+ * the IDs and metadata needed by other helper functions.
+ */
+async function resolveDataLink(RED, node, msg, dataLinkName, { baseUrl, workspaceId = null } = {}) {
+  if (!dataLinkName) {
+    throw new Error("dataLinkName not provided");
+  }
+
+  const dlSearchQS = new URLSearchParams();
+  if (workspaceId != null) dlSearchQS.append("workspaceId", workspaceId);
+  dlSearchQS.append("pageSize", "2");
+  dlSearchQS.append("search", dataLinkName);
+  const searchUrl = `${baseUrl.replace(/\/$/, "")}/data-links/?${dlSearchQS.toString()}`;
+
+  const searchResp = await apiCall(node, "get", searchUrl, { headers: { Accept: "application/json" } });
+  const links = searchResp.data?.dataLinks || [];
+  if (!links.length) throw new Error(`Could not find Data Link '${dataLinkName}'`);
+  if (links.length !== 1) throw new Error(`Found more than one Data Link matching '${dataLinkName}'`);
+
+  const link = links[0];
+  return {
+    dataLinkId: link.id,
+    credentialsId: link.credentials?.[0]?.id,
+    resourceRef: link.resourceRef,
+    resourceType: link.type,
+    provider: link.provider,
+  };
 }
 
 /**
@@ -35,7 +66,6 @@ async function listDataLink(RED, node, msg = {}) {
   const maxResultsRaw = await evalProp(RED, node, msg, node.maxResultsProp, node.maxResultsPropType);
   const workspaceIdOv = await evalProp(RED, node, msg, node.workspaceIdProp, node.workspaceIdPropType);
   const baseUrlOv = await evalProp(RED, node, msg, node.baseUrlProp, node.baseUrlPropType);
-  const tokenOv = await evalProp(RED, node, msg, node.tokenProp, node.tokenPropType);
   const depthRaw = await evalProp(RED, node, msg, node.depthProp, node.depthPropType);
 
   if (!dataLinkName) {
@@ -48,34 +78,23 @@ async function listDataLink(RED, node, msg = {}) {
   const baseUrl = baseUrlOv || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
   const workspaceId = workspaceIdOv || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
 
-  // Helper to construct auth headers
-  const buildHeaders = () => {
-    const headers = { Accept: "application/json" };
-    const token = tokenOv || node.seqeraConfig?.credentials?.token || node.credentials?.token;
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    return headers;
-  };
+  // Build auth headers
+  const headersBase = { Accept: "application/json" };
+  const build = () => headersBase;
 
   /* -----------------------------------------------------------
    * 1) Resolve Data Link ID & credentials
    * --------------------------------------------------------- */
-  const dlSearchQS = new URLSearchParams();
-  if (workspaceId != null) dlSearchQS.append("workspaceId", workspaceId);
-  dlSearchQS.append("pageSize", "2");
-  dlSearchQS.append("search", dataLinkName);
-  const searchUrl = `${baseUrl.replace(/\/$/, "")}/data-links/?${dlSearchQS.toString()}`;
-  msg._seqera_datalink_search_request = { method: "GET", url: searchUrl, headers: buildHeaders() };
-
-  const searchResp = await axios.get(searchUrl, { headers: buildHeaders() });
-  const links = searchResp.data?.dataLinks || [];
-  if (!links.length) throw new Error(`Could not find Data Link '${dataLinkName}'`);
-  if (links.length !== 1) throw new Error(`Found more than one Data Link matching '${dataLinkName}'`);
-
-  const dataLinkId = links[0].id;
-  const credentialsId = links[0].credentials?.[0]?.id;
-  const resourceRef = links[0].resourceRef;
-  const resourceType = links[0].type;
-  const provider = links[0].provider;
+  const { dataLinkId, credentialsId, resourceRef, resourceType, provider } = await resolveDataLink(
+    RED,
+    node,
+    msg,
+    dataLinkName,
+    {
+      baseUrl,
+      workspaceId,
+    },
+  );
 
   /* -----------------------------------------------------------
    * 2) Recursive browse of paths (depth & pagination aware)
@@ -99,7 +118,7 @@ async function listDataLink(RED, node, msg = {}) {
       const qsStr = qs.toString();
       if (qsStr) url += `?${qsStr}`;
 
-      const resp = await axios.get(url, { headers: buildHeaders() });
+      const resp = await apiCall(node, "get", url, { headers: build() });
       const objects = Array.isArray(resp.data?.objects) ? resp.data.objects : [];
 
       if (objects.length) {
@@ -158,4 +177,5 @@ async function listDataLink(RED, node, msg = {}) {
 
 module.exports = {
   listDataLink,
+  resolveDataLink,
 };

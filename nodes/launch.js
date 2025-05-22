@@ -14,8 +14,6 @@ module.exports = function (RED) {
     node.workspaceIdPropType = config.workspaceIdType;
     node.sourceWorkspaceIdProp = config.sourceWorkspaceId;
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
-    node.tokenProp = config.token;
-    node.tokenPropType = config.tokenType;
 
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
@@ -23,6 +21,7 @@ module.exports = function (RED) {
     node.credentials = RED.nodes.getCredentials(node.id);
 
     const axios = require("axios");
+    const { apiCall } = require("./_utils");
 
     // Helper to format date as yyyy-mm-dd HH:MM:SS
     const formatDateTime = () => {
@@ -53,7 +52,6 @@ module.exports = function (RED) {
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
-      const tokenOverride = await evalProp(node.tokenProp, node.tokenPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -69,14 +67,8 @@ module.exports = function (RED) {
           )}/pipelines?workspaceId=${workspaceId}&max=50&offset=0&search=${encodeURIComponent(
             launchpadName,
           )}&visibility=all`;
-          const headersGet = { Accept: "application/json" };
-          const token =
-            tokenOverride ||
-            (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
-            (node.credentials && node.credentials.token);
-          if (token) headersGet["Authorization"] = `Bearer ${token}`;
 
-          const pipelinesResp = await axios.get(pipelinesUrl, { headers: headersGet });
+          const pipelinesResp = await apiCall(node, "get", pipelinesUrl, { headers: { Accept: "application/json" } });
           const pipelines = pipelinesResp.data?.pipelines || [];
           const match = pipelines.find((p) => p.name === launchpadName) || pipelines[0];
           if (!match) throw new Error(`No pipeline found for launchpadName '${launchpadName}'`);
@@ -84,7 +76,7 @@ module.exports = function (RED) {
           const launchCfgUrl = `${baseUrl.replace(/\/$/, "")}/pipelines/${
             match.pipelineId
           }/launch?workspaceId=${workspaceId}`;
-          const launchResp = await axios.get(launchCfgUrl, { headers: headersGet });
+          const launchResp = await apiCall(node, "get", launchCfgUrl, { headers: { Accept: "application/json" } });
           if (!launchResp.data || !launchResp.data.launch) throw new Error("Invalid launch config response");
 
           const lp = { ...launchResp.data.launch };
@@ -95,9 +87,6 @@ module.exports = function (RED) {
           body = { launch: lp };
         } catch (errFetch) {
           node.error(`Failed to resolve launchpad name '${launchpadName}': ${errFetch.message}`, msg);
-          msg._seqera_error = errFetch;
-          send(msg);
-          if (done) done(errFetch);
           return;
         }
       }
@@ -132,29 +121,18 @@ module.exports = function (RED) {
 
       // Headers
       const headers = { "Content-Type": "application/json" };
-      const tokenHeader =
-        tokenOverride ||
-        (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
-        (node.credentials && node.credentials.token);
-      if (tokenHeader) headers["Authorization"] = `Bearer ${tokenHeader}`;
-
-      msg._seqera_request = { method: "POST", url, headers, body };
 
       try {
-        const response = await axios.post(url, body, { headers });
+        const response = await apiCall(node, "post", url, { headers, data: body });
         msg.payload = response.data;
         msg.workflowId = response.data?.workflowId || response.data?.workflow?.id;
         node.status({ fill: "green", shape: "dot", text: `launched: ${formatDateTime()}` });
         send(msg);
         if (done) done();
       } catch (err) {
-        msg._seqera_error = err.response
-          ? { status: err.response.status, data: err.response.data }
-          : { message: err.message };
         node.error(`Seqera API request failed: ${err.message}\nRequest: POST ${url}`, msg);
         node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
-        send(msg);
-        if (done) done(err);
+        return;
       }
     });
   }

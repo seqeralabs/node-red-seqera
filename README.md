@@ -100,7 +100,6 @@ Fired once when the upload completes successfully.
 
 - `msg.payload`: Upload response from the API
 - `msg.datasetId`: The ID of the created dataset
-- `msg._seqera_request`: Details of the dataset creation request (for debugging)
 - `msg._seqera_upload_request`: Details of the file-upload request (for debugging)
 
 ## Launch and Monitor a Run
@@ -129,8 +128,6 @@ Each message contains:
 
 - `msg.payload`: The workflow details from the API
 - `msg.workflowId`: The ID of the workflow
-- `msg._seqera_request`: The request details sent to the API (when error occurs)
-- `msg._seqera_error`: Error details (when error occurs)
 
 ## List Data Link Files
 
@@ -190,8 +187,6 @@ Alternative input:
 
 - `msg.payload`: The launch response from the API
 - `msg.workflowId`: The ID of the launched workflow
-- `msg._seqera_request`: The request details sent to the API (when error occurs)
-- `msg._seqera_error`: Any error details if the request fails
 
 ## Workflow
 
@@ -211,8 +206,6 @@ Each message contains:
 
 - `msg.payload`: The workflow details from the API
 - `msg.workflowId`: The ID of the workflow
-- `msg._seqera_request`: The request details sent to the API (when error occurs)
-- `msg._seqera_error`: Error details (when error occurs)
 
 # License
 

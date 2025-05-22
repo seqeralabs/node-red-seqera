@@ -15,8 +15,6 @@ module.exports = function (RED) {
     node.baseUrlPropType = config.baseUrlType;
     node.workspaceIdProp = config.workspaceId;
     node.workspaceIdPropType = config.workspaceIdType;
-    node.tokenProp = config.token;
-    node.tokenPropType = config.tokenType;
 
     // Reference to the shared Seqera config node
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
@@ -25,6 +23,7 @@ module.exports = function (RED) {
 
     const axios = require("axios");
     const FormData = require("form-data");
+    const { apiCall } = require("./_utils");
 
     // Helper to format date as yyyy-mm-dd HH:MM:SS
     const formatDateTime = () => {
@@ -53,7 +52,6 @@ module.exports = function (RED) {
       const description = await evalProp(node.descriptionProp, node.descriptionPropType);
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
-      const tokenOverride = await evalProp(node.tokenProp, node.tokenPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -79,17 +77,6 @@ module.exports = function (RED) {
         return;
       }
 
-      // Helper: build headers with auth token + additional
-      const buildHeaders = (extra = {}) => {
-        const headers = { ...extra };
-        const token =
-          tokenOverride ||
-          (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
-          (node.credentials && node.credentials.token);
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        return headers;
-      };
-
       try {
         let apiStep = "create";
         node.status({ fill: "blue", shape: "ring", text: `creating: ${formatDateTime()}` });
@@ -101,10 +88,10 @@ module.exports = function (RED) {
         const createBody = { name: datasetName };
         if (description != null && description !== "") createBody.description = description;
 
-        const createHeaders = buildHeaders({ "Content-Type": "application/json" });
-        msg._seqera_request = { method: "POST", url: createUrl, headers: createHeaders, body: createBody };
-
-        const createResp = await axios.post(createUrl, createBody, { headers: createHeaders });
+        const createResp = await apiCall(node, "post", createUrl, {
+          headers: { "Content-Type": "application/json" },
+          data: createBody,
+        });
         const datasetId = createResp.data?.dataset?.id || createResp.data?.datasetId || createResp.data?.id || null;
 
         if (!datasetId) {
@@ -128,10 +115,10 @@ module.exports = function (RED) {
         const mime = node.fileType === "tsv" ? "text/tab-separated-values" : "text/csv";
         form.append("file", buffer, { filename: `${datasetName}.${node.fileType}`, contentType: mime });
 
-        const uploadHeaders = buildHeaders(form.getHeaders());
+        const uploadHeaders = form.getHeaders();
         msg._seqera_upload_request = { method: "POST", url: uploadUrl, headers: uploadHeaders };
 
-        const uploadResp = await axios.post(uploadUrl, form, { headers: uploadHeaders });
+        const uploadResp = await apiCall(node, "post", uploadUrl, { headers: uploadHeaders, data: form });
 
         msg.payload = uploadResp.data;
         msg.datasetId = datasetId;
@@ -142,11 +129,8 @@ module.exports = function (RED) {
         if (!err.api_call)
           err.api_call = err.config && err.config.url && /upload/.test(err.config.url) ? "upload" : "create";
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        // Build error details
-        msg._seqera_error = err.response
-          ? { status: err.response.status, data: err.response.data }
-          : { message: err.message };
-        if (done) done({ "Error type": err.api_call, error: msg._seqera_error });
+        node.error(err);
+        return;
       }
     });
   }

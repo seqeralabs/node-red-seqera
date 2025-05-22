@@ -17,6 +17,7 @@ module.exports = function (RED) {
     node.credentials = RED.nodes.getCredentials(node.id);
 
     const axios = require("axios");
+    const { apiCall } = require("./_utils");
 
     // Helper to format date as yyyy-mm-dd HH:MM:SS
     const formatDateTime = () => {
@@ -46,14 +47,8 @@ module.exports = function (RED) {
       let url = `${node.defaultBaseUrl.replace(/\/$/, "")}/workflow/${workflowId}`;
       if (workspaceId) url += `?workspaceId=${workspaceId}`;
 
-      const headers = {};
-      const token =
-        (node.seqeraConfig && node.seqeraConfig.credentials && node.seqeraConfig.credentials.token) ||
-        (node.credentials && node.credentials.token);
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
       try {
-        const response = await axios.get(url, { headers });
+        const response = await apiCall(node, "get", url);
         msg.payload = response.data;
         msg.workflowId = response.data?.workflow?.id || workflowId;
 
@@ -79,14 +74,9 @@ module.exports = function (RED) {
 
         if (done) done();
       } catch (err) {
-        msg._seqera_request = { method: "GET", url, headers };
-        msg._seqera_error = err.response
-          ? { status: err.response.status, data: err.response.data }
-          : { message: err.message };
         node.error(`Seqera API request failed: ${err.message}\nRequest: GET ${url}`, msg);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        send([null, msg]);
-        if (done) done(err);
+        return;
       }
     });
   }
