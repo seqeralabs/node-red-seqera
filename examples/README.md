@@ -59,12 +59,14 @@ If all goes well, you'll get messages in Slack that look like this:
 
 <img alt="Slack webhook" src="img/slack_message.png" width=500>
 
+Clicking "Open link" will take you directly to a Studio running VS Code, with your pipeline's work directory mounted and ready to debug.
+
 ### Setup
 
 This workflow needs some setup:
 
 - All Seqera nodes need a Seqera configuration to be assigned
-- Data Links, Pipelines, and Compute Environments need to be entered
+- Data Links, Pipelines, and Compute Environments need to be added to nodes
 - Slack workflow needs to be created and webook URL entered.
 
 To make the automated Slack message, first you need to create a Slack Workflow.
