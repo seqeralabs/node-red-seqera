@@ -36,3 +36,32 @@ Some configuration is needed to make this flow work:
 - _Poll files_ and _List files_ need to be configured with the name of a Data Link within Platform
 - _Create dataset_ needs a dataset name to be set somehow (dynamically to avoid name clashes)
 - _Launch workflow_ needs configuring with the name of a Launchpad pipeline, and parameters.
+
+## Slack webhook
+
+`slack_webook.json`
+
+![Slack webhook](img/slack_webhook.png)
+
+This is a very simple workflow to show how workflow monitoring can be hooked up to outgoing webhook URLs.
+In this case, we use a Slack webhook, which can be easily created using Slack Workflows.
+
+Workflow success and failure will create a message in Slack with the workflow name, run name, status and a button that links to the Platform run details page.
+
+This workflow can easily be extended to use different behaviour for successful and failing workflows.
+
+Some configuration is needed to make this flow work:
+
+- All Seqera nodes need a Seqera configuration to be assigned
+- You'll need to create the external webhook (see below)
+
+#### Creating the webhook in Slack
+
+To make the automated Slack message, first you need to create a Slack Workflow.
+Selelct _"From a webhook"_ as the trigger:
+
+![Create Slack workflow](img/slack_workflow_create.png)
+
+Then configure with some input variables and a button, and copy the webhook URL. You'll need this later!
+
+![Slack workflow](img/slack_workflow.png)
