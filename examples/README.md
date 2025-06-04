@@ -30,6 +30,8 @@ This is passed to the "Create Dataset" node, which saves it as a Seqera Platform
 
 Finally, this is passed to the _Launch workflow_ node, which fires off a pipeline run.
 
+### Setup
+
 Some configuration is needed to make this flow work:
 
 - All Seqera nodes need a Seqera configuration to be assigned
@@ -37,25 +39,33 @@ Some configuration is needed to make this flow work:
 - _Create dataset_ needs a dataset name to be set somehow (dynamically to avoid name clashes)
 - _Launch workflow_ needs configuring with the name of a Launchpad pipeline, and parameters.
 
-## Slack webhook
+## Pipeline → Create Studio → Slack webhook
 
-`slack_webook.json`
+`pipeline_studios_slack.json`
 
-![Slack webhook](img/slack_webhook.png)
+![Slack webhook](img/pipeline_studios_slack.png)
 
-This is a very simple workflow to show how workflow monitoring can be hooked up to outgoing webhook URLs.
-In this case, we use a Slack webhook, which can be easily created using Slack Workflows.
+This workflow has three parts to it:
 
-Workflow success and failure will create a message in Slack with the workflow name, run name, status and a button that links to the Platform run details page.
+1. Launch and monitor a workflow
+   - Just a manual click trigger, in reality you should set this up to some other automation
+2. On failure, create a Seqera Studio
+   - Create + start a Studio with VSCode and the Data Link mounted
+3. Send a message to a Slack workflow webhook
+   - Includes workflow status and a button that links to either the workflow run details (on success) or the new Seqera Studios for debugging (on failure)
+   - Could equally be any other webhook
 
-This workflow can easily be extended to use different behaviour for successful and failing workflows.
+If all goes well, you'll get messages in Slack that look like this:
 
-Some configuration is needed to make this flow work:
+<img alt="Slack webhook" src="img/slack_message.png" width=500>
+
+### Setup
+
+This workflow needs some setup:
 
 - All Seqera nodes need a Seqera configuration to be assigned
-- You'll need to create the external webhook (see below)
-
-#### Creating the webhook in Slack
+- Data Links, Pipelines, and Compute Environments need to be entered
+- Slack workflow needs to be created and webook URL entered.
 
 To make the automated Slack message, first you need to create a Slack Workflow.
 Selelct _"From a webhook"_ as the trigger:

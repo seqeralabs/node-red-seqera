@@ -1,0 +1,217 @@
+[
+  {
+    "id": "8128f09c385d33c1",
+    "type": "tab",
+    "label": "Studio on run fail + Slack webhook",
+    "disabled": false,
+    "info": "This workflow has three parts to it:\n\n1. Launch and monitor a workflow\n    - Just a manual click trigger, in reality you should set this up to some other automation\n2. On failure, create a Seqera Studio\n    - Create + start a Studio with VSCode and the Data Link mounted\n3. Send a message to a Slack workflow webhook\n    - Includes workflow status and a button that links to either the workflow run details (on success) or the new Seqera Studios for debugging (on failure)\n\nThis workflow needs some setup:\n\n- All Seqera nodes need a Seqera configuration to be assigned\n- Data Links, Pipelines, and Compute Environments need to be entered\n- Slack workflow needs to be created and webook URL entered.",
+    "env": []
+  },
+  {
+    "id": "719cb7fb45ffb7df",
+    "type": "seqera-launch-monitor",
+    "z": "8128f09c385d33c1",
+    "name": "",
+    "seqera": "",
+    "poll": "5",
+    "pollType": "num",
+    "launchpadName": "",
+    "launchpadNameType": "str",
+    "paramsKey": "{}",
+    "paramsKeyType": "json",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "sourceWorkspaceId": "",
+    "sourceWorkspaceIdType": "str",
+    "x": 470,
+    "y": 200,
+    "wires": [[], ["fb91ea2c0c8934ec"], ["903ba22cbf3b351b"]]
+  },
+  {
+    "id": "70853e9fffdd6f6f",
+    "type": "http request",
+    "z": "8128f09c385d33c1",
+    "name": "Slack webhook",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "body",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 1280,
+    "y": 200,
+    "wires": [[]]
+  },
+  {
+    "id": "fb91ea2c0c8934ec",
+    "type": "change",
+    "z": "8128f09c385d33c1",
+    "name": "Set webhook payload",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "{\t    \"msg\": \"Workflow \" & payload.workflow.projectName & \" (\" & payload.workflow.runName & \"): Status \" & payload.workflow.status & \"\\n\\n Click the button below to view the workflow:\",\t    \"button_link\": \"https://cloud.seqera.io/orgs/\" & payload.orgName & \"/workspaces/\" & payload.workspaceName & \"/watch/\" & payload.workflow.id\t}",
+        "tot": "jsonata"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 1060,
+    "y": 180,
+    "wires": [["70853e9fffdd6f6f"]]
+  },
+  {
+    "id": "bc8ba3dbe1486792",
+    "type": "inject",
+    "z": "8128f09c385d33c1",
+    "name": "",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 300,
+    "y": 200,
+    "wires": [["719cb7fb45ffb7df"]]
+  },
+  {
+    "id": "55ec0476af57d9a2",
+    "type": "change",
+    "z": "8128f09c385d33c1",
+    "name": "Set webook payload",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "{\t    \"msg\": \"Workflow \" & $flowContext(\"workflow_output.workflow.projectName\") & \" (\" & $flowContext(\"workflow_output.workflow.runName\") & \"): Status \" & $flowContext(\"workflow_output.workflow.status\") & \"\\n\\n Click the button below to open a Seqera Studios session to debug:\",\t    \"button_link\": payload.studio.studioUrl\t}",
+        "tot": "jsonata"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 1060,
+    "y": 220,
+    "wires": [["70853e9fffdd6f6f"]]
+  },
+  {
+    "id": "d8cc5db1ccd71d30",
+    "type": "comment",
+    "z": "8128f09c385d33c1",
+    "name": "Webhook setup",
+    "info": "To make the automated Slack message, first you need to create a Slack Workflow.\nSelelct _\"From a webhook\"_ as the trigger.\n\nThen configure with some input variables and a button, and copy the webhook URL.\n\nPaste the webhook URL into the node below, using a `POST` request.",
+    "x": 1280,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "caaf971c4f73d1ba",
+    "type": "seqera-studios-create",
+    "z": "8128f09c385d33c1",
+    "name": "",
+    "seqera": "",
+    "studioName": "\"debug-pipeline-run-\" & payload.workflow.id",
+    "studioNameType": "jsonata",
+    "description": "",
+    "descriptionType": "str",
+    "containerUri": "public.cr.seqera.io/platform/data-studio-vscode:1.93.1-0.8",
+    "containerUriType": "str",
+    "computeEnvId": "",
+    "computeEnvIdType": "str",
+    "mountData": [],
+    "mountDataType": "str",
+    "cpu": "2",
+    "cpuType": "num",
+    "memory": "8192",
+    "memoryType": "num",
+    "gpu": "0",
+    "gpuType": "num",
+    "condaEnvironment": "",
+    "condaEnvironmentType": "str",
+    "lifespanHours": "",
+    "lifespanHoursType": "num",
+    "isPrivate": false,
+    "isPrivateType": "bool",
+    "spot": false,
+    "spotType": "bool",
+    "autoStart": true,
+    "autoStartType": "bool",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "x": 860,
+    "y": 220,
+    "wires": [["55ec0476af57d9a2"]]
+  },
+  {
+    "id": "903ba22cbf3b351b",
+    "type": "change",
+    "z": "8128f09c385d33c1",
+    "name": "Save payload",
+    "rules": [
+      {
+        "t": "set",
+        "p": "workflow_output",
+        "pt": "flow",
+        "to": "payload",
+        "tot": "msg",
+        "dc": true
+      },
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "payload",
+        "tot": "msg",
+        "dc": true
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 680,
+    "y": 220,
+    "wires": [["caaf971c4f73d1ba"]]
+  },
+  {
+    "id": "e4a12f0fc0eb5944",
+    "type": "comment",
+    "z": "8128f09c385d33c1",
+    "name": "Manual trigger",
+    "info": "This is a manual trigger to start the workflow (click the blue square).\nIn reality, you will trigger this workflow by some other automation flow.",
+    "x": 290,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "31b146c0186d0668",
+    "type": "seqera-config",
+    "baseUrl": "https://api.cloud.seqera.io",
+    "workspaceId": "219829050455763"
+  }
+]

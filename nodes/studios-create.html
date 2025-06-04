@@ -67,14 +67,14 @@
 
 <!-- prettier-ignore -->
 <script type="text/markdown" data-help-name="seqera-studios-create">
-Creates a new Data Studio in Seqera Platform.
+Creates a new Studio in Seqera Platform.
 
 ### Inputs
 
 : studioName (string) : Name of the studio.
 : containerUri (string) : Container URI of the tool image.
 : computeEnvId (string) : Compute environment ID to run in.
-: mountData (string | array) : One or more Data Link names to mount. Comma or newline separated when string.
+: mountData (array) : One or more Data Link names to mount.
 : cpu (number) : Number of CPUs (default 2).
 : memory (number) : Memory (MB) (default 8192).
 : gpu (number) : Number of GPUs (default 0).

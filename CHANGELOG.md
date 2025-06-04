@@ -2,7 +2,7 @@
 
 ## [0.2.3] - 2025-05-22
 
-- New nodes for Data Studios:
+- New nodes for Seqera Studios:
   - `seqera-studios-create`
 - Set various node inputs to "required"
 - Improved common library of functions for calling API endpoints
