@@ -35,7 +35,7 @@ RUN npm install --unsafe-perm --no-update-notifier --no-fund --only=production
 COPY ./studios-template/settings.js /node-red-data/settings.js
 COPY ./studios-template/node-red-seqera.css /node-red-data/node-red-seqera.css
 COPY ./studios-template/node-red-seqera.svg /node-red-data/node-red-seqera.svg
-# COPY ./examples/create_launch_monitor.json /node-red-data/flows.json
+COPY ./studios-template/flows.json /node-red-data/flows.json
 
 # Default command to run node-red
 ENV LAST_MODIFIED="2025-05-16-01:55"
