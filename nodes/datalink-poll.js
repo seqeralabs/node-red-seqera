@@ -118,7 +118,7 @@ module.exports = function (RED) {
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
         node.send([msgAll, msgNew]);
       } catch (err) {
-        node.error(`Seqera datalink poll failed: ${err.message}`, errMsg);
+        node.error(`Seqera datalink poll failed: ${err.message}`);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
       }
     };
