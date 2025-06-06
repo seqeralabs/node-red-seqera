@@ -6,7 +6,7 @@
 </picture>
 </h1>
 
-A Node-RED node for interacting with the Seqera Platform API.
+A set of Node-RED nodes for interacting with Seqera Platform.
 
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
@@ -29,6 +29,9 @@ Also [Launch](#launch) and [Workflow](#workflow) nodes for more custom workflows
 - Link triggers and actions to build automation logic using a graphical builder
 - Chain workflows, launching downstream automatically
 - (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
+
+This package includes several example flows which you can import and repurpose.
+See the [example docs](./docs/README.md) for more information.
 
 # Installation
 
