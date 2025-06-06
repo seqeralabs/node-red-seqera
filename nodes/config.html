@@ -1,15 +1,18 @@
 <script type="text/html" data-template-name="seqera-config">
   <div class="form-row">
-    <label for="node-config-input-baseUrl"><i class="icon-globe"></i> Base URL</label>
+    <label for="node-config-input-baseUrl">Base URL</label>
     <input type="text" id="node-config-input-baseUrl" placeholder="https://api.cloud.seqera.io" />
   </div>
   <div class="form-row">
-    <label for="node-config-input-workspaceId"><i class="icon-tasks"></i> Workspace&nbsp;ID</label>
+    <label for="node-config-input-workspaceId">Workspace&nbsp;ID</label>
     <input type="number" id="node-config-input-workspaceId" placeholder="(optional)" />
   </div>
   <div class="form-row">
     <label for="node-config-input-token">
-      <i class="icon-lock"></i> API Token (<a href="https://cloud.seqera.io/tokens" target="_blank">get here</a>)
+      <a href="https://cloud.seqera.io/tokens" target="_blank" style="color: var(--red-ui-text-color-link)">
+        API Token
+        <i class="fa fa-external-link"></i>
+      </a>
     </label>
     <input type="password" id="node-config-input-token" placeholder="Bearer token" autocomplete="off" />
   </div>
