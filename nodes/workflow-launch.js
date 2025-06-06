@@ -1,5 +1,5 @@
 module.exports = function (RED) {
-  function SeqeraLaunchNode(config) {
+  function SeqeraWorkflowLaunchNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
 
@@ -137,7 +137,7 @@ module.exports = function (RED) {
     });
   }
 
-  RED.nodes.registerType("seqera-launch", SeqeraLaunchNode, {
+  RED.nodes.registerType("seqera-workflow-launch", SeqeraWorkflowLaunchNode, {
     credentials: { token: { type: "password" } },
     defaults: {
       name: { value: "" },

@@ -1,11 +1,7 @@
-<script type="text/html" data-template-name="seqera-launch-monitor">
+<script type="text/html" data-template-name="seqera-workflow-launch">
   <div class="form-row">
     <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
-  </div>
-  <div class="form-row">
-    <label for="node-input-poll"><i class="fa fa-clock-o"></i> Poll every (s)</label>
-    <input type="text" id="node-input-poll" />
   </div>
   <div class="form-row">
     <label for="node-input-launchpadName"><i class="fa fa-rocket"></i> Launchpad</label>
@@ -30,65 +26,52 @@
 </script>
 
 <!-- prettier-ignore -->
-<script type="text/markdown" data-help-name="seqera-launch-monitor">
-Launches a workflow and then periodically checks its status until completion.
+<script type="text/markdown" data-help-name="seqera-workflow-launch">
+Launches a workflow using the Seqera Platform API.
 
 ### Inputs
 
 : launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
 : params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
-: pollInterval (number) : How frequently to check workflow status, in seconds (default `5`).
 : workspaceId (string) : Override the workspace ID from the config node.
 : sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
 : body (object) : A full launch request body (alternative to using launchpadName).
 
 ### Outputs
 
-1. Status updates (active workflows)
-: payload (object) : The workflow details from the API, sent on every status poll while workflow is active.
-: workflowId (string) : The ID of the workflow.
-
-2. Success
-: payload (object) : The workflow details from the API, sent once when workflow completes successfully.
-: workflowId (string) : The ID of the workflow.
-
-3. Error
-: payload (object) : The workflow details from the API, sent once when workflow fails or is cancelled.
-: workflowId (string) : The ID of the workflow.
+1. Standard output
+: payload (object) : The launch response from the API.
+: workflowId (string) : The ID of the launched workflow.
 
 ### Details
 
-This node combines the functionality of the "Launch" and "Check Workflow" nodes:
+This node launches a workflow using either:
 
-1. First, it launches a workflow using the provided launchpad name or request body
-2. Then it automatically polls for status updates at the specified interval
-3. It sends status updates to the appropriate output based on workflow state
+1. A launchpad name - the node will automatically look up the launchpad configuration
+2. A full launch request body provided in `msg.body`
 
-This is ideal for creating complete automation flows that take action when workflows complete.
+Workflow parameters can be provided as a JSON object and will be merged with the default parameters from the launchpad.
 
 ### References
 
-- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching and monitoring workflows
+- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching workflows
 </script>
 
 <script type="text/javascript">
-  RED.nodes.registerType("seqera-launch-monitor", {
+  RED.nodes.registerType("seqera-workflow-launch", {
     category: "seqera",
     color: "#A9A1C6",
     inputs: 1,
-    outputs: 3,
-    icon: "seqera.svg",
+    outputs: 1,
+    icon: "icons/pipeline.svg",
     align: "left",
-    paletteLabel: "Launch + monitor",
+    paletteLabel: "Launch wf",
     label: function () {
-      return this.name || "Launch + monitor";
+      return this.name || "Launch workflow";
     },
-    outputLabels: ["status", "success", "error"],
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
-      poll: { value: 5 },
-      pollType: { value: "num" },
       launchpadName: { value: "", required: true },
       launchpadNameType: { value: "str" },
       paramsKey: { value: "{}" },
@@ -104,14 +87,6 @@ This is ideal for creating complete automation flows that take action when workf
         $(id).typedInput("value", val);
         $(id).typedInput("type", type);
       }
-
-      // Special case for poll interval - default to num type
-      $("#node-input-poll").typedInput({
-        default: "num",
-        types: ["num", "msg", "flow", "global", "env", "jsonata"],
-      });
-      $("#node-input-poll").typedInput("value", this.poll || 5);
-      $("#node-input-poll").typedInput("type", this.pollType || "num");
 
       // Special case for params - default to json type
       $("#node-input-paramsKey").typedInput({
@@ -130,7 +105,6 @@ This is ideal for creating complete automation flows that take action when workf
         this[prop] = $(id).typedInput("value");
         this[propType] = $(id).typedInput("type");
       }
-      save.call(this, "#node-input-poll", "poll", "pollType");
       save.call(this, "#node-input-launchpadName", "launchpadName", "launchpadNameType");
       save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");

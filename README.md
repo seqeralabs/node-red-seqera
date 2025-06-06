@@ -17,11 +17,11 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 </picture>
 
 - [Create Dataset](#create-dataset)
-- [Launch and Monitor a Run](#launch-and-monitor-a-run)
+- [Monitor a Run](#monitor-a-run)
 - [List Files from Data Explorer](#list-data-link-files)
 - [Poll Data Link Files](#poll-data-link-files)
 
-Also [Launch](#launch) and [Workflow](#workflow) nodes for more custom workflows where polling workflow status is not required and it's helpful to have full control.
+Also [Launch](#launch) and [Monitor](#monitor-a-run) nodes for automation tasks, giving you full control over workflow execution and tracking.
 
 # Typical Use cases
 
@@ -105,27 +105,25 @@ Fired once when the upload completes successfully.
 - `msg.datasetId`: The ID of the created dataset
 - `msg._seqera_upload_request`: Details of the file-upload request (for debugging)
 
-## Launch and Monitor a Run
+## Monitor a Run
 
-Launches a workflow and then periodically checks its status until completion.
+Checks the status of an existing workflow in Seqera Platform.
 
 ### Inputs
 
-- `launchpadName`: The Human-readable name of a pipeline in the launchpad to use
-- `params`: JSON object containing parameters to merge with the launchpad's default parameters
-- `pollInterval`: How frequently to check workflow status (in seconds)
-- `workspaceId`: Override the workspace ID from the \* config node
-- `sourceWorkspaceId`: The source workspace ID (if a shared workflow and different to workspaceId)
+- `workflowId`: The ID of the workflow run to query (defaults to `msg.workflowId`).
+- `workspaceId`: Override the workspace ID from the \* config node.
 
-Alternative input:
+### Configuration
 
-- `msg.body`: A full launch request body (alternative to using launchpadName)
+- `keepPolling` (boolean): If **true** (default) the node will continue polling the workflow status until it reaches a terminal state.
+- `pollInterval` (number): How frequently to poll when _keepPolling_ is enabled (in seconds, default **5**).
 
 ### Outputs (three outputs)
 
-1. Sent on every status poll (only when workflow is active)
-2. Sent once when the workflow completes successfully
-3. Sent once when the workflow fails, is cancelled, or any non-success terminal state
+1. Sent on every status poll while the workflow is active (submitted / running / pending).
+2. Sent once when the workflow completes successfully.
+3. Sent once when the workflow fails, is cancelled, or any non-success terminal state.
 
 Each message contains:
 
@@ -190,25 +188,6 @@ Alternative input:
 
 - `msg.payload`: The launch response from the API
 - `msg.workflowId`: The ID of the launched workflow
-
-## Workflow
-
-Queries the status of a workflow.
-
-### Inputs
-
-- **workflowId**: The ID of the workflow to query
-- **workspaceId**: Override the workspace ID from the \* config node
-
-### Outputs (two outputs)
-
-1. Only receives messages when the workflow is active (submitted, running, or pending)
-2. Receives messages when the workflow has completed (success or failure) OR when an API error occurs
-
-Each message contains:
-
-- `msg.payload`: The workflow details from the API
-- `msg.workflowId`: The ID of the workflow
 
 # License
 

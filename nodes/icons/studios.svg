@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="20"
+   height="20"
+   viewBox="0 0 19.999999 19.999999"
+   fit=""
+   preserveAspectRatio="xMidYMid"
+   focusable="false"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="studios.svg"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="16.857143"
+     inkscape:cx="10.055085"
+     inkscape:cy="9.6991525"
+     inkscape:window-width="1312"
+     inkscape:window-height="682"
+     inkscape:window-x="387"
+     inkscape:window-y="294"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1" />
+  <g
+     id="Studios"
+     transform="translate(3.0847458,2.6694915)"
+     style="fill:#ffffff">
+    <path
+       id="Ellipse 5 (Stroke)"
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="m 11.3333,3.33341 c 0.3681,0 0.6666,-0.29847 0.6666,-0.66666 0,-0.36819 -0.2985,-0.66667 -0.6666,-0.66667 -0.3682,0 -0.6667,0.29848 -0.6667,0.66667 0,0.36819 0.2985,0.66666 0.6667,0.66666 z m 0,1.33334 c 1.1045,0 2,-0.89543 2,-2 0,-1.10457 -0.8955,-2.000002 -2,-2.000002 -1.1046,0 -2.00005,0.895432 -2.00005,2.000002 0,1.10457 0.89545,2 2.00005,2 z"
+       fill="currentColor"
+       style="fill:#ffffff" />
+    <path
+       id="Ellipse 6 (Stroke)"
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="m 4.66663,5.33341 c 0.36819,0 0.66666,-0.29847 0.66666,-0.66666 0,-0.36819 -0.29847,-0.66667 -0.66666,-0.66667 -0.36819,0 -0.66667,0.29848 -0.66667,0.66667 0,0.36819 0.29848,0.66666 0.66667,0.66666 z m 0,1.33334 c 1.10457,0 2,-0.89543 2,-2 0,-1.10457 -0.89543,-2 -2,-2 -1.10457,0 -2,0.89543 -2,2 0,1.10457 0.89543,2 2,2 z"
+       fill="currentColor"
+       style="fill:#ffffff" />
+    <path
+       id="Ellipse 7 (Stroke)"
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="m 8.66669,9.33341 c 0.36819,0 0.66666,-0.29847 0.66666,-0.66666 0,-0.36819 -0.29847,-0.66667 -0.66666,-0.66667 -0.36819,0 -0.66667,0.29848 -0.66667,0.66667 0,0.36819 0.29848,0.66666 0.66667,0.66666 z m 0,1.33329 c 1.10457,0 2.00001,-0.89538 2.00001,-1.99995 0,-1.10457 -0.89544,-2 -2.00001,-2 -1.10457,0 -2,0.89543 -2,2 0,1.10457 0.89543,1.99995 2,1.99995 z"
+       fill="currentColor"
+       style="fill:#ffffff" />
+    <path
+       id="Line 26 (Stroke)"
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="M 4.98679,6.01623 3.30435,11.5281 2.0291,11.1389 3.71154,5.62697 Z"
+       fill="currentColor"
+       style="fill:#ffffff" />
+    <path
+       id="Line 27 (Stroke)"
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="M 11.498,3.93756 9.86838,7.60423 8.64996,7.06271 10.2796,3.39605 Z"
+       fill="currentColor"
+       style="fill:#ffffff" />
+    <path
+       id="Line 28 (Stroke)"
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="M 7.20799,8.15061 4.87465,5.93849 5.79199,4.97089 8.12533,7.183 Z"
+       fill="currentColor"
+       style="fill:#ffffff" />
+    <path
+       id="Vector 63 (Stroke)"
+       fill-rule="evenodd"
+       clip-rule="evenodd"
+       d="M 0,13.3334 V 0.666748 H 1.33333 V 12.6667 H 13.3333 v 1.3334 H 0.666667 C 0.298477,14.0001 0,13.7016 0,13.3334 Z"
+       fill="currentColor"
+       style="fill:#ffffff" />
+  </g>
+</svg>

@@ -30,10 +30,9 @@
   "node-red": {
     "version": ">=2.0.0",
     "nodes": {
-      "seqera-workflow": "nodes/workflow.js",
       "seqera-config": "nodes/config.js",
-      "seqera-launch": "nodes/launch.js",
-      "seqera-launch-monitor": "nodes/launch-monitor.js",
+      "seqera-workflow-launch": "nodes/workflow-launch.js",
+      "seqera-workflow-monitor": "nodes/workflow-monitor.js",
       "seqera-dataset-create": "nodes/dataset-create.js",
       "seqera-datalink-list": "nodes/datalink-list.js",
       "seqera-datalink-poll": "nodes/datalink-poll.js",
