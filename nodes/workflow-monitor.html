@@ -18,8 +18,13 @@
     <input type="checkbox" id="node-input-keepPolling" style="margin-top: 0; display:inline-block; width:auto;" />
   </div>
   <div class="form-row" id="node-poll-row">
-    <label for="node-input-poll"><i class="fa fa-clock-o"></i> Poll every (s)</label>
-    <input type="text" id="node-input-poll" />
+    <label for="node-input-poll"><i class="fa fa-clock-o"></i> Poll every</label>
+    <input type="text" id="node-input-poll" style="text-align:end; width:50px !important" />
+    <select id="node-input-pollUnits" style="width:120px !important">
+      <option value="seconds">Seconds</option>
+      <option value="minutes">Minutes</option>
+      <option value="hours">Hours</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
@@ -39,7 +44,7 @@ Monitors the status of an existing workflow in Seqera Platform.
 ### Configuration
 
 : Keep polling status (boolean) : If enabled (default), the node will poll the workflow status until it reaches a terminal state. If disabled, the node will query the status once and return immediately.
-: Poll every (seconds) : How frequently to poll when *Keep polling status* is enabled (default `5`).
+: Poll every (string) : How frequently to poll when *Keep polling status* is enabled (default `5 seconds`). Can be configured in seconds, minutes, or hours.
 
 ### Outputs
 
@@ -88,7 +93,7 @@ If *Keep polling status* is disabled the node performs a single status check and
       workspaceIdType: { value: "str" },
       keepPolling: { value: true },
       poll: { value: 5 },
-      pollType: { value: "num" },
+      pollUnits: { value: "seconds" },
     },
     oneditprepare: function () {
       function ti(id, val, type) {
@@ -101,10 +106,9 @@ If *Keep polling status* is disabled the node performs a single status check and
       ti("#node-input-workflowId", this.workflowId || "workflowId", this.workflowIdType || "msg");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
 
-      // Poll interval – default to num
-      $("#node-input-poll").typedInput({ default: "num", types: ["num", "msg", "flow", "global", "env", "jsonata"] });
-      $("#node-input-poll").typedInput("value", this.poll || 5);
-      $("#node-input-poll").typedInput("type", this.pollType || "num");
+      // Poll interval – simple number input
+      $("#node-input-poll").val(this.poll || 5);
+      $("#node-input-pollUnits").val(this.pollUnits || "seconds");
 
       // Keep polling checkbox
       const keepPolling = this.keepPolling !== undefined ? this.keepPolling : true;
@@ -128,7 +132,10 @@ If *Keep polling status* is disabled the node performs a single status check and
       }
       save.call(this, "#node-input-workflowId", "workflowId", "workflowIdType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
-      save.call(this, "#node-input-poll", "poll", "pollType");
+
+      // Save poll interval and units
+      this.poll = $("#node-input-poll").val();
+      this.pollUnits = $("#node-input-pollUnits").val();
 
       // Save keep polling checkbox state
       this.keepPolling = $("#node-input-keepPolling").is(":checked");

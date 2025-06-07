@@ -12,7 +12,13 @@
   <!-- Polling specific -->
   <div class="form-row">
     <label for="node-input-pollFrequency"><i class="fa fa-clock-o"></i> Poll frequency</label>
-    <input type="text" id="node-input-pollFrequency" placeholder="SS | MM:SS | HH:MM:SS | DD-HH:MM:SS" />
+    <input type="text" id="node-input-pollFrequency" style="text-align:end; width:50px !important" />
+    <select id="node-input-pollUnits" style="width:120px !important">
+      <option value="seconds">Seconds</option>
+      <option value="minutes">Minutes</option>
+      <option value="hours">Hours</option>
+      <option value="days">Days</option>
+    </select>
   </div>
 
   <!-- Data link parameters (same as list node) -->
@@ -60,7 +66,7 @@ Polls a Seqera Platform Data Explorer link at a fixed interval.
 
 ### Inputs
 
-: pollFrequency (string) : Poll frequency as a duration string. Supported formats: `SS`, `MM:SS`, `HH:MM:SS`, `DD-HH:MM:SS` (default `15:00`, i.e. 15&nbsp;minutes).
+: pollFrequency (string) : Poll frequency (default `15 minutes`). Can be configured in seconds, minutes, hours, or days.
 : dataLinkName (string) : The name of the data explorer link.
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
 : prefix (string) : Optional prefix filter for results (applies to folders and files)
@@ -119,7 +125,8 @@ All typed-input fields are identical to the _List files_ node with the addition 
       depthType: { value: "num" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
-      pollFrequency: { value: "15:00" },
+      pollFrequency: { value: "15" },
+      pollUnits: { value: "minutes" },
       returnType: { value: "files" },
     },
     oneditprepare: function () {
@@ -137,7 +144,10 @@ All typed-input fields are identical to the _List files_ node with the addition 
       ti("#node-input-maxResults", this.maxResults || "100", this.maxResultsType || "num", "num");
       ti("#node-input-depth", this.depth || "0", this.depthType || "num", "num");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
-      ti("#node-input-pollFrequency", this.pollFrequency || "15:00", "str", "str");
+
+      // Poll frequency – simple number input with units
+      $("#node-input-pollFrequency").val(this.pollFrequency || "15");
+      $("#node-input-pollUnits").val(this.pollUnits || "minutes");
 
       $("#node-input-returnType").val(this.returnType || "files");
     },
@@ -153,7 +163,11 @@ All typed-input fields are identical to the _List files_ node with the addition 
       save.call(this, "#node-input-maxResults", "maxResults", "maxResultsType");
       save.call(this, "#node-input-depth", "depth", "depthType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
-      this.pollFrequency = $("#node-input-pollFrequency").typedInput("value");
+
+      // Save poll frequency and units
+      this.pollFrequency = $("#node-input-pollFrequency").val();
+      this.pollUnits = $("#node-input-pollUnits").val();
+
       this.returnType = $("#node-input-returnType").val();
     },
   });
