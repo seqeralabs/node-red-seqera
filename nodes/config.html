@@ -83,7 +83,7 @@
         } else if (isValid) {
           // Valid connection
           const displayMessage = userInfo
-            ? `<span style="color: green;">✓ Connected as ${userInfo.userName} (${userInfo.email})</span>`
+            ? `<span style="color: green;">✓ Connected as <code>${userInfo.userName}</code> (${userInfo.email})</span>`
             : `<span style="color: green;">✓ ${message}</span>`;
           statusElement.innerHTML = displayMessage;
         } else {
