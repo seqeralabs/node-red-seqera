@@ -10,11 +10,35 @@ You can find the Seqera nodes in the sidebar on the left, under the heading "Seq
 
 ![Importing examples](img/import_examples.png)
 
-## Launch on file upload
+## 01 - Simple launch & monitor
 
-`examples/poll_file_present.json`
+`examples/01 - Simple launch + monitor.json`
 
-![poll_file_present.json](img/poll_file_present.png)
+![01 - Simple launch + monitor.json](img/example_flow_01.png)
+
+This is the most basic example workflow that demonstrates the core _Launch workflow_ and _Monitor workflow_ nodes.
+
+The flow consists of a simple sequence:
+
+1. **Manual trigger** - Click the inject node to start the process
+2. **Launch workflow** - Launches a pipeline using a Seqera Platform Launchpad configuration
+3. **Monitor workflow** - Continuously polls the workflow status until completion
+4. **Debug outputs** - Shows the running status updates and final completion message
+
+### Setup
+
+To get this example working, you'll need to configure:
+
+- **Seqera configuration** - Add your Platform API token and endpoint to both Seqera nodes
+- **Launch workflow node** - Set the correct launchpad name and update any pipeline parameters as needed
+
+Once configured, click "Deploy" in Node-RED, then click the inject node to trigger a workflow launch. You can follow the progress in the Debug panel on the right sidebar.
+
+## 02 - Launch on file upload
+
+`examples/02 - Launch on file upload.json`
+
+![02 - Launch on file upload.json](img/example_flow_02.png)
 
 This flow uses the _Poll files_ node to periodically check for the presence
 of a file called `RTAcomplete.txt` within a Seqera Data Link (eg. an s3 bucket).
@@ -39,11 +63,11 @@ Some configuration is needed to make this flow work:
 - _Create dataset_ needs a dataset name to be set somehow (dynamically to avoid name clashes)
 - _Launch workflow_ needs configuring with the name of a Launchpad pipeline, and parameters.
 
-## Pipeline → Create Studio → Slack webhook
+## 03 - Pipeline → Create Studio → Slack webhook
 
-`pipeline_studios_slack.json`
+`examples/03 - Studio on run fail + Slack webhook.json`
 
-![Slack webhook](img/pipeline_studios_slack.png)
+![03 - Studio on run fail + Slack webhook.json](img/example_flow_03.png)
 
 This workflow has three parts to it:
 
@@ -57,7 +81,7 @@ This workflow has three parts to it:
 
 If all goes well, you'll get messages in Slack that look like this:
 
-<img alt="Slack webhook" src="img/slack_message.png" width=500>
+<img alt="Slack webhook" src="img/example_flow_03_slack_message.png" width=500>
 
 Clicking "Open link" will take you directly to a Studio running VS Code, with your pipeline's work directory mounted and ready to debug.
 
@@ -72,8 +96,8 @@ This workflow needs some setup:
 To make the automated Slack message, first you need to create a Slack Workflow.
 Selelct _"From a webhook"_ as the trigger:
 
-![Create Slack workflow](img/slack_workflow_create.png)
+![Create Slack workflow](img/example_flow_03_slack_workflow_create.png)
 
 Then configure with some input variables and a button, and copy the webhook URL. You'll need this later!
 
-![Slack workflow](img/slack_workflow.png)
+![Slack workflow](img/example_flow_03_slack_workflow.png)
