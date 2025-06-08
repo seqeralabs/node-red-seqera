@@ -54,7 +54,7 @@
     "workspaceId": "",
     "workspaceIdType": "str",
     "returnType": "files",
-    "x": 300,
+    "x": 280,
     "y": 100,
     "wires": [["a530ee2b5e6841d1"]]
   },
@@ -70,7 +70,7 @@
     "initialize": "",
     "finalize": "",
     "libs": [],
-    "x": 470,
+    "x": 450,
     "y": 100,
     "wires": [["0b4091f89d0bd588"]]
   },
@@ -89,13 +89,13 @@
     "description": "",
     "descriptionType": "str",
     "fileType": "csv",
-    "x": 660,
-    "y": 100,
+    "x": 160,
+    "y": 200,
     "wires": [["4d08ce1fad55a0b7"]]
   },
   {
     "id": "4d08ce1fad55a0b7",
-    "type": "seqera-launch",
+    "type": "seqera-workflow-launch",
     "z": "2bb4977ed09ed3de",
     "name": "",
     "seqera": "",
@@ -107,8 +107,25 @@
     "workspaceIdType": "str",
     "sourceWorkspaceId": "",
     "sourceWorkspaceIdType": "str",
-    "x": 850,
-    "y": 100,
-    "wires": [[]]
+    "x": 370,
+    "y": 200,
+    "wires": [["5f9a2c3b8e4d1a67"]]
+  },
+  {
+    "id": "5f9a2c3b8e4d1a67",
+    "type": "seqera-workflow-monitor",
+    "z": "2bb4977ed09ed3de",
+    "name": "",
+    "seqera": "",
+    "workflowId": "workflowId",
+    "workflowIdType": "msg",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "keepPolling": true,
+    "poll": "15",
+    "pollUnits": "seconds",
+    "x": 570,
+    "y": 200,
+    "wires": [[], [], []]
   }
 ]

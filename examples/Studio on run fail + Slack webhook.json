@@ -1,6 +1,6 @@
 [
   {
-    "id": "8128f09c385d33c1",
+    "id": "4df5f9d400dd75bb",
     "type": "tab",
     "label": "Studio on run fail + Slack webhook",
     "disabled": false,
@@ -8,13 +8,11 @@
     "env": []
   },
   {
-    "id": "719cb7fb45ffb7df",
-    "type": "seqera-launch-monitor",
-    "z": "8128f09c385d33c1",
+    "id": "5e9693fb789c345d",
+    "type": "seqera-workflow-launch",
+    "z": "4df5f9d400dd75bb",
     "name": "",
     "seqera": "",
-    "poll": "5",
-    "pollType": "num",
     "launchpadName": "",
     "launchpadNameType": "str",
     "paramsKey": "{}",
@@ -25,12 +23,29 @@
     "sourceWorkspaceIdType": "str",
     "x": 470,
     "y": 200,
-    "wires": [[], ["fb91ea2c0c8934ec"], ["903ba22cbf3b351b"]]
+    "wires": [["88b2f041aea3f4ed"]]
   },
   {
-    "id": "70853e9fffdd6f6f",
+    "id": "88b2f041aea3f4ed",
+    "type": "seqera-workflow-monitor",
+    "z": "4df5f9d400dd75bb",
+    "name": "",
+    "seqera": "",
+    "workflowId": "workflowId",
+    "workflowIdType": "msg",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "keepPolling": true,
+    "poll": 5,
+    "pollUnits": "seconds",
+    "x": 670,
+    "y": 200,
+    "wires": [[], ["9a70f56ce844492a"], ["2fa9726c10d0693e"]]
+  },
+  {
+    "id": "f5aa0497e12be097",
     "type": "http request",
-    "z": "8128f09c385d33c1",
+    "z": "4df5f9d400dd75bb",
     "name": "Slack webhook",
     "method": "POST",
     "ret": "txt",
@@ -43,15 +58,15 @@
     "authType": "",
     "senderr": false,
     "headers": [],
-    "x": 1280,
-    "y": 200,
+    "x": 920,
+    "y": 380,
     "wires": [[]]
   },
   {
-    "id": "fb91ea2c0c8934ec",
+    "id": "9a70f56ce844492a",
     "type": "change",
-    "z": "8128f09c385d33c1",
-    "name": "Set webhook payload",
+    "z": "4df5f9d400dd75bb",
+    "name": "Set webhook payload on success",
     "rules": [
       {
         "t": "set",
@@ -66,14 +81,14 @@
     "from": "",
     "to": "",
     "reg": false,
-    "x": 1060,
-    "y": 180,
-    "wires": [["70853e9fffdd6f6f"]]
+    "x": 660,
+    "y": 340,
+    "wires": [["f5aa0497e12be097"]]
   },
   {
-    "id": "bc8ba3dbe1486792",
+    "id": "c3ed62a9d56c9e0c",
     "type": "inject",
-    "z": "8128f09c385d33c1",
+    "z": "4df5f9d400dd75bb",
     "name": "",
     "props": [
       {
@@ -93,12 +108,12 @@
     "payloadType": "date",
     "x": 300,
     "y": 200,
-    "wires": [["719cb7fb45ffb7df"]]
+    "wires": [["5e9693fb789c345d"]]
   },
   {
-    "id": "55ec0476af57d9a2",
+    "id": "e44f398ad3323d36",
     "type": "change",
-    "z": "8128f09c385d33c1",
+    "z": "4df5f9d400dd75bb",
     "name": "Set webook payload",
     "rules": [
       {
@@ -114,24 +129,24 @@
     "from": "",
     "to": "",
     "reg": false,
-    "x": 1060,
-    "y": 220,
-    "wires": [["70853e9fffdd6f6f"]]
+    "x": 700,
+    "y": 400,
+    "wires": [["f5aa0497e12be097"]]
   },
   {
-    "id": "d8cc5db1ccd71d30",
+    "id": "ccef54b9f05de7ba",
     "type": "comment",
-    "z": "8128f09c385d33c1",
+    "z": "4df5f9d400dd75bb",
     "name": "Webhook setup",
     "info": "To make the automated Slack message, first you need to create a Slack Workflow.\nSelelct _\"From a webhook\"_ as the trigger.\n\nThen configure with some input variables and a button, and copy the webhook URL.\n\nPaste the webhook URL into the node below, using a `POST` request.",
-    "x": 1280,
-    "y": 160,
+    "x": 920,
+    "y": 340,
     "wires": []
   },
   {
-    "id": "caaf971c4f73d1ba",
+    "id": "97db250691c6f2ba",
     "type": "seqera-studios-create",
-    "z": "8128f09c385d33c1",
+    "z": "4df5f9d400dd75bb",
     "name": "",
     "seqera": "",
     "studioName": "\"debug-pipeline-run-\" & payload.workflow.id",
@@ -162,15 +177,15 @@
     "autoStartType": "bool",
     "workspaceId": "",
     "workspaceIdType": "str",
-    "x": 860,
-    "y": 220,
-    "wires": [["55ec0476af57d9a2"]]
+    "x": 500,
+    "y": 400,
+    "wires": [["e44f398ad3323d36"]]
   },
   {
-    "id": "903ba22cbf3b351b",
+    "id": "2fa9726c10d0693e",
     "type": "change",
-    "z": "8128f09c385d33c1",
-    "name": "Save payload",
+    "z": "4df5f9d400dd75bb",
+    "name": "Save payload on fail",
     "rules": [
       {
         "t": "set",
@@ -194,24 +209,18 @@
     "from": "",
     "to": "",
     "reg": false,
-    "x": 680,
-    "y": 220,
-    "wires": [["caaf971c4f73d1ba"]]
+    "x": 300,
+    "y": 400,
+    "wires": [["97db250691c6f2ba"]]
   },
   {
-    "id": "e4a12f0fc0eb5944",
+    "id": "549d57f453c711c1",
     "type": "comment",
-    "z": "8128f09c385d33c1",
+    "z": "4df5f9d400dd75bb",
     "name": "Manual trigger",
     "info": "This is a manual trigger to start the workflow (click the blue square).\nIn reality, you will trigger this workflow by some other automation flow.",
     "x": 290,
     "y": 160,
     "wires": []
-  },
-  {
-    "id": "31b146c0186d0668",
-    "type": "seqera-config",
-    "baseUrl": "https://api.cloud.seqera.io",
-    "workspaceId": "219829050455763"
   }
 ]
