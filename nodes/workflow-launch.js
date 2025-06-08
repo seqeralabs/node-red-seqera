@@ -1,4 +1,72 @@
 module.exports = function (RED) {
+  // Add HTTP endpoint for pipeline auto-complete
+  RED.httpAdmin.get("/admin/seqera/pipelines/:nodeId", async function (req, res) {
+    try {
+      const nodeId = req.params.nodeId;
+      const search = req.query.search || "";
+
+      // Try to get the node, but it might not exist yet if this is a new node
+      let node = RED.nodes.getNode(nodeId);
+      let seqeraConfigId = null;
+      let baseUrl = "https://api.cloud.seqera.io";
+      let workspaceId = null;
+
+      if (node && node.seqeraConfig) {
+        // Node exists and has config
+        seqeraConfigId = node.seqeraConfig.id;
+        baseUrl = node.seqeraConfig.baseUrl || baseUrl;
+        workspaceId = node.seqeraConfig.workspaceId;
+      } else {
+        // Try to get config ID from request body or query params
+        seqeraConfigId = req.query.seqeraConfig || req.body?.seqeraConfig;
+        if (seqeraConfigId) {
+          const configNode = RED.nodes.getNode(seqeraConfigId);
+          if (configNode) {
+            baseUrl = configNode.baseUrl || baseUrl;
+            workspaceId = configNode.workspaceId;
+          }
+        }
+      }
+
+      if (!workspaceId) {
+        return res.json([]); // Return empty array instead of error for better UX
+      }
+
+      // Create a temporary node-like object for apiCall if we don't have a real node
+      const nodeForApi = node || {
+        seqeraConfig: RED.nodes.getNode(seqeraConfigId),
+        warn: () => {}, // Dummy warn function
+      };
+
+      if (!nodeForApi.seqeraConfig) {
+        return res.json([]);
+      }
+
+      const { apiCall } = require("./_utils");
+
+      // Build the pipelines API URL
+      const pipelinesUrl = `${baseUrl.replace(
+        /\/$/,
+        "",
+      )}/pipelines?workspaceId=${workspaceId}&max=50&offset=0&search=${encodeURIComponent(search)}&visibility=all`;
+
+      const response = await apiCall(nodeForApi, "get", pipelinesUrl, {
+        headers: { Accept: "application/json" },
+      });
+
+      const pipelines = response.data?.pipelines || [];
+      const results = pipelines.map((pipeline) => ({
+        value: pipeline.name,
+        label: pipeline.name,
+      }));
+
+      res.json(results);
+    } catch (error) {
+      // Return empty array on error for better UX
+      res.json([]);
+    }
+  });
+
   function SeqeraWorkflowLaunchNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
