@@ -126,8 +126,10 @@ module.exports = function (RED) {
     // Start the polling interval immediately
     const intervalMs = node.pollFrequencySec * 1000;
     const intervalId = setInterval(executePoll, intervalMs);
-    // run once immediately
-    executePoll();
+    // run once immediately if we have a valid configuration
+    if (node.seqeraConfig && config.dataLinkName && config.dataLinkName.trim() !== "") {
+      executePoll();
+    }
 
     node.on("close", () => {
       clearInterval(intervalId);
