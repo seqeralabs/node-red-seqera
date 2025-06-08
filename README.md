@@ -30,8 +30,9 @@ Also [Launch](#launch) and [Monitor](#monitor-a-run) nodes for automation tasks,
 - Chain workflows, launching downstream automatically
 - (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
 
-This package includes several example flows which you can import and repurpose.
-See the [example docs](./docs/README.md) for more information.
+> [!NOTE]
+> This package includes several example flows which you can import and repurpose.
+> **See the [example docs](./docs/README.md) for more information.**
 
 # Installation
 
@@ -71,6 +72,7 @@ Your new Studio should launch with a complete Node-RED instance that's ready for
 ## Example Flows
 
 Once installed, example flows are available in the Node-RED import menu under _Import_ > _Examples_ > _@seqera/node-red-seqera_.
+See the [example docs](./docs/README.md) for more information.
 
 # Usage
 
@@ -105,7 +107,22 @@ Fired once when the upload completes successfully.
 - `msg.datasetId`: The ID of the created dataset
 - `msg._seqera_upload_request`: Details of the file-upload request (for debugging)
 
-## Monitor a Run
+## Launch workflow
+
+Launches a workflow using the Seqera API.
+
+### Inputs
+
+- `launchpadName`: The Human-readable name of a pipeline in the launchpad to use
+- `params`: JSON object containing parameters to merge with the launchpad's default parameters
+- `workspaceId`: Override the workspace ID from the \* config node
+- `sourceWorkspaceId`: The source workspace ID (if a shared workflow and different to workspaceId)
+
+Alternative input:
+
+- `msg.body`: A full launch request body (alternative to using launchpadName)
+
+## Monitor a workflow
 
 Checks the status of an existing workflow in Seqera Platform.
 
@@ -168,21 +185,6 @@ Same as _List Data Link Files_, plus:
 2. **New results** – Fired only when at least one object is detected that wasn't present in the previous poll (will not send anything if there are no new objects).
 
 Each message contains the same properties as _List Data Link Files_ (`payload`, `files`).
-
-## Launch
-
-Launches a workflow using the Seqera API.
-
-### Inputs
-
-- `launchpadName`: The Human-readable name of a pipeline in the launchpad to use
-- `params`: JSON object containing parameters to merge with the launchpad's default parameters
-- `workspaceId`: Override the workspace ID from the \* config node
-- `sourceWorkspaceId`: The source workspace ID (if a shared workflow and different to workspaceId)
-
-Alternative input:
-
-- `msg.body`: A full launch request body (alternative to using launchpadName)
 
 ### Outputs (one output)
 

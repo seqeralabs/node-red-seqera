@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1] - 2025-06-08
+
+- Poll datalinks - don't run poll if node is not configured
+- Improve default flow for Studios container, showcase available nodes.
+- New simple example: launch + monitor.
+- 🐛 Bugfix: Update examples to use refactored launch / monitor nodes
+- Update node screenshots for readme
+
 ## [0.3.0] - 2025-06-08
 
 - Refactored workflow nodes into separate `seqera-workflow-launch` and `seqera-workflow-monitor` nodes
