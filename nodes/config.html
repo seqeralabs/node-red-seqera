@@ -14,8 +14,10 @@
     <input type="password" id="node-config-input-token" placeholder="Bearer token" autocomplete="off" />
   </div>
   <div class="form-row">
-    <label for="node-config-input-workspaceId">Workspace&nbsp;ID</label>
-    <input type="number" id="node-config-input-workspaceId" placeholder="(optional)" />
+    <label for="node-config-input-workspaceId">Workspace</label>
+    <select id="node-config-input-workspaceId" disabled>
+      <option value="">Enter API key</option>
+    </select>
   </div>
   <hr />
   <h4>Connectivity check</h4>
@@ -35,8 +37,8 @@
   Configure the following options:
 
   - **Base URL**: The base URL for the Seqera API (defaults to `https://api.cloud.seqera.io`)
-  - **Workspace ID**: Your Seqera workspace ID (optional)
   - **API Token**: Your personal access token for authenticating with Seqera Platform. Create a Seqera access token via [_Your Tokens_](https://cloud.seqera.io/tokens) in the user menu.
+  - **Workspace**: Default Seqera workspace to use for all nodes (optional)
 
   This configuration node is used by all other Seqera nodes to authenticate with the Seqera Platform API.
 
@@ -50,7 +52,12 @@
     category: "config",
     defaults: {
       baseUrl: { value: "https://api.cloud.seqera.io", required: true },
-      workspaceId: { value: null },
+      workspaceId: {
+        value: null,
+        validate: function (v) {
+          return v === null || v === "" || (!isNaN(v) && parseInt(v) > 0);
+        },
+      },
     },
     credentials: {
       token: { type: "password" },
@@ -90,17 +97,92 @@
         document.getElementById("connectivity-message").innerHTML = "";
       }
 
+      function clearWorkspaceDropdown(message = "Enter API key") {
+        const workspaceSelect = document.getElementById("node-config-input-workspaceId");
+        workspaceSelect.innerHTML = `<option value="">${message}</option>`;
+        workspaceSelect.disabled = true;
+      }
+
+      async function populateWorkspaceDropdown() {
+        const baseUrl = document.getElementById("node-config-input-baseUrl").value.trim();
+        const token = document.getElementById("node-config-input-token").value.trim();
+        const workspaceSelect = document.getElementById("node-config-input-workspaceId");
+
+        if (!token || !baseUrl) {
+          clearWorkspaceDropdown();
+          return;
+        }
+
+        try {
+          const queryParams = new URLSearchParams({
+            baseUrl: baseUrl,
+            token: token,
+          });
+
+          const response = await fetch(`/seqera-config/workspaces?${queryParams}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.organizations) {
+              // Store current selection to preserve it if possible
+              const currentValue = workspaceSelect.value;
+
+              // Clear and rebuild dropdown
+              workspaceSelect.innerHTML = '<option value="">[ leave unset ]</option>';
+
+              // Add organizations and workspaces
+              data.organizations.forEach((org) => {
+                if (org.workspaces && org.workspaces.length > 0) {
+                  const optgroup = document.createElement("optgroup");
+                  optgroup.label = org.orgName;
+
+                  org.workspaces.forEach((workspace) => {
+                    const option = document.createElement("option");
+                    option.value = workspace.id;
+                    option.textContent = workspace.name;
+                    optgroup.appendChild(option);
+                  });
+
+                  workspaceSelect.appendChild(optgroup);
+                }
+              });
+
+              // Restore previous selection if it still exists
+              if (currentValue && Array.from(workspaceSelect.options).some((opt) => opt.value === currentValue)) {
+                workspaceSelect.value = currentValue;
+              }
+
+              workspaceSelect.disabled = false;
+            } else {
+              clearWorkspaceDropdown("Failed to load workspaces");
+            }
+          } else {
+            clearWorkspaceDropdown("Failed to load workspaces");
+          }
+        } catch (error) {
+          console.error("Workspace fetch error:", error);
+          clearWorkspaceDropdown("Failed to load workspaces");
+        }
+      }
+
       async function checkConnectivity() {
         const baseUrl = document.getElementById("node-config-input-baseUrl").value.trim();
         const token = document.getElementById("node-config-input-token").value.trim();
 
         if (!token) {
           updateConnectivityStatus("No API token");
+          clearWorkspaceDropdown();
           return;
         }
 
         if (!baseUrl) {
           updateConnectivityStatus("No base URL specified", false);
+          clearWorkspaceDropdown();
           return;
         }
 
@@ -123,19 +205,25 @@
             const data = await response.json();
             if (data.success) {
               updateConnectivityStatus("API token is valid", true, data.user);
+              // Populate workspace dropdown when connectivity check succeeds
+              await populateWorkspaceDropdown();
             } else {
               if (data.isEmptyToken) {
                 updateConnectivityStatus("No API token");
+                clearWorkspaceDropdown();
               } else {
                 updateConnectivityStatus(data.message, false);
+                clearWorkspaceDropdown("Invalid API key");
               }
             }
           } else {
             updateConnectivityStatus("Server error occurred", false);
+            clearWorkspaceDropdown("Server error");
           }
         } catch (error) {
           console.error("Connectivity check error:", error);
           updateConnectivityStatus("Connection failed - unable to reach server", false);
+          clearWorkspaceDropdown("Connection failed");
         }
       }
 
@@ -143,6 +231,9 @@
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(checkConnectivity, debounceDelay);
       }
+
+      // Initialize workspace dropdown
+      clearWorkspaceDropdown();
 
       // Check connectivity when the dialog opens
       setTimeout(checkConnectivity, 100);
