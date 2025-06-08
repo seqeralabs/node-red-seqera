@@ -1,8 +1,8 @@
 <h1>
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/logo-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/logo.svg">
-  <img src="https://github.com/ewels/node-red-seqera/raw/main/images/logo.svg" alt="@seqera/node-red-seqera">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/logo.svg">
+  <img src="https://github.com/ewels/node-red-seqera/raw/main/docs/img/logo.svg" alt="@seqera/node-red-seqera">
 </picture>
 </h1>
 
@@ -11,9 +11,9 @@ A set of Node-RED nodes for interacting with Seqera Platform.
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/nodes-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/images/nodes.png">
-  <img src="https://github.com/ewels/node-red-seqera/raw/main/images/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/nodes-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/nodes.png">
+  <img src="https://github.com/ewels/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
 </picture>
 
 - [Create Dataset](#create-dataset)
