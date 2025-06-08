@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.0] - 2025-06-08
+
+- Refactored workflow nodes into separate `seqera-workflow-launch` and `seqera-workflow-monitor` nodes
+- Added autocomplete for launchpad names in workflow launch node
+- Added workspace dropdown to config node
+- Added in-dialogue API check to config node
+- Individual nodes can now override workspace ID from config
+- Improved poll duration inputs with time units
+- Added new custom icons for node types
+- Added Seqera styling to Node-RED editor
+- New example flows:
+  - Launch on file upload
+  - Studio on run fail + Slack webhook
+- Added `README.md` for examples and improved visibility in palette
+- Improved error handling and centralized API calls
+- 🐛 Bugfix: Remove remnant `errMsg` variable causing crashes
+
 ## [0.2.3] - 2025-05-22
 
 - New nodes for Seqera Studios:
