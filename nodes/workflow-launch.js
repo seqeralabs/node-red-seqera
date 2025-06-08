@@ -16,6 +16,11 @@ module.exports = function (RED) {
         seqeraConfigId = node.seqeraConfig.id;
         baseUrl = node.seqeraConfig.baseUrl || baseUrl;
         workspaceId = node.seqeraConfig.workspaceId;
+
+        // Check for workspace ID override in the node configuration
+        if (node.workspaceIdProp && node.workspaceIdPropType === "str" && node.workspaceIdProp.trim()) {
+          workspaceId = node.workspaceIdProp;
+        }
       } else {
         // Try to get config ID from request body or query params
         seqeraConfigId = req.query.seqeraConfig || req.body?.seqeraConfig;
@@ -26,6 +31,11 @@ module.exports = function (RED) {
             workspaceId = configNode.workspaceId;
           }
         }
+      }
+
+      // Also check for workspace ID override in query parameters (from frontend)
+      if (req.query.workspaceId && req.query.workspaceId.trim()) {
+        workspaceId = req.query.workspaceId;
       }
 
       if (!workspaceId) {

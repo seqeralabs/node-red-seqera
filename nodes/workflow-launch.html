@@ -150,6 +150,13 @@ Workflow parameters can be provided as a JSON object and will be merged with the
                   seqeraConfig: seqeraConfigId,
                 });
 
+                // Add workspace ID override if configured
+                const workspaceIdOverride = $("#node-input-workspaceId").typedInput("value");
+                const workspaceIdType = $("#node-input-workspaceId").typedInput("type");
+                if (workspaceIdType === "str" && workspaceIdOverride && workspaceIdOverride.trim()) {
+                  params.append("workspaceId", workspaceIdOverride);
+                }
+
                 $.ajax({
                   url: `admin/seqera/pipelines/${nodeId}?${params.toString()}`,
                   method: "GET",
