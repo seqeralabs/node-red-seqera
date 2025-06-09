@@ -135,7 +135,7 @@ Any of these can be overridden using the corresponding input properties.
       // Set dropdown value for returnType
       $("#node-input-returnType").val(this.returnType || "files");
 
-      // Add auto-complete for dataset name when type is "str"
+      // Add auto-complete for datalink name when type is "str"
       const setupAutoComplete = () => {
         const dataLinkNameInput = $("#node-input-dataLinkName");
         const currentType = dataLinkNameInput.typedInput("type");
@@ -168,7 +168,7 @@ Any of these can be overridden using the corresponding input properties.
                   return;
                 }
 
-                // Make API call to get dataset names
+                // Make API call to get datalink names
                 const nodeId =
                   (RED.editor.edit_node && RED.editor.edit_node.id) ||
                   (RED.editor.edit_stack && RED.editor.edit_stack.length > 0 && RED.editor.edit_stack[0].id) ||
@@ -193,7 +193,7 @@ Any of these can be overridden using the corresponding input properties.
                 }
 
                 $.ajax({
-                  url: `admin/seqera/datasets/${nodeId}?${params.toString()}`,
+                  url: `admin/seqera/datalinks/${nodeId}?${params.toString()}`,
                   method: "GET",
                   success: function (data) {
                     // data is already in the correct format: [{value, label}]

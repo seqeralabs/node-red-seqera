@@ -27,7 +27,7 @@
     "depthType": "num",
     "workspaceId": "",
     "workspaceIdType": "str",
-    "pollFrequency": "15:00",
+    "pollFrequency": "15",
     "returnType": "files",
     "x": 100,
     "y": 100,

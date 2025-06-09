@@ -53,14 +53,14 @@ async function apiCall(node, method, url, options = {}) {
 }
 
 /**
- * Shared handler for dataset auto-complete HTTP endpoint.
+ * Shared handler for datalink auto-complete HTTP endpoint.
  * Used by both datalink-list and datalink-poll nodes.
  *
  * @param {object} RED - Node-RED runtime
  * @param {object} req - Express request object
  * @param {object} res - Express response object
  */
-async function handleDatasetAutoComplete(RED, req, res) {
+async function handleDatalinkAutoComplete(RED, req, res) {
   try {
     const nodeId = req.params.nodeId;
     const search = req.query.search || "";
@@ -112,23 +112,22 @@ async function handleDatasetAutoComplete(RED, req, res) {
       return res.json([]);
     }
 
-    // Build the datasets API URL
-    const datasetsUrl = `${baseUrl.replace(/\/$/, "")}/datasets?workspaceId=${workspaceId}`;
+    // Build the data-links API URL with search parameter
+    const params = new URLSearchParams({ workspaceId });
+    if (search) {
+      params.append("search", search);
+    }
+    const dataLinksUrl = `${baseUrl.replace(/\/$/, "")}/data-links?${params.toString()}`;
 
-    const response = await apiCall(nodeForApi, "get", datasetsUrl, {
+    const response = await apiCall(nodeForApi, "get", dataLinksUrl, {
       headers: { Accept: "application/json" },
     });
 
-    const datasets = response.data?.datasets || [];
+    const dataLinks = response.data?.dataLinks || [];
 
-    // Filter datasets by search term if provided
-    const filteredDatasets = search
-      ? datasets.filter((dataset) => dataset.name.toLowerCase().includes(search.toLowerCase()))
-      : datasets;
-
-    const results = filteredDatasets.map((dataset) => ({
-      value: dataset.name,
-      label: dataset.name,
+    const results = dataLinks.map((dataLink) => ({
+      value: dataLink.name,
+      label: dataLink.name,
     }));
 
     res.json(results);
@@ -138,4 +137,4 @@ async function handleDatasetAutoComplete(RED, req, res) {
   }
 }
 
-module.exports = { buildHeaders, apiCall, handleDatasetAutoComplete };
+module.exports = { buildHeaders, apiCall, handleDatalinkAutoComplete };

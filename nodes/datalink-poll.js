@@ -1,9 +1,9 @@
 module.exports = function (RED) {
-  const { handleDatasetAutoComplete } = require("./_utils");
+  const { handleDatalinkAutoComplete } = require("./_utils");
 
-  // Add HTTP endpoint for dataset auto-complete
-  RED.httpAdmin.get("/admin/seqera/datasets/:nodeId", (req, res) => {
-    handleDatasetAutoComplete(RED, req, res);
+  // Add HTTP endpoint for datalink auto-complete
+  RED.httpAdmin.get("/admin/seqera/datalinks/:nodeId", (req, res) => {
+    handleDatalinkAutoComplete(RED, req, res);
   });
 
   const datalinkUtils = require("./datalink-utils");
@@ -169,7 +169,7 @@ module.exports = function (RED) {
       depthType: { value: "num" },
       returnType: { value: "files" },
       // poll specific
-      pollFrequency: { value: "15:00" },
+      pollFrequency: { value: "15" },
     },
   });
 };
