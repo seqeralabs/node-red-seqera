@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.2] - 2025-06-09
+
+- Add autocomplete for datalink name in datalink nodes
+- Fix Poll datalinks don't-run-if-not-configured thing
+
 ## [0.3.1] - 2025-06-08
 
 - Poll datalinks - don't run poll if node is not configured
