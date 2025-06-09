@@ -1,5 +1,12 @@
 // New node implementation for seqera-datalink-list
 module.exports = function (RED) {
+  const { handleDatasetAutoComplete } = require("./_utils");
+
+  // Add HTTP endpoint for dataset auto-complete
+  RED.httpAdmin.get("/admin/seqera/datasets/:nodeId", (req, res) => {
+    handleDatasetAutoComplete(RED, req, res);
+  });
+
   function SeqeraDatalinkListNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;

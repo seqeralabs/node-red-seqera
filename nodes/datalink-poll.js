@@ -1,4 +1,11 @@
 module.exports = function (RED) {
+  const { handleDatasetAutoComplete } = require("./_utils");
+
+  // Add HTTP endpoint for dataset auto-complete
+  RED.httpAdmin.get("/admin/seqera/datasets/:nodeId", (req, res) => {
+    handleDatasetAutoComplete(RED, req, res);
+  });
+
   const datalinkUtils = require("./datalink-utils");
 
   function SeqeraDatalinkPollNode(config) {

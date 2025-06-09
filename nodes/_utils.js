@@ -52,4 +52,90 @@ async function apiCall(node, method, url, options = {}) {
   }
 }
 
-module.exports = { buildHeaders, apiCall };
+/**
+ * Shared handler for dataset auto-complete HTTP endpoint.
+ * Used by both datalink-list and datalink-poll nodes.
+ *
+ * @param {object} RED - Node-RED runtime
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ */
+async function handleDatasetAutoComplete(RED, req, res) {
+  try {
+    const nodeId = req.params.nodeId;
+    const search = req.query.search || "";
+
+    // Try to get the node, but it might not exist yet if this is a new node
+    let node = RED.nodes.getNode(nodeId);
+    let seqeraConfigId = null;
+    let baseUrl = "https://api.cloud.seqera.io";
+    let workspaceId = null;
+
+    if (node && node.seqeraConfig) {
+      // Node exists and has config
+      seqeraConfigId = node.seqeraConfig.id;
+      baseUrl = node.seqeraConfig.baseUrl || baseUrl;
+      workspaceId = node.seqeraConfig.workspaceId;
+
+      // Check for workspace ID override in the node configuration
+      if (node.workspaceIdProp && node.workspaceIdPropType === "str" && node.workspaceIdProp.trim()) {
+        workspaceId = node.workspaceIdProp;
+      }
+    } else {
+      // Try to get config ID from request body or query params
+      seqeraConfigId = req.query.seqeraConfig || req.body?.seqeraConfig;
+      if (seqeraConfigId) {
+        const configNode = RED.nodes.getNode(seqeraConfigId);
+        if (configNode) {
+          baseUrl = configNode.baseUrl || baseUrl;
+          workspaceId = configNode.workspaceId;
+        }
+      }
+    }
+
+    // Also check for workspace ID override in query parameters (from frontend)
+    if (req.query.workspaceId && req.query.workspaceId.trim()) {
+      workspaceId = req.query.workspaceId;
+    }
+
+    if (!workspaceId) {
+      return res.json([]); // Return empty array instead of error for better UX
+    }
+
+    // Create a temporary node-like object for apiCall if we don't have a real node
+    const nodeForApi = node || {
+      seqeraConfig: RED.nodes.getNode(seqeraConfigId),
+      warn: () => {}, // Dummy warn function
+    };
+
+    if (!nodeForApi.seqeraConfig) {
+      return res.json([]);
+    }
+
+    // Build the datasets API URL
+    const datasetsUrl = `${baseUrl.replace(/\/$/, "")}/datasets?workspaceId=${workspaceId}`;
+
+    const response = await apiCall(nodeForApi, "get", datasetsUrl, {
+      headers: { Accept: "application/json" },
+    });
+
+    const datasets = response.data?.datasets || [];
+
+    // Filter datasets by search term if provided
+    const filteredDatasets = search
+      ? datasets.filter((dataset) => dataset.name.toLowerCase().includes(search.toLowerCase()))
+      : datasets;
+
+    const results = filteredDatasets.map((dataset) => ({
+      value: dataset.name,
+      label: dataset.name,
+    }));
+
+    res.json(results);
+  } catch (error) {
+    // Return empty array on error for better UX
+    res.json([]);
+  }
+}
+
+module.exports = { buildHeaders, apiCall, handleDatasetAutoComplete };

@@ -134,6 +134,98 @@ Any of these can be overridden using the corresponding input properties.
 
       // Set dropdown value for returnType
       $("#node-input-returnType").val(this.returnType || "files");
+
+      // Add auto-complete for dataset name when type is "str"
+      const setupAutoComplete = () => {
+        const dataLinkNameInput = $("#node-input-dataLinkName");
+        const currentType = dataLinkNameInput.typedInput("type");
+
+        // Ensure our custom CSS is added only once
+        if (!document.getElementById("seqera-autocomplete-style")) {
+          const style = document.createElement("style");
+          style.id = "seqera-autocomplete-style";
+          style.innerHTML = `.red-ui-autoComplete li a { display:block; padding:4px 8px; width:100%; box-sizing:border-box; }`;
+          document.head.appendChild(style);
+        }
+
+        // Get the actual visible input element from the typedInput widget
+        const actualInput = dataLinkNameInput.parent().find(".red-ui-typedInput-input");
+
+        // Remove existing auto-complete if any
+        if (actualInput.data("autoCompleteEnabled")) {
+          actualInput.autoComplete("destroy");
+          actualInput.data("autoCompleteEnabled", false);
+        }
+
+        if (currentType === "str" && actualInput.length > 0) {
+          // Add a small delay to ensure typedInput is fully initialized
+          setTimeout(() => {
+            actualInput.autoComplete({
+              search: function (value, done) {
+                // Only search if we have some input
+                if (!value || value.length < 1) {
+                  done([]);
+                  return;
+                }
+
+                // Make API call to get dataset names
+                const nodeId =
+                  (RED.editor.edit_node && RED.editor.edit_node.id) ||
+                  (RED.editor.edit_stack && RED.editor.edit_stack.length > 0 && RED.editor.edit_stack[0].id) ||
+                  "temp-" + Date.now();
+                const seqeraConfigId = $("#node-input-seqera").val();
+
+                if (!seqeraConfigId) {
+                  done([]);
+                  return;
+                }
+
+                const params = new URLSearchParams({
+                  search: value,
+                  seqeraConfig: seqeraConfigId,
+                });
+
+                // Add workspace ID override if configured
+                const workspaceIdOverride = $("#node-input-workspaceId").typedInput("value");
+                const workspaceIdType = $("#node-input-workspaceId").typedInput("type");
+                if (workspaceIdType === "str" && workspaceIdOverride && workspaceIdOverride.trim()) {
+                  params.append("workspaceId", workspaceIdOverride);
+                }
+
+                $.ajax({
+                  url: `admin/seqera/datasets/${nodeId}?${params.toString()}`,
+                  method: "GET",
+                  success: function (data) {
+                    // data is already in the correct format: [{value, label}]
+                    done(data || []);
+                  },
+                  error: function () {
+                    done([]);
+                  },
+                });
+              },
+            });
+
+            actualInput.data("autoCompleteEnabled", true);
+          }, 100);
+        }
+      };
+
+      // Set up auto-complete initially
+      setupAutoComplete();
+
+      // Re-setup auto-complete when type changes
+      $("#node-input-dataLinkName").on("change", function (event, type) {
+        if (type) {
+          // Add delay to avoid conflicts with ongoing autocomplete operations
+          setTimeout(setupAutoComplete, 200);
+        }
+      });
+
+      // Re-setup auto-complete when Seqera config changes
+      $("#node-input-seqera").on("change", function () {
+        setupAutoComplete();
+      });
     },
     oneditsave: function () {
       function save(id, prop, propType) {
