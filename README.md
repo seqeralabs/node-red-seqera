@@ -1,8 +1,8 @@
 <h1>
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/logo-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/logo.svg">
-  <img src="https://github.com/ewels/node-red-seqera/raw/main/docs/img/logo.svg" alt="@seqera/node-red-seqera">
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo.svg">
+  <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo.svg" alt="@seqera/node-red-seqera">
 </picture>
 </h1>
 
@@ -11,9 +11,9 @@ A set of Node-RED nodes for interacting with Seqera Platform.
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/nodes-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/ewels/node-red-seqera/raw/main/docs/img/nodes.png">
-  <img src="https://github.com/ewels/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png">
+  <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
 </picture>
 
 - [Create Dataset](#create-dataset)
@@ -58,7 +58,7 @@ This repository comes with a custom Docker image containing both Node-RED and th
 Simply create a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
 
 ```
-ghcr.io/ewels/node-red-seqera:latest
+ghcr.io/seqeralabs/node-red-seqera:latest
 ```
 
 Make sure that the studio is set to _Always keep the session running_.

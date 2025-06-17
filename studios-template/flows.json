@@ -55,7 +55,7 @@
     "z": "dae5714e049c0d25",
     "g": "5f25af5b9d8216eb",
     "name": "Welcome to Node-RED + Seqera! 🎉 \\n Click here and look at the \"info\" tab in the sidebar -->",
-    "info": "Thanks for setting up Node-RED with Seqera!\n\n**Click on the other comment nodes** to see how to get started.\n\nIf you need help or would like to contribute, please check out the GitHub repository for this extension: https://github.com/ewels/node-red-seqera",
+    "info": "Thanks for setting up Node-RED with Seqera!\n\n**Click on the other comment nodes** to see how to get started.\n\nIf you need help or would like to contribute, please check out the GitHub repository for this extension: https://github.com/seqeralabs/node-red-seqera",
     "x": 300,
     "y": 100,
     "wires": []

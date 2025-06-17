@@ -4,11 +4,11 @@
   "description": "Node-RED nodes for interacting with the Seqera Platform API",
   "author": "Phil Ewels <phil.ewels@seqera.io>",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/ewels/node-red-seqera#readme",
-  "bugs": "https://github.com/ewels/node-red-seqera/issues",
+  "homepage": "https://github.com/seqeralabs/node-red-seqera#readme",
+  "bugs": "https://github.com/seqeralabs/node-red-seqera/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ewels/node-red-seqera"
+    "url": "https://github.com/seqeralabs/node-red-seqera"
   },
   "keywords": [
     "node-red",
