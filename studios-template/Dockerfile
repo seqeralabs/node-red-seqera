@@ -1,7 +1,3 @@
-# Build command. NB: RUN FROM REPO ROOT DIR!
-#  docker build . -f studios-template/Dockerfile -t ewels/node-red-data-studios:latest --platform linux/amd64
-#  docker push ewels/node-red-data-studios:latest
-
 # Stage 1: Get the Seqera Connect client
 FROM public.cr.seqera.io/platform/connect-client:0.8 AS connect
 
