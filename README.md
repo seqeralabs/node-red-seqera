@@ -96,19 +96,17 @@ Launch a new workflow (pipeline run) on Seqera Platform.
 
 ### Inputs
 
-* **launchpadName**: Name of a Launchpad entry. If supplied the node will look up the pipeline, fetch its default launch configuration and submit the run.
-* **params**: Key/value pairs to merge into `paramsText`. By default these are read from `msg.params` but this property can be changed in the node.
-* **body**: A fully-formed request body placed on `msg.body` or `msg.payload`. If present it is sent as-is and the `launchpadName` lookup is skipped.
-* **workspaceId**: Override the workspace ID from the Config node.
-* **sourceWorkspaceId**: Workspace that owns the source pipeline when launching a shared workflow.
-* **baseUrl**: Override the Seqera API URL.
+- **launchpadName**: Name of a Launchpad entry. If supplied the node will look up the pipeline, fetch its default launch configuration and submit the run.
+- **params**: Key/value pairs to merge into `paramsText`. By default these are read from `msg.params` but this property can be changed in the node.
+- **body**: A fully-formed request body placed on `msg.body` or `msg.payload`. If present it is sent as-is and the `launchpadName` lookup is skipped.
+- **workspaceId**: Override the workspace ID from the Config node.
+- **sourceWorkspaceId**: Workspace that owns the source pipeline when launching a shared workflow.
+- **baseUrl**: Override the Seqera API URL.
 
 ### Outputs (one)
 
-* `msg.payload` – Raw API response.
-* `msg.workflowId` – Convenience copy of the submitted workflow ID.
-
-
+- `msg.payload` – Raw API response.
+- `msg.workflowId` – Convenience copy of the submitted workflow ID.
 
 ## Monitor a workflow
 
@@ -116,13 +114,13 @@ Poll the status of an existing workflow run until it reaches a terminal state.
 
 ### Inputs
 
-* **workflowId** (required, default: `msg.workflowId`): ID of the workflow to monitor.
-* **workspaceId**: Override the workspace ID from the Config node.
+- **workflowId** (required, default: `msg.workflowId`): ID of the workflow to monitor.
+- **workspaceId**: Override the workspace ID from the Config node.
 
 ### Configuration
 
-* **keepPolling** (default **true**): Continue polling until the workflow is finished.
-* **pollInterval** (default **5 seconds**): Frequency of status checks.
+- **keepPolling** (default **true**): Continue polling until the workflow is finished.
+- **pollInterval** (default **5 seconds**): Frequency of status checks.
 
 ### Outputs (three)
 
@@ -132,10 +130,8 @@ Poll the status of an existing workflow run until it reaches a terminal state.
 
 Each message contains:
 
-* `msg.payload` – Full workflow object from the API.
-* `msg.workflowId` – Convenience copy of the workflow ID.
-
-
+- `msg.payload` – Full workflow object from the API.
+- `msg.workflowId` – Convenience copy of the workflow ID.
 
 ## Create Dataset
 
@@ -143,19 +139,17 @@ Create a new Dataset and upload its tabular contents in one step.
 
 ### Inputs
 
-* **datasetName** (required): Name of the Dataset to create.
-* **fileContents** (required, default `msg.payload`): CSV/TSV content to upload.
-* **fileType** (default **csv**): Either `csv` or `tsv`. Determines the MIME type and file extension.
-* **description**: Dataset description.
-* **workspaceId**: Override the workspace ID from the Config node.
-* **baseUrl**: Override the Seqera API URL.
+- **datasetName** (required): Name of the Dataset to create.
+- **fileContents** (required, default `msg.payload`): CSV/TSV content to upload.
+- **fileType** (default **csv**): Either `csv` or `tsv`. Determines the MIME type and file extension.
+- **description**: Dataset description.
+- **workspaceId**: Override the workspace ID from the Config node.
+- **baseUrl**: Override the Seqera API URL.
 
 ### Outputs (one)
 
-* `msg.payload` – API response from the upload request.
-* `msg.datasetId` – ID of the newly-created Dataset.
-
-
+- `msg.payload` – API response from the upload request.
+- `msg.datasetId` – ID of the newly-created Dataset.
 
 ## List Files from Data Explorer
 
@@ -163,23 +157,21 @@ Retrieve objects from a Seqera **Data Explorer** link (Data Link).
 
 ### Inputs
 
-* **dataLinkName** (required): Display name of the Data Link.
-* **basePath**: Path within the Data Link to start from.
-* **prefix**: Prefix filter applied to both files and folders.
-* **pattern**: Regular-expression filter applied to files *after* the prefix filter.
-* **returnType** (default **files**): `files`, `folders` or `all`.
-* **maxResults** (default **100**): Maximum number of objects to return.
-* **depth** (default **0**): Folder recursion depth (`0` = current dir only).
-* **workspaceId**: Override the workspace ID from the Config node.
-* **baseUrl**: Override the Seqera API URL.
+- **dataLinkName** (required): Display name of the Data Link.
+- **basePath**: Path within the Data Link to start from.
+- **prefix**: Prefix filter applied to both files and folders.
+- **pattern**: Regular-expression filter applied to files _after_ the prefix filter.
+- **returnType** (default **files**): `files`, `folders` or `all`.
+- **maxResults** (default **100**): Maximum number of objects to return.
+- **depth** (default **0**): Folder recursion depth (`0` = current dir only).
+- **workspaceId**: Override the workspace ID from the Config node.
+- **baseUrl**: Override the Seqera API URL.
 
 ### Outputs (one)
 
-* `msg.payload.files` – Array of objects returned by the API (after filtering).
-* `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Metadata describing the Data Link.
-* `msg.files` – Convenience array containing fully-qualified object names.
-
-
+- `msg.payload.files` – Array of objects returned by the API (after filtering).
+- `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Metadata describing the Data Link.
+- `msg.files` – Convenience array containing fully-qualified object names.
 
 ## Poll Data Link Files
 
@@ -189,20 +181,18 @@ Periodically list a Data Link and emit messages when new objects appear. The nod
 
 All of the inputs from _List Files from Data Explorer_ node, plus:
 
-* **pollFrequency** (default **15 min**): Interval between polls expressed as seconds (`90`), `MM:SS`, `HH:MM:SS` or `DD-HH:MM:SS`.
+- **pollFrequency** (default **15 min**): Interval between polls expressed as seconds (`90`), `MM:SS`, `HH:MM:SS` or `DD-HH:MM:SS`.
 
 ### Outputs (two)
 
 1. **All results** – Emitted every poll with the full, filtered list.
-2. **New results** – Emitted only when one or more *new* objects are detected since the last poll.
+2. **New results** – Emitted only when one or more _new_ objects are detected since the last poll.
 
 Both messages include the same properties:
 
-* `msg.payload.files`, `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider`.
-* `msg.files` – Convenience array of fully-qualified object names.
-* `msg.payload.nextPoll` (only on the *All results* output) – ISO timestamp of the next scheduled poll.
-
-
+- `msg.payload.files`, `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider`.
+- `msg.files` – Convenience array of fully-qualified object names.
+- `msg.payload.nextPoll` (only on the _All results_ output) – ISO timestamp of the next scheduled poll.
 
 ## Create Studio
 
@@ -210,29 +200,27 @@ Create a new **Studio** (interactive workspace) on Seqera Platform.
 
 ### Inputs
 
-* **studioName** (required): Studio display name.
-* **containerUri** (required): Container image URI for the Studio tool.
-* **computeEnvId** (required): ID of the Compute Environment to run on.
-* **description**: Text description for the Studio.
-* **mountData**: One or more Data Link names to mount inside the Studio.
-* **cpu** (default **2**)
-* **memory** (default **8192**)
-* **gpu** (default **0**)
-* **initialCheckpointId**
-* **condaEnvironment**
-* **lifespanHours**: Maximum lifetime before auto-stop.
-* **isPrivate** (default **false**)
-* **spot** (default **false**)
-* **autoStart** (default **true**)
-* **workspaceId**: Override the workspace ID from the Config node.
-* **baseUrl**: Override the Seqera API URL.
+- **studioName** (required): Studio display name.
+- **containerUri** (required): Container image URI for the Studio tool.
+- **computeEnvId** (required): ID of the Compute Environment to run on.
+- **description**: Text description for the Studio.
+- **mountData**: One or more Data Link names to mount inside the Studio.
+- **cpu** (default **2**)
+- **memory** (default **8192**)
+- **gpu** (default **0**)
+- **initialCheckpointId**
+- **condaEnvironment**
+- **lifespanHours**: Maximum lifetime before auto-stop.
+- **isPrivate** (default **false**)
+- **spot** (default **false**)
+- **autoStart** (default **true**)
+- **workspaceId**: Override the workspace ID from the Config node.
+- **baseUrl**: Override the Seqera API URL.
 
 ### Outputs (one)
 
-* `msg.payload` – Full API response.
-* `msg.studioId` – ID of the created Studio.
-
-
+- `msg.payload` – Full API response.
+- `msg.studioId` – ID of the created Studio.
 
 # License
 
