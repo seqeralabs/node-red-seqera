@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1] - 2025-06-18
+
+- Use two separate Docker image names for the vanilla and Studios images.
+
 ## [1.0.0] - 2025-06-18
 
 - Moved repository to [seqeralabs/node-red-seqera](https://github.com/seqeralabs/node-red-seqera)

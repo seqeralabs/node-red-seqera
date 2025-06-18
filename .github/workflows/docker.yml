@@ -9,10 +9,6 @@ on:
   release:
     types: [published]
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,9 +16,9 @@ jobs:
       matrix:
         include:
           - dockerfile: docker/Dockerfile
-            tag_suffix: ""
+            image_name: ghcr.io/${{ github.repository }}
           - dockerfile: docker/studios.Dockerfile
-            tag_suffix: "-studios"
+            image_name: ghcr.io/${{ github.repository }}-studios
     permissions:
       contents: read
       packages: write
@@ -35,7 +31,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -43,13 +39,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ matrix.image_name }}
           tags: |
-            type=raw,value=main${{ matrix.tag_suffix }},enable={{is_default_branch}}
-            type=raw,value=latest${{ matrix.tag_suffix }},enable={{is_default_branch}}
-            type=semver,pattern={{version}}${{ matrix.tag_suffix }}
-            type=semver,pattern={{major}}.{{minor}}${{ matrix.tag_suffix }}
-            type=semver,pattern={{major}}${{ matrix.tag_suffix }}
+            type=raw,value=main,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
 
       - name: Build and push Docker image
         id: push
