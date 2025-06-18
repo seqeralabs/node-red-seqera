@@ -116,8 +116,6 @@ module.exports = function (RED) {
         form.append("file", buffer, { filename: `${datasetName}.${node.fileType}`, contentType: mime });
 
         const uploadHeaders = form.getHeaders();
-        msg._seqera_upload_request = { method: "POST", url: uploadUrl, headers: uploadHeaders };
-
         const uploadResp = await apiCall(node, "post", uploadUrl, { headers: uploadHeaders, data: form });
 
         msg.payload = uploadResp.data;
