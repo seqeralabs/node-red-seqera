@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.0] - 2025-06-18
+
+- Moved repository to [seqeralabs/node-red-seqera](https://github.com/seqeralabs/node-red-seqera)
+- Tidied up and updated `README.md`
+- Made a vanilla `Dockerfile` to run outside of Seqera Studios
+
 ## [0.3.3] - 2025-06-09
 
 - Datalink nodes: autocomplete datalinks, not datasets 🙈

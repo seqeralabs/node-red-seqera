@@ -79,11 +79,12 @@ See [the Node-RED documentation](https://nodered.org/docs/getting-started/docker
 ## Seqera Studios
 
 In addition to the base Docker image, the repo has an image specifically designed to run within [Seqera Studios](https://docs.seqera.io/platform-cloud/studios/overview).
+The images are the same, just with a `-studios` tag suffix.
 
 To use, create a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
 
 ```
-ghcr.io/seqeralabs/node-red-seqera:studios-latest
+ghcr.io/seqeralabs/node-red-seqera:latest-studios
 ```
 
 Make sure that the studio is set to _Always keep the session running_.
