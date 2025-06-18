@@ -20,9 +20,9 @@ jobs:
       matrix:
         include:
           - dockerfile: docker/Dockerfile
-            tag_prefix: ""
+            tag_suffix: ""
           - dockerfile: docker/studios.Dockerfile
-            tag_prefix: "studios-"
+            tag_suffix: "-studios"
     permissions:
       contents: read
       packages: write
@@ -45,11 +45,11 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=main,enable={{is_default_branch}}
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=raw,value=main${{ matrix.tag_suffix }},enable={{is_default_branch}}
+            type=raw,value=latest${{ matrix.tag_suffix }},enable={{is_default_branch}}
+            type=semver,pattern={{version}}${{ matrix.tag_suffix }}
+            type=semver,pattern={{major}}.{{minor}}${{ matrix.tag_suffix }}
+            type=semver,pattern={{major}}${{ matrix.tag_suffix }}
 
       - name: Build and push Docker image
         id: push
@@ -58,5 +58,5 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: ${{ matrix.tag_prefix }}${{ steps.meta.outputs.tags }}
-          labels: ${{ matrix.tag_prefix }}${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
