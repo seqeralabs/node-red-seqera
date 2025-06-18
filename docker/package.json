@@ -1,6 +1,6 @@
 {
-  "name": "node-red-seqera-data-studios",
-  "description": "Run Node-RED on Seqera Platform Studios",
+  "name": "node-red-seqera-instance",
+  "description": "Automate Seqera Platform with Node-RED",
   "version": "0.0.1",
   "private": true,
   "scripts": {

@@ -23,7 +23,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 - [Poll Data Link Files](#poll-data-link-files)
 - [Create a Seqera Studio](#create-studio)
 
-> [!NOTE]
+> [!IMPORTANT]
 > This is an open-source project for community benefit. It is provided as-is and is not part of Seqera's officially supported toolset.
 
 # Typical Use cases
@@ -33,7 +33,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 - Chain workflows, launching downstream automatically
 - (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
 
-> [!NOTE]
+> [!TIP]
 > This package includes several example flows which you can import and repurpose.
 > **See the [example docs](./docs/README.md) for more information.**
 
@@ -53,24 +53,42 @@ Install via the Node-RED palette manager _or_ from the command line inside your 
 npm install @seqera/node-red-seqera
 ```
 
-## Seqera Studios
+## Docker
 
-This repository comes with a custom Docker image containing both Node-RED and the Seqera nodes, designed to run within
-[Seqera Studios](https://docs.seqera.io/platform-cloud/studios/overview).
+This repository comes with a custom Docker image containing both Node-RED and the Seqera nodes, so that you can quickly launch a complete instance of Node-RED with everything you need.
 
-Simply create a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
+> [!NOTE]
+> This image is designed to be a reference only to get you started only.
+> You may want to customise the `docker/Dockerfile` and `docker/settings.js` files.
+
+The image can be found at (also with verioned tags):
 
 ```
 ghcr.io/seqeralabs/node-red-seqera:latest
 ```
 
+To run, you can use a Docker command such as the following:
+
+```bash
+docker run -p 1880:1880 ghcr.io/seqeralabs/node-red-seqera:latest
+```
+
+Please note that you will need to mount a local data folder to save progress, or save flows using _Projects_, in case you need to kill the container to upgrade or similar.
+See [the Node-RED documentation](https://nodered.org/docs/getting-started/docker) for more details.
+
+## Seqera Studios
+
+In addition to the base Docker image, the repo has an image specifically designed to run within [Seqera Studios](https://docs.seqera.io/platform-cloud/studios/overview).
+
+To use, create a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
+
+```
+ghcr.io/seqeralabs/node-red-seqera:studios-latest
+```
+
 Make sure that the studio is set to _Always keep the session running_.
 
 Your new Studio should launch with a complete Node-RED instance that's ready for you to customise and use with Seqera automation.
-
-> [!NOTE]
-> This image is designed to be a reference only to get you started only.
-> You may want to customise the `studios-template/Dockerfile` and `studios-template/settings.js` files.
 
 ## Example Flows
 

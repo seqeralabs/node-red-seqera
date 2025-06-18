@@ -24,14 +24,14 @@ COPY ./ /node-red-seqera/
 
 # Copy package.json to the WORKDIR so npm builds all of your added nodes modules
 WORKDIR /node-red-data
-COPY ./studios-template/package.json /node-red-data
+COPY ./docker/package.json /node-red-data
 RUN npm install --unsafe-perm --no-update-notifier --no-fund --only=production
 
 # Copy _your_ Node-RED project files into place
-COPY ./studios-template/settings.js /node-red-data/settings.js
-COPY ./studios-template/node-red-seqera.css /node-red-data/node-red-seqera.css
-COPY ./studios-template/node-red-seqera.svg /node-red-data/node-red-seqera.svg
-COPY ./studios-template/flows.json /node-red-data/flows.json
+COPY ./docker/settings.js /node-red-data/settings.js
+COPY ./docker/node-red-seqera.css /node-red-data/node-red-seqera.css
+COPY ./docker/node-red-seqera.svg /node-red-data/node-red-seqera.svg
+COPY ./docker/flows.json /node-red-data/flows.json
 
 # Default command to run node-red
 ENV LAST_MODIFIED="2025-05-16-01:55"
