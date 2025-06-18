@@ -16,12 +16,15 @@ Gives new Node-RED node types for your automation workflows, which are designed 
   <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
 </picture>
 
-- [Create Dataset](#create-dataset)
-- [Monitor a Run](#monitor-a-run)
+- [Launch a workflow](#launch-a-workflow)
+- [Monitor a workflow](#monitor-a-workfow)
+- [Create Dataset](#create-a-dataset)
 - [List Files from Data Explorer](#list-data-link-files)
 - [Poll Data Link Files](#poll-data-link-files)
+- [Create a Seqera Studio](#create-studio)
 
-Also [Launch](#launch) and [Monitor](#monitor-a-run) nodes for automation tasks, giving you full control over workflow execution and tracking.
+> [!NOTE]
+> This is an open-source project for community benefit. It is provided as-is and is not part of Seqera's officially supported toolset.
 
 # Typical Use cases
 
@@ -84,112 +87,152 @@ This is used by all other Seqera Node-RED nodes, so that you only
 have to enter your Seqera credentials once.
 
 - **Base URL**: The base URL for the Seqera API (default: https://api.cloud.seqera.io)
-- **Workspace ID**: Your Seqera workspace ID
 - **Token**: Your Seqera API token. Create a Seqera access token via [_Your Tokens_](https://cloud.seqera.io/tokens) in the user menu.
+- **Workspace ID**: Your Seqera workspace ID
 
-## Create Dataset
+## Launch a workflow
 
-Creates a new Dataset and uploads its file contents in one step.
-
-### Inputs
-
-- `datasetName`: Name of the dataset to create
-- `fileContents`: CSV/TSV (string or Buffer) to upload. Defaults to `msg.payload`.
-- `fileType`: _csv_ or _tsv_ – Select the MIME type for the upload (defaults to **csv**). This is required by Seqera Platform to validate the file contents.
-- `description`: Optional description string for the dataset
-- `workspaceId`: Override the workspace ID from the \* config node
-
-### Outputs (one output)
-
-Fired once when the upload completes successfully.
-
-- `msg.payload`: Upload response from the API
-- `msg.datasetId`: The ID of the created dataset
-- `msg._seqera_upload_request`: Details of the file-upload request (for debugging)
-
-## Launch workflow
-
-Launches a workflow using the Seqera API.
+Launch a new workflow (pipeline run) on Seqera Platform.
 
 ### Inputs
 
-- `launchpadName`: The Human-readable name of a pipeline in the launchpad to use
-- `params`: JSON object containing parameters to merge with the launchpad's default parameters
-- `workspaceId`: Override the workspace ID from the \* config node
-- `sourceWorkspaceId`: The source workspace ID (if a shared workflow and different to workspaceId)
+* **launchpadName**: Name of a Launchpad entry. If supplied the node will look up the pipeline, fetch its default launch configuration and submit the run.
+* **params**: Key/value pairs to merge into `paramsText`. By default these are read from `msg.params` but this property can be changed in the node.
+* **body**: A fully-formed request body placed on `msg.body` or `msg.payload`. If present it is sent as-is and the `launchpadName` lookup is skipped.
+* **workspaceId**: Override the workspace ID from the Config node.
+* **sourceWorkspaceId**: Workspace that owns the source pipeline when launching a shared workflow.
+* **baseUrl**: Override the Seqera API URL.
 
-Alternative input:
+### Outputs (one)
 
-- `msg.body`: A full launch request body (alternative to using launchpadName)
+* `msg.payload` – Raw API response.
+* `msg.workflowId` – Convenience copy of the submitted workflow ID.
+
+
 
 ## Monitor a workflow
 
-Checks the status of an existing workflow in Seqera Platform.
+Poll the status of an existing workflow run until it reaches a terminal state.
 
 ### Inputs
 
-- `workflowId`: The ID of the workflow run to query (defaults to `msg.workflowId`).
-- `workspaceId`: Override the workspace ID from the \* config node.
+* **workflowId** (required, default: `msg.workflowId`): ID of the workflow to monitor.
+* **workspaceId**: Override the workspace ID from the Config node.
 
 ### Configuration
 
-- `keepPolling` (boolean): If **true** (default) the node will continue polling the workflow status until it reaches a terminal state.
-- `pollInterval` (number): How frequently to poll when _keepPolling_ is enabled (in seconds, default **5**).
+* **keepPolling** (default **true**): Continue polling until the workflow is finished.
+* **pollInterval** (default **5 seconds**): Frequency of status checks.
 
-### Outputs (three outputs)
+### Outputs (three)
 
-1. Sent on every status poll while the workflow is active (submitted / running / pending).
-2. Sent once when the workflow completes successfully.
-3. Sent once when the workflow fails, is cancelled, or any non-success terminal state.
+1. **Active** – Emitted on every poll while the workflow is in `submitted`, `pending` or `running`.
+2. **Succeeded** – Emitted once when the workflow reaches a success status (`completed`, `succeeded`).
+3. **Failed** – Emitted once for any terminal non-success status (`failed`, `error`, `cancelled`, …).
 
 Each message contains:
 
-- `msg.payload`: The workflow details from the API
-- `msg.workflowId`: The ID of the workflow
+* `msg.payload` – Full workflow object from the API.
+* `msg.workflowId` – Convenience copy of the workflow ID.
 
-## List Data Link Files
 
-Lists files and folders from a Seqera Platform **Data Explorer** link.
+
+## Create Dataset
+
+Create a new Dataset and upload its tabular contents in one step.
 
 ### Inputs
 
-- **dataLinkName** (string): The Data Explorer link to query.
-- **basePath** (string): Path within the data link to start browsing. Leave blank for the root.
-- **prefix** (string): Optional prefix filter (applies to files _and_ folders).
-- **pattern** (string): Optional regular-expression pattern filter (applies to **files** only).
-- **returnType** (string): Choose what to return: `files`, `folders`, or `all` (everything).
-- **maxResults** (number): Maximum number of results to return (default: 100).
-- **depth** (number): How many directory levels to recurse into (0 = current dir only).
-- **workspaceId** (string): Override the workspace ID from the Config node.
+* **datasetName** (required): Name of the Dataset to create.
+* **fileContents** (required, default `msg.payload`): CSV/TSV content to upload.
+* **fileType** (default **csv**): Either `csv` or `tsv`. Determines the MIME type and file extension.
+* **description**: Dataset description.
+* **workspaceId**: Override the workspace ID from the Config node.
+* **baseUrl**: Override the Seqera API URL.
 
-### Outputs (one output)
+### Outputs (one)
 
-- `msg.payload` (array): Array of objects returned by the API after filtering.
-- `msg.files` (array): Convenience array containing only the file names.
+* `msg.payload` – API response from the upload request.
+* `msg.datasetId` – ID of the newly-created Dataset.
+
+
+
+## List Files from Data Explorer
+
+Retrieve objects from a Seqera **Data Explorer** link (Data Link).
+
+### Inputs
+
+* **dataLinkName** (required): Display name of the Data Link.
+* **basePath**: Path within the Data Link to start from.
+* **prefix**: Prefix filter applied to both files and folders.
+* **pattern**: Regular-expression filter applied to files *after* the prefix filter.
+* **returnType** (default **files**): `files`, `folders` or `all`.
+* **maxResults** (default **100**): Maximum number of objects to return.
+* **depth** (default **0**): Folder recursion depth (`0` = current dir only).
+* **workspaceId**: Override the workspace ID from the Config node.
+* **baseUrl**: Override the Seqera API URL.
+
+### Outputs (one)
+
+* `msg.payload.files` – Array of objects returned by the API (after filtering).
+* `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Metadata describing the Data Link.
+* `msg.files` – Convenience array containing fully-qualified object names.
+
+
 
 ## Poll Data Link Files
 
-Like **List Data Link Files**, but runs automatically on a timer so that you can trigger downstream automation whenever new data appears.
+Periodically list a Data Link and emit messages when new objects appear. The node starts polling as soon as the flow is deployed – it has **no message inputs**.
 
-This node has **no inputs** – it starts polling as soon as the Node-RED flow is deployed.
+### Properties
 
-### Inputs (typed-input fields)
+All of the inputs from _List Files from Data Explorer_ node, plus:
 
-Same as _List Data Link Files_, plus:
+* **pollFrequency** (default **15 min**): Interval between polls expressed as seconds (`90`), `MM:SS`, `HH:MM:SS` or `DD-HH:MM:SS`.
 
-- **pollFrequency** (number): How often to poll (default: 15 minutes).
+### Outputs (two)
 
-### Outputs (two outputs)
+1. **All results** – Emitted every poll with the full, filtered list.
+2. **New results** – Emitted only when one or more *new* objects are detected since the last poll.
 
-1. **All results** – Fired every poll with the full list returned from the API.
-2. **New results** – Fired only when at least one object is detected that wasn't present in the previous poll (will not send anything if there are no new objects).
+Both messages include the same properties:
 
-Each message contains the same properties as _List Data Link Files_ (`payload`, `files`).
+* `msg.payload.files`, `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider`.
+* `msg.files` – Convenience array of fully-qualified object names.
+* `msg.payload.nextPoll` (only on the *All results* output) – ISO timestamp of the next scheduled poll.
 
-### Outputs (one output)
 
-- `msg.payload`: The launch response from the API
-- `msg.workflowId`: The ID of the launched workflow
+
+## Create Studio
+
+Create a new **Studio** (interactive workspace) on Seqera Platform.
+
+### Inputs
+
+* **studioName** (required): Studio display name.
+* **containerUri** (required): Container image URI for the Studio tool.
+* **computeEnvId** (required): ID of the Compute Environment to run on.
+* **description**: Text description for the Studio.
+* **mountData**: One or more Data Link names to mount inside the Studio.
+* **cpu** (default **2**)
+* **memory** (default **8192**)
+* **gpu** (default **0**)
+* **initialCheckpointId**
+* **condaEnvironment**
+* **lifespanHours**: Maximum lifetime before auto-stop.
+* **isPrivate** (default **false**)
+* **spot** (default **false**)
+* **autoStart** (default **true**)
+* **workspaceId**: Override the workspace ID from the Config node.
+* **baseUrl**: Override the Seqera API URL.
+
+### Outputs (one)
+
+* `msg.payload` – Full API response.
+* `msg.studioId` – ID of the created Studio.
+
+
 
 # License
 
