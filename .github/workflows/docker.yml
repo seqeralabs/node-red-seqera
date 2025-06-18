@@ -16,6 +16,13 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - dockerfile: docker/Dockerfile
+            tag_prefix: ""
+          - dockerfile: docker/studios.Dockerfile
+            tag_prefix: "studios-"
     permissions:
       contents: read
       packages: write
@@ -49,17 +56,7 @@ jobs:
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
-          file: docker/Dockerfile
+          file: ${{ matrix.dockerfile }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Build and push Studios image
-        id: push-studios
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
-        with:
-          context: .
-          file: docker/studios.Dockerfile
-          push: true
-          tags: studios-${{ steps.meta.outputs.tags }}
-          labels: studios-${{ steps.meta.outputs.labels }}
+          tags: ${{ matrix.tag_prefix }}${{ steps.meta.outputs.tags }}
+          labels: ${{ matrix.tag_prefix }}${{ steps.meta.outputs.labels }}
