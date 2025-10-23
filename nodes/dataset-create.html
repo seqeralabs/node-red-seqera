@@ -30,6 +30,10 @@
       <option value="tsv">TSV</option>
     </select>
   </div>
+  <div class="form-row">
+    <label for="node-input-hasHeader"><i class="fa fa-table"></i> Has header</label>
+    <input type="checkbox" id="node-input-hasHeader" style="display: inline-block; width: auto; vertical-align: top;" />
+  </div>
 </script>
 
 <!-- prettier-ignore -->
@@ -41,6 +45,7 @@ Creates a new dataset and uploads its file contents to Seqera Platform.
 : datasetName (string) : Name of the dataset to create.
 : fileContents (string | buffer) : CSV/TSV string or buffer to upload. Defaults to `msg.payload`.
 : fileType (string) : File format / MIME type. Choose between 'csv' (default) or 'tsv'.
+: hasHeader (boolean) : Whether the file has a header row. When enabled, adds `header=true` query parameter to the upload API call.
 : description (string) : Optional description for the dataset.
 : workspaceId (string) : Override the workspace ID from the config node.
 
@@ -89,6 +94,7 @@ by Seqera Platform to validate the file contents.
       description: { value: "" },
       descriptionType: { value: "str" },
       fileType: { value: "csv" },
+      hasHeader: { value: false },
     },
     oneditprepare: function () {
       function ti(id, val, type, def = "str") {
@@ -106,6 +112,7 @@ by Seqera Platform to validate the file contents.
       ti("#node-input-description", this.description || "", this.descriptionType || "str");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
       $("#node-input-fileType").val(this.fileType || "csv");
+      $("#node-input-hasHeader").prop("checked", this.hasHeader || false);
     },
     oneditsave: function () {
       function save(id, prop, propType) {
@@ -117,6 +124,7 @@ by Seqera Platform to validate the file contents.
       save.call(this, "#node-input-description", "description", "descriptionType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       this.fileType = $("#node-input-fileType").val();
+      this.hasHeader = $("#node-input-hasHeader").prop("checked");
     },
   });
 </script>
