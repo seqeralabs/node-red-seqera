@@ -27,7 +27,7 @@
     "type": "function",
     "z": "a8f9e2c3d1b45678",
     "name": "Set user inputs",
-    "func": "// USER CONFIGURATION - Edit these values\n// This example uses nf-core test data that works out of the box\n\n// Path to RNA-seq samplesheet CSV\n// Using small test dataset from this repository\nmsg.rnaseqSamplesheet = \"https://raw.githubusercontent.com/seqeralabs/node-red-seqera/21daf72/examples/data/rnaseq-tests-datasets.csv\";\n\n// Base output path (will be combined with CSV basename)\n// IMPORTANT: Change this to your actual output location\nmsg.basePath = \"s3://my-bucket/results\";\n\n// Path to contrasts CSV for differential abundance\n// This defines comparisons: WT vs RAP1_UNINDUCED, WT vs RAP1_IAA_30M, etc.\nmsg.contrastsCSV = \"https://raw.githubusercontent.com/seqeralabs/node-red-seqera/21daf72/examples/data/rnaseq-test-contrasts.csv\";\n\n// Genome parameter (use iGenomes reference)\n// The test data is S. cerevisiae (yeast)\nmsg.genome = \"R64-1-1\";\n\n// Launchpad pipeline names (must exist in your workspace)\nmsg.rnaseqLaunchpad = \"nf-core-rnaseq\";\nmsg.diffabundLaunchpad = \"nf-core-differentialabundance\";\n\n// Additional RNA-seq parameters (optional)\nmsg.rnaseqExtraParams = {\n    \"aligner\": \"star_salmon\",\n    \"pseudo_aligner\": null\n};\n\n// Store CSV path for later\nmsg.csvPath = msg.rnaseqSamplesheet;\n\nreturn msg;",
+    "func": "// USER CONFIGURATION - Edit these values\n// This example uses nf-core test data that works out of the box\n\n// Path to RNA-seq samplesheet CSV\n// Using small test dataset from this repository\nmsg.rnaseqSamplesheet = \"https://raw.githubusercontent.com/seqeralabs/node-red-seqera/21daf72/examples/data/rnaseq-tests-datasets.csv\";\n\n// Base output path (will be combined with CSV basename)\n// IMPORTANT: Change this to your actual output location\nmsg.basePath = \"s3://scidev-playground-eu-west-2/scratch/gBNg8QN0OCK22\";\n\n// Path to contrasts CSV for differential abundance\n// This defines comparisons: WT vs RAP1_UNINDUCED, WT vs RAP1_IAA_30M, etc.\nmsg.contrastsCSV = \"https://raw.githubusercontent.com/seqeralabs/node-red-seqera/21daf72/examples/data/rnaseq-test-contrasts.csv\";\n\n// Genome parameter (use iGenomes reference)\n// The test data is S. cerevisiae (yeast)\nmsg.genome = \"R64-1-1\";\n\n// Launchpad pipeline names (must exist in your workspace)\nmsg.rnaseqLaunchpad = \"nf-core-rnaseq\";\nmsg.diffabundLaunchpad = \"nf-core-differentialabundance\";\n\n// Additional RNA-seq parameters (optional)\nmsg.rnaseqExtraParams = {\n    \"aligner\": \"star_salmon\",\n    \"pseudo_aligner\": null\n};\n\n// Store CSV path for later\nmsg.csvPath = msg.rnaseqSamplesheet;\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -50,7 +50,7 @@
     "initialize": "",
     "finalize": "",
     "libs": [],
-    "x": 490,
+    "x": 480,
     "y": 200,
     "wires": [["launch_rnaseq"]]
   },
@@ -59,7 +59,7 @@
     "type": "seqera-workflow-launch",
     "z": "a8f9e2c3d1b45678",
     "name": "Launch nf-core/rnaseq",
-    "seqera": "",
+    "seqera": "37a74dee5cfd3aa6",
     "launchpadName": "rnaseqLaunchpad",
     "launchpadNameType": "msg",
     "paramsKey": "{\"input\": msg.rnaseqSamplesheet, \"outdir\": msg.outdir, \"genome\": msg.genome, \"aligner\": msg.rnaseqExtraParams.aligner}",
@@ -77,7 +77,7 @@
     "type": "seqera-workflow-monitor",
     "z": "a8f9e2c3d1b45678",
     "name": "Monitor nf-core/rnaseq",
-    "seqera": "",
+    "seqera": "37a74dee5cfd3aa6",
     "workflowId": "workflowId",
     "workflowIdType": "msg",
     "workspaceId": "",
@@ -85,7 +85,7 @@
     "keepPolling": true,
     "poll": "15",
     "pollUnits": "seconds",
-    "x": 890,
+    "x": 950,
     "y": 200,
     "wires": [["debug_rnaseq_running"], ["prepare_diffabund"], ["debug_rnaseq_failed"]]
   },
@@ -102,8 +102,8 @@
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 1110,
-    "y": 160,
+    "x": 1230,
+    "y": 180,
     "wires": []
   },
   {
@@ -119,8 +119,8 @@
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 1110,
-    "y": 240,
+    "x": 1220,
+    "y": 220,
     "wires": []
   },
   {
@@ -135,7 +135,7 @@
     "initialize": "",
     "finalize": "",
     "libs": [],
-    "x": 370,
+    "x": 210,
     "y": 320,
     "wires": [["launch_diffabund"]]
   },
@@ -144,7 +144,7 @@
     "type": "seqera-workflow-launch",
     "z": "a8f9e2c3d1b45678",
     "name": "Launch nf-core/differentialabundance",
-    "seqera": "",
+    "seqera": "37a74dee5cfd3aa6",
     "launchpadName": "diffabundLaunchpad",
     "launchpadNameType": "msg",
     "paramsKey": "diffabundParams",
@@ -153,7 +153,7 @@
     "workspaceIdType": "str",
     "sourceWorkspaceId": "",
     "sourceWorkspaceIdType": "str",
-    "x": 660,
+    "x": 570,
     "y": 320,
     "wires": [["monitor_diffabund"]]
   },
@@ -162,7 +162,7 @@
     "type": "seqera-workflow-monitor",
     "z": "a8f9e2c3d1b45678",
     "name": "Monitor nf-core/differentialabundance",
-    "seqera": "",
+    "seqera": "37a74dee5cfd3aa6",
     "workflowId": "workflowId",
     "workflowIdType": "msg",
     "workspaceId": "",
@@ -187,7 +187,7 @@
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 1170,
+    "x": 1230,
     "y": 280,
     "wires": []
   },
@@ -204,7 +204,7 @@
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 1180,
+    "x": 1240,
     "y": 320,
     "wires": []
   },
@@ -221,7 +221,7 @@
     "targetType": "msg",
     "statusVal": "",
     "statusType": "auto",
-    "x": 1170,
+    "x": 1230,
     "y": 360,
     "wires": []
   },
@@ -241,7 +241,7 @@
     "z": "a8f9e2c3d1b45678",
     "name": "2. Generate unique output directory",
     "info": "This function extracts the CSV filename and creates\na unique output directory by combining:\n\nbasePath + CSV basename (without .csv extension)\n\nExample:\n- Input CSV: s3://bucket/data/experiment123.csv\n- Base path: s3://bucket/results\n- Output dir: s3://bucket/results/experiment123",
-    "x": 490,
+    "x": 540,
     "y": 140,
     "wires": []
   },
@@ -251,7 +251,7 @@
     "z": "a8f9e2c3d1b45678",
     "name": "3. Launch & Monitor RNA-seq",
     "info": "Launches nf-core/rnaseq using the Launchpad configuration.\n\nParameters passed:\n- input: samplesheet CSV path\n- outdir: generated output directory\n- gtf: annotation file path\n- aligner: STAR+Salmon (default)\n\nThe monitor node polls every 15 seconds and has three outputs:\n- Port 1: Running status (continuous updates)\n- Port 2: Success (triggers next stage)\n- Port 3: Failed (goes to debug)",
-    "x": 800,
+    "x": 940,
     "y": 140,
     "wires": []
   },
@@ -261,8 +261,8 @@
     "z": "a8f9e2c3d1b45678",
     "name": "4. Prepare DifferentialAbundance",
     "info": "Once RNA-seq succeeds, this function constructs the input\nparameters for nf-core/differentialabundance.\n\nIt builds file paths based on the known output structure:\n- matrix: star_salmon/salmon.merged.gene_counts.tsv\n- transcript_length_matrix: star_salmon/salmon.merged.gene_lengths.tsv\n\nReuses:\n- Same samplesheet (must include 'condition' column)\n- Same GTF file\n- Contrasts CSV for comparison definitions",
-    "x": 380,
-    "y": 260,
+    "x": 370,
+    "y": 380,
     "wires": []
   },
   {
@@ -271,8 +271,22 @@
     "z": "a8f9e2c3d1b45678",
     "name": "5. Launch & Monitor DifferentialAbundance",
     "info": "Launches nf-core/differentialabundance with:\n- input: samplesheet with condition column\n- contrasts: comparison definitions\n- matrix: count matrix from RNA-seq\n- transcript_length_matrix: gene lengths from RNA-seq\n- gtf: same annotation used for RNA-seq\n- outdir: rnaseq_outdir + '_differentialabundance' suffix\n\nThe monitor node tracks completion and outputs to debug nodes.",
-    "x": 820,
-    "y": 260,
+    "x": 900,
+    "y": 380,
     "wires": []
+  },
+  {
+    "id": "37a74dee5cfd3aa6",
+    "type": "seqera-config",
+    "baseUrl": "https://api.cloud.seqera.io",
+    "workspaceId": "162690105070735"
+  },
+  {
+    "id": "79e5974ccd7dcc5d",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@seqera/node-red-seqera": "1.0.1"
+    }
   }
 ]
