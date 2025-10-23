@@ -1,0 +1,5 @@
+id,variable,reference,target,blocking
+treatment_WT_RAP1_UNINDUCED,treatment,WT,RAP1_UNINDUCED,
+treatment_WT_RAP1_IAA_30M,treatment,WT,RAP1_IAA_30M,
+treatment_RAP1_UNINDUCED_RAP1_IAA_30M,treatment,RAP1_UNINDUCED,RAP1_IAA_30M,
+treatment_WT_RAP1_UNINDUCED_blocked,treatment,WT,RAP1_UNINDUCED,replicate
