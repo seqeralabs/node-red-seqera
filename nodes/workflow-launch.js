@@ -86,6 +86,8 @@ module.exports = function (RED) {
     node.launchpadNamePropType = config.launchpadNameType;
     node.paramsProp = config.paramsKey;
     node.paramsPropType = config.paramsKeyType;
+    node.runNameProp = config.runName;
+    node.runNamePropType = config.runNameType;
     node.baseUrlProp = config.baseUrl;
     node.baseUrlPropType = config.baseUrlType;
     node.workspaceIdProp = config.workspaceId;
@@ -127,6 +129,7 @@ module.exports = function (RED) {
 
       const launchpadName = await evalProp(node.launchpadNameProp, node.launchpadNamePropType);
       const paramsObj = await evalProp(node.paramsProp, node.paramsPropType);
+      const runName = await evalProp(node.runNameProp, node.runNamePropType);
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
@@ -188,6 +191,12 @@ module.exports = function (RED) {
           } catch (_) {}
         }
         body.launch.paramsText = JSON.stringify({ ...existingParams, ...paramsObj });
+      }
+
+      // Set custom run name if provided
+      if (runName && runName.trim()) {
+        body.launch = body.launch || {};
+        body.launch.runName = runName.trim();
       }
 
       // Build URL with query params

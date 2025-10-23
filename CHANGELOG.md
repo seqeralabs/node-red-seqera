@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Added customizable run name field to workflow launch node. Users can now specify a custom name for workflow runs, which will override the default auto-generated name. If left blank, Seqera Platform will generate a default name automatically.
+
 ## [1.0.1] - 2025-06-18
 
 - Use two separate Docker image names for the vanilla and Studios images.
