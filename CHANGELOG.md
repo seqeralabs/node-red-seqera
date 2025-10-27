@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0] - 2025-10-27
+
+- Launch node: added ability to provide key/value pairs for params in the editor interface
+
+## [1.1.0] - 2025-10-27
+
+- Added customizable run name field to workflow launch node [#8](https://github.com/seqeralabs/node-red-seqera/pull/8)
+- New example workflow: nf-core/rnaseq chained to nf-core/differentialabundance [#7](https://github.com/seqeralabs/node-red-seqera/pull/7)
+- Add checkbox to specify that dataset has a header row [#6](https://github.com/seqeralabs/node-red-seqera/pull/6)
+- Clarify required user permissions in Platform [#4](https://github.com/seqeralabs/node-red-seqera/pull/4)
+- Add ability to manually trigger a new docker image build [#2](https://github.com/seqeralabs/node-red-seqera/pull/2)
+
 ## [1.0.1] - 2025-06-18
 
 - Use two separate Docker image names for the vanilla and Studios images.

@@ -86,6 +86,9 @@ module.exports = function (RED) {
     node.launchpadNamePropType = config.launchpadNameType;
     node.paramsProp = config.paramsKey;
     node.paramsPropType = config.paramsKeyType;
+    node.paramsArray = config.params || [];
+    node.runNameProp = config.runName;
+    node.runNamePropType = config.runNameType;
     node.baseUrlProp = config.baseUrl;
     node.baseUrlPropType = config.baseUrlType;
     node.workspaceIdProp = config.workspaceId;
@@ -127,6 +130,7 @@ module.exports = function (RED) {
 
       const launchpadName = await evalProp(node.launchpadNameProp, node.launchpadNamePropType);
       const paramsObj = await evalProp(node.paramsProp, node.paramsPropType);
+      const runName = await evalProp(node.runNameProp, node.runNamePropType);
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
@@ -178,8 +182,17 @@ module.exports = function (RED) {
         return;
       }
 
-      // Merge paramsObj into launch.paramsText
-      if (paramsObj && typeof paramsObj === "object") {
+      // Evaluate params array
+      const paramsFromArray = {};
+      for (const param of node.paramsArray) {
+        if (param.name && param.name.trim()) {
+          const evaluatedValue = await evalProp(param.value, param.valueType);
+          paramsFromArray[param.name] = evaluatedValue;
+        }
+      }
+
+      // Merge params: start with existing launch.paramsText, then paramsObj (from JSON field), then paramsArray (individual params)
+      if ((paramsObj && typeof paramsObj === "object") || Object.keys(paramsFromArray).length > 0) {
         body.launch = body.launch || {};
         let existingParams = {};
         if (body.launch.paramsText) {
@@ -187,7 +200,19 @@ module.exports = function (RED) {
             existingParams = JSON.parse(body.launch.paramsText);
           } catch (_) {}
         }
-        body.launch.paramsText = JSON.stringify({ ...existingParams, ...paramsObj });
+        // Merge in order: existing -> paramsObj -> paramsFromArray (individual params take precedence)
+        const mergedParams = { ...existingParams };
+        if (paramsObj && typeof paramsObj === "object") {
+          Object.assign(mergedParams, paramsObj);
+        }
+        Object.assign(mergedParams, paramsFromArray);
+        body.launch.paramsText = JSON.stringify(mergedParams);
+      }
+
+      // Set custom run name if provided
+      if (runName && runName.trim()) {
+        body.launch = body.launch || {};
+        body.launch.runName = runName.trim();
       }
 
       // Build URL with query params

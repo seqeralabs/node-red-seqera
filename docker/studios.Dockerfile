@@ -1,5 +1,6 @@
 # Stage 1: Get the Seqera Connect client
-FROM public.cr.seqera.io/platform/connect-client:0.8 AS connect
+ARG CONNECT_CLIENT_VERSION=0.8
+FROM public.cr.seqera.io/platform/connect-client:${CONNECT_CLIENT_VERSION} AS connect
 
 # Final image: Start from the official node-red image
 FROM nodered/node-red:latest-debian

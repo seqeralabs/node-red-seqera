@@ -8,6 +8,14 @@ on:
   # Build release
   release:
     types: [published]
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      connect_version:
+        description: "Connect binary version"
+        required: false
+        default: "0.8"
+        type: string
 
 jobs:
   build:
@@ -56,3 +64,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            CONNECT_CLIENT_VERSION=${{ inputs.connect_version || '0.8' }}

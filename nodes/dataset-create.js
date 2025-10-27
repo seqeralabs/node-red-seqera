@@ -9,6 +9,7 @@ module.exports = function (RED) {
     node.fileContentsProp = config.fileContents;
     node.fileContentsPropType = config.fileContentsType;
     node.fileType = config.fileType || "csv";
+    node.hasHeader = config.hasHeader;
     node.descriptionProp = config.description;
     node.descriptionPropType = config.descriptionType;
     node.baseUrlProp = config.baseUrl;
@@ -105,7 +106,10 @@ module.exports = function (RED) {
         node.status({ fill: "yellow", shape: "ring", text: `uploading: ${formatDateTime()}` });
 
         let uploadUrl = `${baseUrl.replace(/\/$/, "")}/datasets/${datasetId}/upload`;
-        if (workspaceId != null) uploadUrl += `?workspaceId=${workspaceId}`;
+        const queryParams = [];
+        if (workspaceId != null) queryParams.push(`workspaceId=${workspaceId}`);
+        if (node.hasHeader) queryParams.push(`header=true`);
+        if (queryParams.length > 0) uploadUrl += `?${queryParams.join("&")}`;
 
         const form = new FormData();
         const buffer = Buffer.isBuffer(fileContents)
@@ -151,6 +155,7 @@ module.exports = function (RED) {
       token: { value: "token" },
       tokenType: { value: "str" },
       fileType: { value: "csv" },
+      hasHeader: { value: false },
     },
   });
 };
