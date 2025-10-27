@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2025-10-27
+
+- Launch node: added ability to provide key/value pairs for params in the editor interface
+
 ## [1.1.0] - 2025-10-27
 
 - Added customizable run name field to workflow launch node [#8](https://github.com/seqeralabs/node-red-seqera/pull/8)
