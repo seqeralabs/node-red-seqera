@@ -52,7 +52,7 @@ Monitors the status of a Seqera Platform Studio session.
 : payload (object) : The Studio details from the API, sent on every status poll while the Studio is active (starting, running, building, or stopping).
 : studioId (string) : The Studio session ID.
 
-2. Success
+2. Stopped
 : payload (object) : The Studio details from the API, sent once when the Studio is stopped.
 : studioId (string) : The Studio session ID.
 
@@ -65,6 +65,10 @@ Monitors the status of a Seqera Platform Studio session.
 This node queries the Seqera Platform API for the current status of a Studio. When *Keep polling status* is enabled (default) the node will keep polling at the configured interval until the Studio reaches a terminal state (stopped, errored, buildFailed).
 
 If *Keep polling status* is disabled the node performs a single status check and outputs the result immediately.
+
+**Status progression:** A typical Studio lifecycle follows: `starting` → `building` → `running` → `stopping` → `stopped`. Error states (`errored`, `buildFailed`) can occur at any point.
+
+**Payload details:** The `msg.payload.statusInfo.status` field contains the current status string. Additional details like container information, resource allocation, and timestamps are available in the full payload object.
 
 ### References
 
