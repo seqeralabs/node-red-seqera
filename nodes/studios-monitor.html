@@ -48,16 +48,16 @@ Monitors the status of a Seqera Platform Studio session.
 
 ### Outputs
 
-1. Status updates (active Studio)
-: payload (object) : The Studio details from the API, sent on every status poll while the Studio is active (starting, running, building, or stopping).
+1. All status checks
+: payload (object) : The Studio details from the API, sent on every status poll regardless of state.
 : studioId (string) : The Studio session ID.
 
-2. Stopped
-: payload (object) : The Studio details from the API, sent once when the Studio is stopped.
+2. Ready to use
+: payload (object) : The Studio details from the API, sent **once** when the Studio status transitions to `running` (ready for connections).
 : studioId (string) : The Studio session ID.
 
-3. Error
-: payload (object) : The Studio details from the API, sent once when the Studio errors or the build fails.
+3. Terminated
+: payload (object) : The Studio details from the API, sent when the Studio is no longer running (`stopped`, `errored`, or `buildFailed`).
 : studioId (string) : The Studio session ID.
 
 ### Details
@@ -65,6 +65,13 @@ Monitors the status of a Seqera Platform Studio session.
 This node queries the Seqera Platform API for the current status of a Studio. When *Keep polling status* is enabled (default) the node will keep polling at the configured interval until the Studio reaches a terminal state (stopped, errored, buildFailed).
 
 If *Keep polling status* is disabled the node performs a single status check and outputs the result immediately.
+
+**Output behavior:**
+- **Output 1** emits on every poll for monitoring/logging purposes
+- **Output 2** emits **once** when status transitions to `running` - use this to trigger actions when the Studio is ready (e.g., send notification, open Studio URL)
+- **Output 3** emits when the Studio terminates (stopped/errored/buildFailed) - use for cleanup or error handling
+
+Output 2 only fires on the state transition from any other state → `running`, not on subsequent polls while the Studio remains running.
 
 **Status progression:** A typical Studio lifecycle follows: `starting` → `building` → `running` → `stopping` → `stopped`. Error states (`errored`, `buildFailed`) can occur at any point.
 
@@ -87,7 +94,7 @@ If *Keep polling status* is disabled the node performs a single status check and
     label: function () {
       return this.name || "Monitor studio";
     },
-    outputLabels: ["status", "stopped", "error"],
+    outputLabels: ["all checks", "ready", "terminated"],
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },

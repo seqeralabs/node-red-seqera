@@ -29,6 +29,7 @@ module.exports = function (RED) {
     };
 
     let intervalId = null;
+    let previousStatus = null; // Track previous status to detect transitions
 
     const clearPolling = () => {
       if (intervalId) {
@@ -102,16 +103,20 @@ module.exports = function (RED) {
           studioId: response.data?.sessionId || studioId,
         };
 
-        if (/^(starting|running|building|stopping)$/.test(statusLower)) {
-          send([outMsg, null, null]);
-        } else if (/^(stopped)$/.test(statusLower)) {
-          send([null, outMsg, null]);
-        } else {
-          send([null, null, outMsg]);
-        }
+        // Output 1: Always send on every check
+        // Output 2: Send only on transition to running (ready to use) - not on every poll while running
+        // Output 3: Send when studio is no longer running (stopped, errored, buildFailed)
+        const isRunning = /^(running)$/.test(statusLower);
+        const isTerminated = /^(stopped|errored|buildfailed)$/.test(statusLower);
+        const justBecameRunning = isRunning && previousStatus !== "running";
 
-        // Determine if we should continue polling
-        if (!node.keepPolling || !/^(starting|running|building|stopping)$/.test(statusLower)) {
+        send([outMsg, justBecameRunning ? outMsg : null, isTerminated ? outMsg : null]);
+
+        // Update previous status for next poll
+        previousStatus = statusLower;
+
+        // Determine if we should continue polling (stop when terminated)
+        if (!node.keepPolling || isTerminated) {
           clearPolling();
         }
 
@@ -133,6 +138,7 @@ module.exports = function (RED) {
 
     node.on("input", async function (msg, send, done) {
       clearPolling();
+      previousStatus = null; // Reset status tracking on new input
       try {
         await fetchStatus(msg, send);
 

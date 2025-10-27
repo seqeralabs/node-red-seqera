@@ -166,7 +166,7 @@ module.exports = function (RED) {
 
         const resp = await apiCall(node, "post", url, { headers: { "Content-Type": "application/json" }, data: body });
         msg.payload = resp.data;
-        msg.studioId = resp.data?.studio?.id || resp.data?.id;
+        msg.studioId = resp.data?.studio?.sessionId || resp.data?.sessionId;
         node.status({ fill: "green", shape: "dot", text: `created: ${formatDateTime()}` });
         send(msg);
         if (done) done();

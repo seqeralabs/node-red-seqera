@@ -274,9 +274,9 @@ Poll the status of an existing **Studio** session until it reaches a terminal st
 
 ### Outputs (three)
 
-1. **Active** – Emitted on every poll while the Studio is active (`starting`, `running`, `building`, or `stopping`).
-2. **Stopped** – Emitted once when the Studio has been successfully stopped.
-3. **Error** – Emitted once when the Studio encounters an error or build failure (`errored`, `buildFailed`).
+1. **All status checks** – Emitted on every poll regardless of state, for monitoring and logging.
+2. **Ready to use** – Emitted **once** when the Studio status transitions to `running` (ready for connections).
+3. **Terminated** – Emitted when the Studio is no longer running (`stopped`, `errored`, or `buildFailed`).
 
 Each message contains:
 
@@ -289,13 +289,15 @@ The Studio status progression typically follows this sequence:
 
 - **starting** → Initial provisioning (yellow)
 - **building** → Container image is being built (yellow)
-- **running** → Studio is active and ready to use (blue)
+- **running** → Studio is active and ready to use (blue) - **Output 2 fires here**
 - **stopping** → Shutdown in progress (yellow)
-- **stopped** → Successfully terminated (green)
-- **errored** → Runtime error occurred (red)
-- **buildFailed** → Container build failed (red)
+- **stopped** → Successfully terminated (green) - **Output 3 fires here**
+- **errored** → Runtime error occurred (red) - **Output 3 fires here**
+- **buildFailed** → Container build failed (red) - **Output 3 fires here**
 
 When **keepPolling** is disabled, the node performs a single status check and outputs the result immediately without waiting for terminal states.
+
+**Tip:** Connect Output 2 to subsequent automation (e.g., send a Slack notification when Studio is ready). This output only fires once on the state transition to `running`, making it perfect for triggering actions without duplicate messages. Use Output 3 for cleanup or error handling.
 
 # License
 
