@@ -4,29 +4,35 @@
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
   </div>
   <div class="form-row">
-    <label for="node-input-launchpadName"><i class="fa fa-rocket"></i> Launchpad</label>
-    <input type="text" id="node-input-launchpadName" />
+    <label for="node-input-name"><i class="fa fa-tag"></i> Node name</label>
+    <input type="text" id="node-input-name" />
   </div>
   <div class="form-row">
-    <label for="node-input-paramsKey"><i class="fa fa-code"></i> Params</label>
-    <input type="text" id="node-input-paramsKey" />
+    <label for="node-input-launchpadName">
+      <i class="fa fa-rocket"></i> <abbr title="Launchpad pipeline name">Launchpad</abbr>
+    </label>
+    <input type="text" id="node-input-launchpadName" />
   </div>
   <div class="form-row">
     <label for="node-input-runName"><i class="fa fa-play-circle"></i> Run name</label>
     <input type="text" id="node-input-runName" />
   </div>
   <div class="form-row">
-    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" />
+    <label for="node-input-paramsKey"><i class="fa fa-code"></i> Params</label>
+    <input type="text" id="node-input-paramsKey" />
   </div>
   <div class="form-row">
-    <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
+    <label for="node-input-workspaceId">
+      <i class="icon-tasks"></i> <abbr title="Override Seqera config: workspace ID">Workspace ID</abbr>
+    </label>
     <input type="text" id="node-input-workspaceId" />
   </div>
-  <div class="form-row">
+  <!-- [Phil] Honestly, I've never figured out what the source workspace is. Hiding for now. -->
+  <div class="form-row" style="display: none;">
     <label for="node-input-sourceWorkspaceId"><i class="icon-tasks"></i> Source WS ID</label>
     <input type="text" id="node-input-sourceWorkspaceId" />
   </div>
+  <!-- [end source workspace hide] -->
 </script>
 
 <!-- prettier-ignore -->
