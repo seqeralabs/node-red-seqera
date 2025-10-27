@@ -17,11 +17,12 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 </picture>
 
 - [Launch a workflow](#launch-a-workflow)
-- [Monitor a workflow](#monitor-a-workfow)
+- [Monitor a workflow](#monitor-a-workflow)
 - [Create Dataset](#create-a-dataset)
 - [List Files from Data Explorer](#list-data-link-files)
 - [Poll Data Link Files](#poll-data-link-files)
 - [Create a Seqera Studio](#create-studio)
+- [Monitor a Seqera Studio](#monitor-studio)
 
 > [!IMPORTANT]
 > This is an open-source project for community benefit. It is provided as-is and is not part of Seqera's officially supported toolset.
@@ -117,6 +118,7 @@ have to enter your Seqera credentials once.
 | Create Dataset            | Launch                |
 | List/Poll Data Link Files | Maintain              |
 | Create Studio             | Maintain              |
+| Monitor Studio            | View                  |
 
 For full automation functionality, use a token with the **Maintain** role.
 
@@ -154,7 +156,7 @@ Poll the status of an existing workflow run until it reaches a terminal state.
 ### Configuration
 
 - **keepPolling** (default **true**): Continue polling until the workflow is finished.
-- **pollInterval** (default **5 seconds**): Frequency of status checks.
+- **pollInterval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
 
 ### Outputs (three)
 
@@ -255,6 +257,47 @@ Create a new **Studio** (interactive workspace) on Seqera Platform.
 
 - `msg.payload` – Full API response.
 - `msg.studioId` – ID of the created Studio.
+
+## Monitor Studio
+
+Poll the status of an existing **Studio** session until it reaches a terminal state.
+
+### Inputs
+
+- **studioId** (required, default: `msg.studioId`): ID of the Studio session to monitor.
+- **workspaceId**: Override the workspace ID from the Config node.
+
+### Configuration
+
+- **keepPolling** (default **true**): Continue polling until the Studio reaches a terminal state (stopped, errored, or buildFailed).
+- **pollInterval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
+
+### Outputs (three)
+
+1. **All status checks** – Emitted on every poll regardless of state, for monitoring and logging.
+2. **Ready to use** – Emitted **once** when the Studio status transitions to `running` (ready for connections).
+3. **Terminated** – Emitted when the Studio is no longer running (`stopped`, `errored`, or `buildFailed`).
+
+Each message contains:
+
+- `msg.payload` – Full Studio object from the API, including `statusInfo` with current status details.
+- `msg.studioId` – ID of the Studio session.
+
+### Status Details
+
+The Studio status progression typically follows this sequence:
+
+- **starting** → Initial provisioning (yellow)
+- **building** → Container image is being built (yellow)
+- **running** → Studio is active and ready to use (blue) - **Output 2 fires here**
+- **stopping** → Shutdown in progress (yellow)
+- **stopped** → Successfully terminated (green) - **Output 3 fires here**
+- **errored** → Runtime error occurred (red) - **Output 3 fires here**
+- **buildFailed** → Container build failed (red) - **Output 3 fires here**
+
+When **keepPolling** is disabled, the node performs a single status check and outputs the result immediately without waiting for terminal states.
+
+**Tip:** Connect Output 2 to subsequent automation (e.g., send a Slack notification when Studio is ready). This output only fires once on the state transition to `running`, making it perfect for triggering actions without duplicate messages. Use Output 3 for cleanup or error handling.
 
 # License
 

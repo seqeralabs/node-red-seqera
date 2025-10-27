@@ -127,6 +127,15 @@ Always evaluate properties inside the `node.on("input", ...)` handler so they re
 - Mounts Data Links specified in `mountData` array
 - Returns `msg.studioId`
 
+**[studios-monitor.js](nodes/studios-monitor.js):**
+
+- Polls Studio status at configurable interval (default 5s) with units (seconds/minutes/hours)
+- Three outputs: All checks (every poll), Ready (running), Terminated (stopped/errored/buildFailed)
+- Stops polling when Studio reaches terminal state or `keepPolling` is false
+- Status mapping: `starting|building|stopping` → yellow, `running` → blue, `stopped` → green, `errored|buildFailed` → red
+- Output 1 fires every poll, Output 2 fires **once** on transition to `running`, Output 3 fires on termination
+- Tracks `previousStatus` to detect state transitions and prevent duplicate ready notifications
+
 ### HTTP Admin Endpoints
 
 Several nodes register HTTP endpoints on Node-RED's admin API for editor features:
