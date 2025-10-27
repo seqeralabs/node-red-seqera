@@ -108,6 +108,18 @@ have to enter your Seqera credentials once.
 - **Token**: Your Seqera API token. Create a Seqera access token via [_Your Tokens_](https://cloud.seqera.io/tokens) in the user menu.
 - **Workspace ID**: Your Seqera workspace ID
 
+### Required Token Permissions
+
+| Node                      | Minimum Role Required |
+| ------------------------- | --------------------- |
+| Launch workflow           | Maintain              |
+| Monitor workflow          | View                  |
+| Create Dataset            | Launch                |
+| List/Poll Data Link Files | Maintain              |
+| Create Studio             | Maintain              |
+
+For full automation functionality, use a token with the **Maintain** role.
+
 ## Launch a workflow
 
 Launch a new workflow (pipeline run) on Seqera Platform.
