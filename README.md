@@ -112,7 +112,7 @@ have to enter your Seqera credentials once.
 
 | Node                      | Minimum Role Required |
 | ------------------------- | --------------------- |
-| Launch workflow           | Launch                |
+| Launch workflow           | Maintain              |
 | Monitor workflow          | View                  |
 | Create Dataset            | Launch                |
 | List/Poll Data Link Files | Maintain              |
