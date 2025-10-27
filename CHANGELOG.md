@@ -1,8 +1,6 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
+## [1.1.0] - 2025-10-27
 
 - Added customizable run name field to workflow launch node [#8](https://github.com/seqeralabs/node-red-seqera/pull/8)
 - New example workflow: nf-core/rnaseq chained to nf-core/differentialabundance [#7](https://github.com/seqeralabs/node-red-seqera/pull/7)
