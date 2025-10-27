@@ -9,7 +9,7 @@ module.exports = function (RED) {
     node.workspaceIdProp = config.workspaceId;
     node.workspaceIdPropType = config.workspaceIdType;
     node.pollIntervalProp = config.poll;
-    node.pollIntervalPropType = config.pollType;
+    node.pollUnitsProp = config.pollUnits;
     node.keepPolling = config.keepPolling !== false; // default true
 
     // Shared Seqera config
@@ -53,6 +53,14 @@ module.exports = function (RED) {
       return RED.util.evaluateNodeProperty(p, t, node, msg);
     };
 
+    // Helper to convert poll interval to seconds based on units
+    const convertToSeconds = (val, unit) => {
+      const num = parseInt(val, 10) || 5;
+      if (unit === "minutes") return num * 60;
+      if (unit === "hours") return num * 3600;
+      return num; // seconds or default
+    };
+
     // Status-colour mapping
     const mapColor = (s) => {
       const stat = (s || "").toLowerCase();
@@ -68,7 +76,6 @@ module.exports = function (RED) {
         // Evaluate dynamic props each poll so they can change via msg
         const studioId = await evalProp(node.studioIdProp, node.studioIdPropType, msg);
         const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType, msg);
-        const pollIntervalVal = await evalProp(node.pollIntervalProp, node.pollIntervalPropType, msg);
 
         if (!studioId) throw new Error("studioId not provided");
 
@@ -110,7 +117,7 @@ module.exports = function (RED) {
 
         // Adjust poll interval dynamically if value changed
         if (node.keepPolling && /^(starting|running|building|stopping)$/.test(statusLower)) {
-          const pollSec = parseInt(pollIntervalVal, 10) || 5;
+          const pollSec = convertToSeconds(node.pollIntervalProp, node.pollUnitsProp);
           if (pollSec * 1000 !== node._currentPollMs) {
             clearPolling();
             node._currentPollMs = pollSec * 1000;
@@ -130,8 +137,7 @@ module.exports = function (RED) {
         await fetchStatus(msg, send);
 
         if (node.keepPolling && !intervalId) {
-          const pollIntervalVal = await evalProp(node.pollIntervalProp, node.pollIntervalPropType, msg);
-          const pollSec = parseInt(pollIntervalVal, 10) || 5;
+          const pollSec = convertToSeconds(node.pollIntervalProp, node.pollUnitsProp);
           node._currentPollMs = pollSec * 1000;
           intervalId = setInterval(() => fetchStatus(msg, send), node._currentPollMs);
         }
@@ -148,14 +154,14 @@ module.exports = function (RED) {
     },
     defaults: {
       name: { value: "" },
-      seqeraConfig: { value: "", type: "seqera-config", required: true },
+      seqera: { value: "", type: "seqera-config" },
       studioId: { value: "studioId" },
       studioIdType: { value: "msg" },
-      workspaceId: { value: "workspaceId" },
-      workspaceIdType: { value: "msg" },
+      workspaceId: { value: "" },
+      workspaceIdType: { value: "str" },
       keepPolling: { value: true },
       poll: { value: 5 },
-      pollType: { value: "num" },
+      pollUnits: { value: "seconds" },
     },
   });
 };
