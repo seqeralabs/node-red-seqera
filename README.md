@@ -127,7 +127,10 @@ Launch a new workflow (pipeline run) on Seqera Platform.
 ### Inputs
 
 - **launchpadName**: Name of a Launchpad entry. If supplied the node will look up the pipeline, fetch its default launch configuration and submit the run.
-- **params**: Key/value pairs to merge into `paramsText`. By default these are read from `msg.params` but this property can be changed in the node.
+- **params**: Pipeline parameters can be specified in two ways:
+  - **Params JSON**: A complete JSON object containing multiple parameters. By default this is a JSON literal (`{}`), but can be changed to read from a message property like `msg.params`
+  - **Additional params**: Individual key-value pairs configured in the node editor's editable list
+  - When both are provided, they are merged together with individual params taking highest precedence
 - **runName**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
 - **body**: A fully-formed request body placed on `msg.body` or `msg.payload`. If present it is sent as-is and the `launchpadName` lookup is skipped.
 - **workspaceId**: Override the workspace ID from the Config node.

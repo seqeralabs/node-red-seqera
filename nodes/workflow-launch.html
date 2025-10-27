@@ -18,10 +18,6 @@
     <input type="text" id="node-input-runName" />
   </div>
   <div class="form-row">
-    <label for="node-input-paramsKey"><i class="fa fa-code"></i> Params</label>
-    <input type="text" id="node-input-paramsKey" />
-  </div>
-  <div class="form-row">
     <label for="node-input-workspaceId">
       <i class="icon-tasks"></i> <abbr title="Override Seqera config: workspace ID">Workspace ID</abbr>
     </label>
@@ -33,6 +29,14 @@
     <input type="text" id="node-input-sourceWorkspaceId" />
   </div>
   <!-- [end source workspace hide] -->
+  <div class="form-row">
+    <label for="node-input-paramsKey"><i class="fa fa-code"></i> Params JSON</label>
+    <input type="text" id="node-input-paramsKey" />
+  </div>
+  <div class="form-row">
+    <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Additional params</label>
+    <ol id="node-input-params-container"></ol>
+  </div>
 </script>
 
 <!-- prettier-ignore -->
@@ -61,7 +65,12 @@ This node launches a workflow using either:
 1. A launchpad name - the node will automatically look up the launchpad configuration
 2. A full launch request body provided in `msg.body`
 
-Workflow parameters can be provided as a JSON object and will be merged with the default parameters from the launchpad.
+Workflow parameters can be provided in two ways:
+
+1. **Params JSON** - A complete JSON object containing multiple parameters. This can be a JSON literal, or can be set to read from a message property (e.g., `msg.params`)
+2. **Additional params** - Individual key-value pairs added via the editable list
+
+When both are provided, they are merged together with individual params taking highest precedence. All parameters are then merged with the default parameters from the launchpad.
 
 ### References
 
@@ -87,6 +96,7 @@ Workflow parameters can be provided as a JSON object and will be merged with the
       launchpadNameType: { value: "str" },
       paramsKey: { value: "{}" },
       paramsKeyType: { value: "json" },
+      params: { value: [] },
       runName: { value: "" },
       runNameType: { value: "str" },
       workspaceId: { value: "" },
@@ -205,6 +215,46 @@ Workflow parameters can be provided as a JSON object and will be merged with the
       $("#node-input-seqera").on("change", function () {
         setupAutoComplete();
       });
+
+      // Initialize params editableList
+      $("#node-input-params-container")
+        .css("min-height", "150px")
+        .css("min-width", "450px")
+        .editableList({
+          addItem: function (container, index, param) {
+            const row = $("<div/>").css({ display: "flex", alignItems: "center", gap: "5px" }).appendTo(container);
+
+            // Parameter name input (string only)
+            const nameLabel = $('<span style="margin-left: 5px; min-width: 40px;">Name:</span>').appendTo(row);
+            const nameInput = $('<input type="text" style="width: 150px;">')
+              .val(param.name || "")
+              .appendTo(row);
+
+            // Parameter value input (typed)
+            const valueLabel = $('<span style="margin-left: 10px; min-width: 40px;">Value:</span>').appendTo(row);
+            const valueInput = $('<input type="text" style="flex: 1; min-width: 200px;">').appendTo(row);
+
+            valueInput.typedInput({
+              default: "str",
+              types: ["str", "msg", "flow", "global", "env", "jsonata", "json", "bool", "num"],
+            });
+            valueInput.typedInput("value", param.value || "");
+            valueInput.typedInput("type", param.valueType || "str");
+
+            // Store references for retrieval
+            param.nameInput = nameInput;
+            param.valueInput = valueInput;
+          },
+          removable: true,
+          sortable: true,
+        });
+
+      // Populate existing params
+      if (this.params && Array.isArray(this.params)) {
+        this.params.forEach((param) => {
+          $("#node-input-params-container").editableList("addItem", param);
+        });
+      }
     },
     oneditsave: function () {
       function save(id, prop, propType) {
@@ -216,6 +266,22 @@ Workflow parameters can be provided as a JSON object and will be merged with the
       save.call(this, "#node-input-runName", "runName", "runNameType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
+
+      // Save params array from editableList
+      const params = [];
+      $("#node-input-params-container")
+        .editableList("items")
+        .each(function () {
+          const param = $(this).data("data");
+          const name = param.nameInput.val().trim();
+          const value = param.valueInput.typedInput("value");
+          const valueType = param.valueInput.typedInput("type");
+          if (name) {
+            // Only save if name is not empty
+            params.push({ name, value, valueType });
+          }
+        });
+      this.params = params;
     },
   });
 </script>

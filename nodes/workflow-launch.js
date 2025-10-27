@@ -86,6 +86,7 @@ module.exports = function (RED) {
     node.launchpadNamePropType = config.launchpadNameType;
     node.paramsProp = config.paramsKey;
     node.paramsPropType = config.paramsKeyType;
+    node.paramsArray = config.params || [];
     node.runNameProp = config.runName;
     node.runNamePropType = config.runNameType;
     node.baseUrlProp = config.baseUrl;
@@ -181,8 +182,17 @@ module.exports = function (RED) {
         return;
       }
 
-      // Merge paramsObj into launch.paramsText
-      if (paramsObj && typeof paramsObj === "object") {
+      // Evaluate params array
+      const paramsFromArray = {};
+      for (const param of node.paramsArray) {
+        if (param.name && param.name.trim()) {
+          const evaluatedValue = await evalProp(param.value, param.valueType);
+          paramsFromArray[param.name] = evaluatedValue;
+        }
+      }
+
+      // Merge params: start with existing launch.paramsText, then paramsObj (from JSON field), then paramsArray (individual params)
+      if ((paramsObj && typeof paramsObj === "object") || Object.keys(paramsFromArray).length > 0) {
         body.launch = body.launch || {};
         let existingParams = {};
         if (body.launch.paramsText) {
@@ -190,7 +200,13 @@ module.exports = function (RED) {
             existingParams = JSON.parse(body.launch.paramsText);
           } catch (_) {}
         }
-        body.launch.paramsText = JSON.stringify({ ...existingParams, ...paramsObj });
+        // Merge in order: existing -> paramsObj -> paramsFromArray (individual params take precedence)
+        const mergedParams = { ...existingParams };
+        if (paramsObj && typeof paramsObj === "object") {
+          Object.assign(mergedParams, paramsObj);
+        }
+        Object.assign(mergedParams, paramsFromArray);
+        body.launch.paramsText = JSON.stringify(mergedParams);
       }
 
       // Set custom run name if provided
