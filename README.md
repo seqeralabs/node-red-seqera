@@ -116,6 +116,7 @@ Launch a new workflow (pipeline run) on Seqera Platform.
 
 - **launchpadName**: Name of a Launchpad entry. If supplied the node will look up the pipeline, fetch its default launch configuration and submit the run.
 - **params**: Key/value pairs to merge into `paramsText`. By default these are read from `msg.params` but this property can be changed in the node.
+- **runName**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
 - **body**: A fully-formed request body placed on `msg.body` or `msg.payload`. If present it is sent as-is and the `launchpadName` lookup is skipped.
 - **workspaceId**: Override the workspace ID from the Config node.
 - **sourceWorkspaceId**: Workspace that owns the source pipeline when launching a shared workflow.

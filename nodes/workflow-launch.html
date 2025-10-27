@@ -12,6 +12,10 @@
     <input type="text" id="node-input-paramsKey" />
   </div>
   <div class="form-row">
+    <label for="node-input-runName"><i class="fa fa-play-circle"></i> Run name</label>
+    <input type="text" id="node-input-runName" />
+  </div>
+  <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" />
   </div>
@@ -33,6 +37,7 @@ Launches a workflow using the Seqera Platform API.
 
 : launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
 : params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
+: runName (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
 : workspaceId (string) : Override the workspace ID from the config node.
 : sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
 : body (object) : A full launch request body (alternative to using launchpadName).
@@ -76,6 +81,8 @@ Workflow parameters can be provided as a JSON object and will be merged with the
       launchpadNameType: { value: "str" },
       paramsKey: { value: "{}" },
       paramsKeyType: { value: "json" },
+      runName: { value: "" },
+      runNameType: { value: "str" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
       sourceWorkspaceId: { value: "" },
@@ -97,6 +104,7 @@ Workflow parameters can be provided as a JSON object and will be merged with the
       $("#node-input-paramsKey").typedInput("type", this.paramsKeyType || "json");
 
       ti("#node-input-launchpadName", this.launchpadName || "", this.launchpadNameType || "str");
+      ti("#node-input-runName", this.runName || "", this.runNameType || "str");
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
       ti("#node-input-sourceWorkspaceId", this.sourceWorkspaceId || "", this.sourceWorkspaceIdType || "str");
 
@@ -199,6 +207,7 @@ Workflow parameters can be provided as a JSON object and will be merged with the
       }
       save.call(this, "#node-input-launchpadName", "launchpadName", "launchpadNameType");
       save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
+      save.call(this, "#node-input-runName", "runName", "runNameType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
     },
