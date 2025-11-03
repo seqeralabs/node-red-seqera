@@ -134,6 +134,8 @@ Launch a new workflow (pipeline run) on Seqera Platform.
   - **Additional params**: Individual key-value pairs configured in the node editor's editable list
   - When both are provided, they are merged together with individual params taking highest precedence
 - **runName**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
+- **sessionId**: Session ID from a previous workflow run for resuming failed workflows. Optional - typically extracted from `msg.payload.workflow.sessionId` of a monitored workflow.
+- **resume**: Enable Nextflow resume functionality to restart from the last successful process. Optional boolean value (default: false).
 - **body**: A fully-formed request body placed on `msg.body` or `msg.payload`. If present it is sent as-is and the `launchpadName` lookup is skipped.
 - **workspaceId**: Override the workspace ID from the Config node.
 - **sourceWorkspaceId**: Workspace that owns the source pipeline when launching a shared workflow.

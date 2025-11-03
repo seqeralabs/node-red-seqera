@@ -18,6 +18,19 @@
     <input type="text" id="node-input-runName" />
   </div>
   <div class="form-row">
+    <label for="node-input-sessionId">
+      <i class="fa fa-history"></i> <abbr title="Session ID from previous workflow run to resume">Session ID</abbr>
+    </label>
+    <input type="text" id="node-input-sessionId" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-resume">
+      <i class="fa fa-refresh"></i>
+      <abbr title="Enable Nextflow resume to restart from last successful process">Resume</abbr>
+    </label>
+    <input type="text" id="node-input-resume" />
+  </div>
+  <div class="form-row">
     <label for="node-input-workspaceId">
       <i class="icon-tasks"></i> <abbr title="Override Seqera config: workspace ID">Workspace ID</abbr>
     </label>
@@ -48,6 +61,8 @@ Launches a workflow using the Seqera Platform API.
 : launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
 : params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
 : runName (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
+: sessionId (string) : Session ID from a previous workflow run to resume (optional). Get from `msg.payload.workflow.sessionId` after monitoring a workflow.
+: resume (boolean) : Enable Nextflow resume to restart from last successful process (optional, default: false).
 : workspaceId (string) : Override the workspace ID from the config node.
 : sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
 : body (object) : A full launch request body (alternative to using launchpadName).
@@ -72,9 +87,24 @@ Workflow parameters can be provided in two ways:
 
 When both are provided, they are merged together with individual params taking highest precedence. All parameters are then merged with the default parameters from the launchpad.
 
+#### Resuming Failed Workflows
+
+To resume a failed workflow, provide:
+
+1. **sessionId** - The session ID from the previous workflow run (available in `msg.payload.workflow.sessionId` from the workflow monitor output)
+2. **resume** - Set to `true` to enable Nextflow resume functionality
+
+The resumed workflow must use the same work directory as the original run, so ensure your compute environment has access to the cached results.
+
+**Example resume pattern:**
+```
+[Launch] → [Monitor] → (Failed) → [Function: Extract sessionId] → [Launch with Resume]
+```
+
 ### References
 
 - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching workflows
+- [Seqera Resume docs](https://docs.seqera.io/platform-cloud/launch/cache-resume#resume-a-workflow-run) - information about resume functionality
 </script>
 
 <script type="text/javascript">
@@ -99,6 +129,10 @@ When both are provided, they are merged together with individual params taking h
       params: { value: [] },
       runName: { value: "" },
       runNameType: { value: "str" },
+      sessionId: { value: "" },
+      sessionIdType: { value: "str" },
+      resume: { value: "" },
+      resumeType: { value: "bool" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
       sourceWorkspaceId: { value: "" },
@@ -121,6 +155,23 @@ When both are provided, they are merged together with individual params taking h
 
       ti("#node-input-launchpadName", this.launchpadName || "", this.launchpadNameType || "str");
       ti("#node-input-runName", this.runName || "", this.runNameType || "str");
+
+      // Initialize sessionId typedInput (supports msg for extracting from workflow monitor output)
+      $("#node-input-sessionId").typedInput({
+        default: "str",
+        types: ["str", "msg", "flow", "global", "env", "jsonata"],
+      });
+      $("#node-input-sessionId").typedInput("value", this.sessionId || "");
+      $("#node-input-sessionId").typedInput("type", this.sessionIdType || "str");
+
+      // Initialize resume typedInput (boolean type for true/false)
+      $("#node-input-resume").typedInput({
+        default: "bool",
+        types: ["bool", "msg", "flow", "global", "env", "jsonata"],
+      });
+      $("#node-input-resume").typedInput("value", this.resume || "");
+      $("#node-input-resume").typedInput("type", this.resumeType || "bool");
+
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
       ti("#node-input-sourceWorkspaceId", this.sourceWorkspaceId || "", this.sourceWorkspaceIdType || "str");
 
@@ -264,6 +315,8 @@ When both are provided, they are merged together with individual params taking h
       save.call(this, "#node-input-launchpadName", "launchpadName", "launchpadNameType");
       save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
       save.call(this, "#node-input-runName", "runName", "runNameType");
+      save.call(this, "#node-input-sessionId", "sessionId", "sessionIdType");
+      save.call(this, "#node-input-resume", "resume", "resumeType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
 

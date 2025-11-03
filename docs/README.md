@@ -135,3 +135,31 @@ This workflow comes **pre-configured with test data** and works out of the box!
 - Set `msg.contrastsCSV` to your contrasts file
 - Set `msg.basePath` to your output location (e.g., `s3://my-bucket/results`)
 - Set `msg.genome` or provide explicit `msg.gtfFile` and `msg.fasta` paths
+
+## 05 - Auto-resume on workflow failure
+
+`examples/05 - Auto-resume on workflow failure.json`
+
+This workflow demonstrates how to automatically resume a failed Nextflow workflow using the session ID from the failed run. This pattern is useful for recovering from transient errors without re-running successfully completed tasks.
+
+The flow implements an automatic resume pattern:
+
+1. **Initial Launch** - A workflow is launched using the Launch workflow node
+2. **Monitor** - The workflow is continuously monitored for completion
+3. **Failure Detection** - If the workflow fails (output port 3 of the monitor node), the failure path is triggered
+4. **Extract Session ID** - A function node extracts the `sessionId` from `msg.payload.workflow.sessionId`
+5. **Resume Launch** - The original Launch workflow node is triggered with:
+   - The extracted `sessionId` (from `msg.sessionId`)
+   - The `resume` flag set to `true` (from `msg.resume`)
+6. **Monitor Resumed** - The resumed workflow is monitored for completion
+
+### Setup
+
+To use this example:
+
+- Configure all Seqera nodes with your Platform credentials
+- Set the launchpad name in both Launch workflow nodes (must be the same)
+- Adjust parameters as needed
+- Click "Deploy" and trigger with the inject node
+
+If your workflow succeeds on the first try, the resume logic won't be triggered. If it fails, the flow will automatically attempt to resume from the failure point.

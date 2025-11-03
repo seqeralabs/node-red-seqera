@@ -95,6 +95,10 @@ module.exports = function (RED) {
     node.workspaceIdPropType = config.workspaceIdType;
     node.sourceWorkspaceIdProp = config.sourceWorkspaceId;
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
+    node.sessionIdProp = config.sessionId;
+    node.sessionIdPropType = config.sessionIdType;
+    node.resumeProp = config.resume;
+    node.resumePropType = config.resumeType;
 
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
@@ -134,6 +138,8 @@ module.exports = function (RED) {
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
+      const sessionId = await evalProp(node.sessionIdProp, node.sessionIdPropType);
+      const resume = await evalProp(node.resumeProp, node.resumePropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -215,6 +221,18 @@ module.exports = function (RED) {
         body.launch.runName = runName.trim();
       }
 
+      // Set sessionId for resuming failed workflows if provided
+      if (sessionId && sessionId.trim && sessionId.trim()) {
+        body.launch = body.launch || {};
+        body.launch.sessionId = sessionId.trim();
+      }
+
+      // Enable resume flag if provided
+      if (resume !== undefined && resume !== null && resume !== "") {
+        body.launch = body.launch || {};
+        body.launch.resume = Boolean(resume);
+      }
+
       // Build URL with query params
       let url = `${baseUrl.replace(/\/$/, "")}/workflow/launch`;
       const qs = new URLSearchParams();
@@ -259,6 +277,10 @@ module.exports = function (RED) {
       baseUrlType: { value: "str" },
       sourceWorkspaceId: { value: "sourceWorkspaceId" },
       sourceWorkspaceIdType: { value: "str" },
+      sessionId: { value: "" },
+      sessionIdType: { value: "str" },
+      resume: { value: "" },
+      resumeType: { value: "bool" },
       token: { value: "token" },
       tokenType: { value: "str" },
     },
