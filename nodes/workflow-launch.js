@@ -97,6 +97,8 @@ module.exports = function (RED) {
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
     node.resumeWorkflowIdProp = config.resumeWorkflowId;
     node.resumeWorkflowIdPropType = config.resumeWorkflowIdType;
+    node.configProfilesProp = config.configProfiles;
+    node.configProfilesPropType = config.configProfilesType;
 
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
@@ -137,6 +139,7 @@ module.exports = function (RED) {
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
       const resumeWorkflowId = await evalProp(node.resumeWorkflowIdProp, node.resumeWorkflowIdPropType);
+      const configProfiles = await evalProp(node.configProfilesProp, node.configProfilesPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -216,6 +219,22 @@ module.exports = function (RED) {
       if (runName && runName.trim()) {
         body.launch = body.launch || {};
         body.launch.runName = runName.trim();
+      }
+
+      // Set config profiles if provided
+      if (configProfiles) {
+        body.launch = body.launch || {};
+        // Handle different input types: string (CSV), array, or already formatted
+        if (typeof configProfiles === "string" && configProfiles.trim()) {
+          // Split comma-separated string and trim each profile name
+          body.launch.configProfiles = configProfiles
+            .split(",")
+            .map((p) => p.trim())
+            .filter((p) => p);
+        } else if (Array.isArray(configProfiles) && configProfiles.length > 0) {
+          // Use array directly, filtering out empty values
+          body.launch.configProfiles = configProfiles.filter((p) => p && p.trim && p.trim());
+        }
       }
 
       // Resume from a previous workflow if workflow ID is provided
@@ -306,6 +325,18 @@ module.exports = function (RED) {
         const response = await apiCall(node, "post", url, { headers, data: body });
         msg.payload = response.data;
         msg.workflowId = response.data?.workflowId || response.data?.workflow?.id;
+
+        // Add request details to msg.request (with masked credentials)
+        msg.request = {
+          method: "POST",
+          url: url,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer ***MASKED***",
+          },
+          body: body,
+        };
+
         node.status({ fill: "green", shape: "dot", text: `launched: ${formatDateTime()}` });
         send(msg);
         if (done) done();
@@ -338,6 +369,8 @@ module.exports = function (RED) {
       sourceWorkspaceIdType: { value: "str" },
       resumeWorkflowId: { value: "" },
       resumeWorkflowIdType: { value: "str" },
+      configProfiles: { value: "" },
+      configProfilesType: { value: "str" },
       token: { value: "token" },
       tokenType: { value: "str" },
     },

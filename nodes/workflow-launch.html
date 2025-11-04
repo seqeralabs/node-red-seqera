@@ -25,6 +25,13 @@
     <input type="text" id="node-input-resumeWorkflowId" />
   </div>
   <div class="form-row">
+    <label for="node-input-configProfiles">
+      <i class="fa fa-cog"></i>
+      <abbr title="Nextflow configuration profile names (comma-separated string or JSON array)">Profiles</abbr>
+    </label>
+    <input type="text" id="node-input-configProfiles" />
+  </div>
+  <div class="form-row">
     <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Parameters</label>
     <ol id="node-input-params-container"></ol>
   </div>
@@ -60,6 +67,7 @@ Launches a workflow using the Seqera Platform API.
 : Launchpad (string) : The human-readable name of a pipeline in the launchpad to launch. Supports autocomplete.
 : Run name (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
 : Resume from (string) : Workflow ID from a previous run to resume (optional). Can be extracted from workflow monitor output using `msg.workflowId`.
+: Profiles (string | array) : Nextflow configuration profile names to apply. When using string type, provide comma-separated values (e.g., `docker,test,aws`). When using json type, provide an array (e.g., `["docker", "test"]`). Can also reference a message property containing an array.
 : Parameters (array) : Individual parameter key-value pairs added via the editable list. Each parameter can be configured with a name and a value of any type (string, number, boolean, JSON, etc.). These take highest precedence when merging.
 : Params JSON (object) : A JSON object containing multiple parameters to merge with the launchpad's default parameters. Merged before individual parameters.
 : Workspace ID (string) : Override the workspace ID from the Seqera config node (optional).
@@ -70,6 +78,7 @@ Launches a workflow using the Seqera Platform API.
 1. Standard output
 : payload (object) : The launch response from the API.
 : workflowId (string) : The ID of the launched workflow.
+: request (object) : The full request sent to Seqera Platform, including method, URL, headers (with masked credentials), and body. Useful for debugging and logging.
 
 ### Details
 
@@ -125,6 +134,8 @@ The resumed workflow must use the same work directory as the original run, so en
       runNameType: { value: "str" },
       resumeWorkflowId: { value: "" },
       resumeWorkflowIdType: { value: "str" },
+      configProfiles: { value: "" },
+      configProfilesType: { value: "str" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
       sourceWorkspaceId: { value: "" },
@@ -155,6 +166,14 @@ The resumed workflow must use the same work directory as the original run, so en
       });
       $("#node-input-resumeWorkflowId").typedInput("value", this.resumeWorkflowId || "");
       $("#node-input-resumeWorkflowId").typedInput("type", this.resumeWorkflowIdType || "str");
+
+      // Initialize configProfiles typedInput
+      $("#node-input-configProfiles").typedInput({
+        default: "str",
+        types: ["str", "msg", "flow", "global", "env", "jsonata", "json"],
+      });
+      $("#node-input-configProfiles").typedInput("value", this.configProfiles || "");
+      $("#node-input-configProfiles").typedInput("type", this.configProfilesType || "str");
 
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
       ti("#node-input-sourceWorkspaceId", this.sourceWorkspaceId || "", this.sourceWorkspaceIdType || "str");
@@ -298,6 +317,7 @@ The resumed workflow must use the same work directory as the original run, so en
       save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
       save.call(this, "#node-input-runName", "runName", "runNameType");
       save.call(this, "#node-input-resumeWorkflowId", "resumeWorkflowId", "resumeWorkflowIdType");
+      save.call(this, "#node-input-configProfiles", "configProfiles", "configProfilesType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
 
