@@ -97,8 +97,6 @@ module.exports = function (RED) {
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
     node.sessionIdProp = config.sessionId;
     node.sessionIdPropType = config.sessionIdType;
-    node.resumeProp = config.resume;
-    node.resumePropType = config.resumeType;
 
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
@@ -139,7 +137,6 @@ module.exports = function (RED) {
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
       const sessionId = await evalProp(node.sessionIdProp, node.sessionIdPropType);
-      const resume = await evalProp(node.resumeProp, node.resumePropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -222,15 +219,11 @@ module.exports = function (RED) {
       }
 
       // Set sessionId for resuming failed workflows if provided
+      // When sessionId is provided (non-empty string), automatically enable resume
       if (sessionId && sessionId.trim && sessionId.trim()) {
         body.launch = body.launch || {};
         body.launch.sessionId = sessionId.trim();
-      }
-
-      // Enable resume flag if provided
-      if (resume !== undefined && resume !== null && resume !== "") {
-        body.launch = body.launch || {};
-        body.launch.resume = Boolean(resume);
+        body.launch.resume = true;
       }
 
       // Build URL with query params
@@ -279,8 +272,6 @@ module.exports = function (RED) {
       sourceWorkspaceIdType: { value: "str" },
       sessionId: { value: "" },
       sessionIdType: { value: "str" },
-      resume: { value: "" },
-      resumeType: { value: "bool" },
       token: { value: "token" },
       tokenType: { value: "str" },
     },

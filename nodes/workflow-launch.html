@@ -19,16 +19,10 @@
   </div>
   <div class="form-row">
     <label for="node-input-sessionId">
-      <i class="fa fa-history"></i> <abbr title="Session ID from previous workflow run to resume">Session ID</abbr>
+      <i class="fa fa-history"></i>
+      <abbr title="Session ID from previous workflow run to resume">Resume Session ID</abbr>
     </label>
     <input type="text" id="node-input-sessionId" />
-  </div>
-  <div class="form-row">
-    <label for="node-input-resume">
-      <i class="fa fa-refresh"></i>
-      <abbr title="Enable Nextflow resume to restart from last successful process">Resume</abbr>
-    </label>
-    <input type="text" id="node-input-resume" />
   </div>
   <div class="form-row">
     <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Parameters</label>
@@ -65,8 +59,7 @@ Launches a workflow using the Seqera Platform API.
 : Node name (string) : Optional custom name for the node in the editor.
 : Launchpad (string) : The human-readable name of a pipeline in the launchpad to launch. Supports autocomplete.
 : Run name (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
-: Session ID (string) : Session ID from a previous workflow run to resume (optional). Can be extracted from workflow monitor output using `msg.payload.workflow.sessionId`.
-: Resume (boolean) : Enable Nextflow resume to restart from last successful process (optional, default false).
+: Session ID (string) : Session ID from a previous workflow run to resume (optional). Can be extracted from workflow monitor output using `msg.payload.workflow.sessionId`. When a non-empty session ID is provided, Nextflow resume is automatically enabled.
 : Parameters (array) : Individual parameter key-value pairs added via the editable list. Each parameter can be configured with a name and a value of any type (string, number, boolean, JSON, etc.). These take highest precedence when merging.
 : Params JSON (object) : A JSON object containing multiple parameters to merge with the launchpad's default parameters. Merged before individual parameters.
 : Workspace ID (string) : Override the workspace ID from the Seqera config node (optional).
@@ -94,10 +87,7 @@ When both are provided, they are merged together with individual params taking h
 
 #### Resuming Failed Workflows
 
-To resume a failed workflow, provide:
-
-1. **sessionId** - The session ID from the previous workflow run (available in `msg.payload.workflow.sessionId` from the workflow monitor output)
-2. **resume** - Set to `true` to enable Nextflow resume functionality
+To resume a failed workflow, provide the **sessionId** from the previous workflow run (available in `msg.payload.workflow.sessionId` from the workflow monitor output). When a non-empty session ID is provided, Nextflow resume functionality is automatically enabled.
 
 The resumed workflow must use the same work directory as the original run, so ensure your compute environment has access to the cached results.
 
@@ -131,8 +121,6 @@ The resumed workflow must use the same work directory as the original run, so en
       runNameType: { value: "str" },
       sessionId: { value: "" },
       sessionIdType: { value: "str" },
-      resume: { value: "" },
-      resumeType: { value: "bool" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
       sourceWorkspaceId: { value: "" },
@@ -163,14 +151,6 @@ The resumed workflow must use the same work directory as the original run, so en
       });
       $("#node-input-sessionId").typedInput("value", this.sessionId || "");
       $("#node-input-sessionId").typedInput("type", this.sessionIdType || "str");
-
-      // Initialize resume typedInput (boolean type for true/false)
-      $("#node-input-resume").typedInput({
-        default: "bool",
-        types: ["bool", "msg", "flow", "global", "env", "jsonata"],
-      });
-      $("#node-input-resume").typedInput("value", this.resume || "");
-      $("#node-input-resume").typedInput("type", this.resumeType || "bool");
 
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
       ti("#node-input-sourceWorkspaceId", this.sourceWorkspaceId || "", this.sourceWorkspaceIdType || "str");
@@ -314,7 +294,6 @@ The resumed workflow must use the same work directory as the original run, so en
       save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
       save.call(this, "#node-input-runName", "runName", "runNameType");
       save.call(this, "#node-input-sessionId", "sessionId", "sessionIdType");
-      save.call(this, "#node-input-resume", "resume", "resumeType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
 
