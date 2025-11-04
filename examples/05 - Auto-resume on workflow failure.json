@@ -4,7 +4,7 @@
     "type": "tab",
     "label": "Auto-resume on workflow failure",
     "disabled": false,
-    "info": "# Auto-resume on workflow failure\n\nThis example demonstrates how to automatically resume a failed workflow using a **loop pattern**. When a workflow fails, the sessionId is extracted and fed back to the same launch node to automatically retry with resume enabled.\n\n## How it works (Loop Pattern)\n\n1. **Trigger** - Click inject to start (or use any trigger)\n2. **Launch** - Launches workflow (reads sessionId from msg.sessionId if present)\n3. **Monitor** - Monitors workflow status with three outputs\n4. **On Success** - Flow completes (output 2)\n5. **On Failure** - Extract sessionId and loop back to Launch node (output 3 → function → back to Launch)\n\n## Key Features\n\n- **Single Launch Node**: The same node handles both initial launch and resume\n- **Automatic Loop**: Failed workflows automatically retry with resume enabled\n- **sessionId from msg**: The launch node reads sessionId from msg.sessionId (first run = empty, retry = populated)\n- **resume from msg**: The launch node reads resume flag from msg.resume\n\n## Setup Instructions\n\n1. Double click the **\"Launch workflow\"** node:\n   - Configure Seqera Platform credentials\n   - Set launchpad name\n   - **Important**: sessionId is set to read from \"msg.sessionId\" (type: msg)\n   - **Important**: resume is set to read from \"msg.resume\" (type: msg)\n\n2. Configure the **\"Monitor workflow\"** node with same Seqera config\n\n3. Click **\"Deploy\"** in Node-RED (top right)\n\n4. Click the **Inject** node to start\n\n## Important Notes\n\n- The resumed workflow must use the same work directory as the original\n- Your compute environment must have access to the cached results\n- The loop will continue until success or you can add retry limits\n- Each retry uses Nextflow's `-resume` to skip completed tasks",
+    "info": "# Auto-resume on workflow failure\n\nThis example demonstrates how to automatically resume a failed workflow using a **simple loop pattern**. When a workflow fails, it loops directly back to the launch node which automatically retries with resume enabled.\n\n## How it works (Loop Pattern)\n\n1. **Trigger** - Click inject to start (or use any trigger)\n2. **Launch** - Launches workflow (reads workflow ID from msg.workflowId for resume)\n3. **Monitor** - Monitors workflow status with three outputs\n4. **On Success** - Flow completes (output 2)\n5. **On Failure** - Loops directly back to Launch node (output 3)\n\n## Key Features\n\n- **Single Launch Node**: The same node handles both initial launch and resume\n- **Direct Loop**: Failed workflows loop directly back - no intermediate nodes needed!\n- **Automatic resume**: The launch node reads msg.workflowId and automatically:\n  - Fetches the session ID from the failed workflow\n  - Enables Nextflow resume\n  - Uses the correct commit/revision\n\n## Setup Instructions\n\n1. Double click the **\"Launch workflow\"** node:\n   - Configure Seqera Platform credentials\n   - Set launchpad name\n   - **Important**: \"Resume from\" field is set to read from \"msg.workflowId\" (type: msg)\n\n2. Configure the **\"Monitor workflow\"** node with same Seqera config\n\n3. Click **\"Deploy\"** in Node-RED (top right)\n\n4. Click the **Inject** node to start\n\n## Important Notes\n\n- The resumed workflow must use the same work directory as the original\n- Your compute environment must have access to the cached results\n- **This creates an infinite loop** that retries until success - add retry limit logic if needed\n- Each retry uses Nextflow's `-resume` to skip completed tasks",
     "env": []
   },
   {
@@ -19,7 +19,7 @@
     "onceDelay": 0.1,
     "topic": "",
     "x": 140,
-    "y": 160,
+    "y": 180,
     "wires": [["launch_node"]]
   },
   {
@@ -30,14 +30,25 @@
     "seqera": "",
     "launchpadName": "nf-core-rnaseq",
     "launchpadNameType": "str",
-    "paramsKey": "{\"outdir\":\"./results\"}",
+    "paramsKey": "",
     "paramsKeyType": "json",
+    "params": [
+      {
+        "name": "ourdir",
+        "value": "./results",
+        "valueType": "str"
+      }
+    ],
+    "runName": "",
+    "runNameType": "str",
+    "resumeWorkflowId": "workflowId",
+    "resumeWorkflowIdType": "msg",
     "workspaceId": "",
     "workspaceIdType": "str",
     "sourceWorkspaceId": "",
     "sourceWorkspaceIdType": "str",
-    "x": 340,
-    "y": 160,
+    "x": 350,
+    "y": 180,
     "wires": [["monitor_node"]]
   },
   {
@@ -53,41 +64,9 @@
     "keepPolling": true,
     "poll": "15",
     "pollUnits": "seconds",
-    "x": 560,
+    "x": 570,
     "y": 160,
-    "wires": [["debug_running"], ["debug_success"], ["extract_and_loop"]]
-  },
-  {
-    "id": "extract_and_loop",
-    "type": "function",
-    "z": "resume_example_tab",
-    "name": "Extract sessionId & loop back",
-    "func": "// Extract the sessionId from the failed workflow\nconst sessionId = msg.payload?.workflow?.sessionId;\n\nif (!sessionId) {\n    node.error(\"No sessionId found in workflow payload\", msg);\n    return null;\n}\n\nnode.warn(`Workflow failed! Resuming with sessionId: ${sessionId}`);\n\n// Set the sessionId and resume flag for the launch node\nmsg.sessionId = sessionId;\nmsg.resume = true;\n\n// Optional: Add retry counter to prevent infinite loops\nif (!msg.retryCount) {\n    msg.retryCount = 0;\n}\nmsg.retryCount += 1;\n\nif (msg.retryCount > 3) {\n    node.error(`Max retries (3) reached. Workflow failed after ${msg.retryCount} attempts.`, msg);\n    return null;\n}\n\nnode.warn(`Retry attempt ${msg.retryCount} of 3`);\n\nreturn msg;",
-    "outputs": 1,
-    "noerr": 0,
-    "initialize": "",
-    "finalize": "",
-    "libs": [],
-    "x": 410,
-    "y": 260,
-    "wires": [["launch_node"]]
-  },
-  {
-    "id": "debug_running",
-    "type": "debug",
-    "z": "resume_example_tab",
-    "name": "Running status",
-    "active": true,
-    "tosidebar": true,
-    "console": false,
-    "tostatus": false,
-    "complete": "payload.workflow.status",
-    "targetType": "msg",
-    "statusVal": "",
-    "statusType": "auto",
-    "x": 790,
-    "y": 120,
-    "wires": []
+    "wires": [[], ["debug_success"], ["launch_node"]]
   },
   {
     "id": "debug_success",
@@ -111,7 +90,7 @@
     "type": "comment",
     "z": "resume_example_tab",
     "name": "1. Trigger",
-    "info": "Click this inject node to start the workflow.\n\nIn a real automation, you might trigger this\nfrom a file upload, scheduled time, or other event.\n\nThe initial message has no sessionId or resume flag,\nso the launch node will start fresh.",
+    "info": "Click this inject node to start the workflow.\n\nIn a real automation, you might trigger this\nfrom a file upload, scheduled time, or other event.\n\nThe initial message has no workflow ID,\nso the launch node will start fresh.",
     "x": 140,
     "y": 100,
     "wires": []
@@ -121,8 +100,8 @@
     "type": "comment",
     "z": "resume_example_tab",
     "name": "2. Launch (with loop)",
-    "info": "This node handles BOTH initial launch AND resume.\n\n**Configuration:**\n- sessionId: msg.sessionId (type: msg)\n- resume: msg.resume (type: msg)\n\n**First run:** msg.sessionId is undefined → launches fresh\n**Loop back:** msg.sessionId is populated → resumes from failure\n\nThe same node works for both cases!",
-    "x": 360,
+    "info": "This node handles BOTH initial launch AND resume.\n\n**Configuration:**\n- Resume from: `msg.workflowId` (type: msg)\n\n**First run:** `msg.workflowId` is `undefined` → launches fresh\n**Loop back:** `msg.workflowId` is populated → fetches session ID and resumes\n\nThe same node works for both cases! When a workflow ID is provided,\nthe node automatically fetches the session ID from the API and enables resume.",
+    "x": 350,
     "y": 100,
     "wires": []
   },
@@ -131,19 +110,9 @@
     "type": "comment",
     "z": "resume_example_tab",
     "name": "3. Monitor",
-    "info": "Monitors the workflow status.\n\n**Three outputs:**\n1. Running status (every poll)\n2. Success (workflow completed) → Flow ends here\n3. Failed (workflow errored) → Triggers resume loop\n\nOutput 3 connects back to the launch node via\nthe extract function, creating the loop.",
+    "info": "Monitors the workflow status.\n\n**Three outputs:**\n1. Running status (not connected - no action needed)\n2. Success (workflow completed) → Flow ends here with debug output\n3. Failed (workflow errored) → Loops directly back to Launch node\n\nOutput 3 connects directly back to the launch node, creating the resume loop.",
     "x": 560,
     "y": 100,
-    "wires": []
-  },
-  {
-    "id": "comment_extract",
-    "type": "comment",
-    "z": "resume_example_tab",
-    "name": "4. Extract & Loop",
-    "info": "When the workflow fails, this function:\n\n1. Extracts sessionId from msg.payload.workflow.sessionId\n2. Sets msg.sessionId for the launch node\n3. Sets msg.resume = true to enable Nextflow resume\n4. Tracks retry count (max 3 attempts)\n5. Loops back to the Launch node\n\nThe Launch node reads these msg properties and\nautomatically resumes the failed workflow.\n\n**Retry Logic:**\nPrevents infinite loops by limiting to 3 retry attempts.\nYou can adjust this or remove it as needed.",
-    "x": 360,
-    "y": 320,
     "wires": []
   },
   {
@@ -151,27 +120,28 @@
     "type": "comment",
     "z": "resume_example_tab",
     "name": "Outputs",
-    "info": "**Running status** - Shows workflow status on each poll\n**Success** - Final successful completion\n\nThe loop continues until:\n- Workflow succeeds (output 2)\n- Max retries reached (3 attempts)\n- Manual intervention stops the flow",
-    "x": 780,
-    "y": 200,
+    "info": "**Success** - Final successful completion (debug output)\n\nThe loop continues until:\n- Workflow succeeds (output 2)\n- Manual intervention stops the flow",
+    "x": 770,
+    "y": 100,
     "wires": []
   },
   {
-    "id": "link_loop",
+    "id": "59ebff648cf0649e",
     "type": "comment",
     "z": "resume_example_tab",
-    "name": "← Loop back on failure",
-    "info": "This connection creates the resume loop.\n\nWhen a workflow fails:\nMonitor (output 3) → Extract sessionId → Loop back to Launch\n\nThe Launch node automatically handles resume\nbecause it reads sessionId and resume from msg.",
-    "x": 140,
-    "y": 320,
-    "wires": []
+    "name": "Warning! ⚠️",
+    "info": "Please note: this flow will loop _forever_.\nOr at least, until the workflow succeeds.\n\n**You don't want this in practice**.\nIf there is some problem which means the workflow\nwill never succeed, ie. it keeps failing for the same\nreason, it'll just go on and on and on.\n\nYou'll want some custom logic in this loop to\nadd some safeguards.",
+    "x": 470,
+    "y": 240,
+    "wires": [],
+    "icon": "font-awesome/fa-warning"
   },
   {
-    "id": "b5c73ea48912939a",
+    "id": "ce068971d6f3f1f0",
     "type": "global-config",
     "env": [],
     "modules": {
-      "@seqera/node-red-seqera": "1.0.1"
+      "@seqera/node-red-seqera": "1.2.0"
     }
   }
 ]
