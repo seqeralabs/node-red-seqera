@@ -303,10 +303,9 @@ When **keepPolling** is disabled, the node performs a single status check and ou
 Contributions are welcome! If you'd like to contribute to this project, please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 - Development setup instructions
-- How to run Node-RED locally with your changes
-- Code structure and patterns
-- Guidelines for adding new nodes
-- Testing and submission process
+- How to install and run Node-RED locally with your changes
+- Docker development setup
+- Getting help and resources
 
 # License
 

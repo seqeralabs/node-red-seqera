@@ -6,12 +6,9 @@ Thank you for your interest in contributing to this project! This document provi
 
 - [Development Setup](#development-setup)
 - [Running Node-RED Locally](#running-node-red-locally)
-- [Code Structure](#code-structure)
-- [Code Style and Linting](#code-style-and-linting)
-- [Adding New Nodes](#adding-new-nodes)
-- [Testing Your Changes](#testing-your-changes)
 - [Docker Development](#docker-development)
-- [Submitting Changes](#submitting-changes)
+- [Getting Help](#getting-help)
+- [License](#license)
 
 ## Development Setup
 
@@ -140,7 +137,6 @@ docker build -f docker/Dockerfile.studios -t ghcr.io/seqeralabs/node-red-seqera-
 
 - **Documentation**: Check [CLAUDE.md](CLAUDE.md) for detailed architecture notes
 - **Issues**: Search existing [GitHub issues](https://github.com/seqeralabs/node-red-seqera/issues)
-- **Questions**: Open a new issue with the "question" label
 
 ## License
 
