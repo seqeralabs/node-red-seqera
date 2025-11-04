@@ -122,10 +122,13 @@ module.exports = function (RED) {
         const uploadHeaders = form.getHeaders();
         const uploadResp = await apiCall(node, "post", uploadUrl, { headers: uploadHeaders, data: form });
 
-        msg.payload = uploadResp.data;
-        msg.datasetId = datasetId;
+        const outMsg = {
+          ...msg,
+          payload: uploadResp.data,
+          datasetId: datasetId,
+        };
         node.status({ fill: "green", shape: "dot", text: `uploaded: ${formatDateTime()}` });
-        send(msg);
+        send(outMsg);
         if (done) done();
       } catch (err) {
         if (!err.api_call)

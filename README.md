@@ -98,6 +98,52 @@ See the [example docs](./docs/README.md) for more information.
 
 # Usage
 
+## Message Property Passthrough
+
+**All Seqera nodes automatically preserve unrecognized message properties from input to output.**
+
+This means that any custom properties you add to the input message (such as `msg._context`, `msg.correlationId`, `msg.customMetadata`, etc.) will be copied through to the output message alongside the node's standard properties.
+
+### How it works
+
+Each node uses the JavaScript spread operator to copy all input properties before adding node-specific outputs:
+
+```javascript
+const outputMsg = {
+  ...msg,              // All input properties preserved
+  payload: ...,        // Node-specific properties added/overwritten
+  workflowId: ...,
+};
+```
+
+### Common use cases
+
+- **`msg._context`** - Preserve shared context across multiple nodes in a flow
+- **`msg.correlationId`** - Track messages through parallel branches or complex flows
+- **`msg.userId`** - Maintain user session information throughout a workflow
+- **Custom metadata** - Any debugging, logging, or business logic data
+
+### Example
+
+```javascript
+// Input message
+{
+  _context: { requestId: "abc123", source: "webhook" },
+  correlationId: "order-789",
+  payload: { ... }
+}
+
+// After passing through a workflow-launch node, output includes:
+{
+  _context: { requestId: "abc123", source: "webhook" },  // Preserved
+  correlationId: "order-789",                            // Preserved
+  payload: { ... },                                      // Overwritten with API response
+  workflowId: "xyz456"                                   // Added by node
+}
+```
+
+This works for **all node types**, including monitor nodes with multiple outputs (all outputs receive the same passthrough properties).
+
 ## Seqera Config Node
 
 Create a Seqera Config node to store your API credentials and default settings.
