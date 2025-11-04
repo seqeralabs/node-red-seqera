@@ -298,6 +298,16 @@ When **keepPolling** is disabled, the node performs a single status check and ou
 
 **Tip:** Connect Output 2 to subsequent automation (e.g., send a Slack notification when Studio is ready). This output only fires once on the state transition to `running`, making it perfect for triggering actions without duplicate messages. Use Output 3 for cleanup or error handling.
 
+# Contributing
+
+Contributions are welcome! If you'd like to contribute to this project, please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+
+- Development setup instructions
+- How to run Node-RED locally with your changes
+- Code structure and patterns
+- Guidelines for adding new nodes
+- Testing and submission process
+
 # License
 
 Apache-2.0 license
