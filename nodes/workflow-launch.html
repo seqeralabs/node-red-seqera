@@ -31,24 +31,27 @@
     <input type="text" id="node-input-resume" />
   </div>
   <div class="form-row">
-    <label for="node-input-workspaceId">
-      <i class="icon-tasks"></i> <abbr title="Override Seqera config: workspace ID">Workspace ID</abbr>
-    </label>
-    <input type="text" id="node-input-workspaceId" />
+    <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Parameters</label>
+    <ol id="node-input-params-container"></ol>
   </div>
-  <!-- [Phil] Honestly, I've never figured out what the source workspace is. Hiding for now. -->
-  <div class="form-row" style="display: none;">
-    <label for="node-input-sourceWorkspaceId"><i class="icon-tasks"></i> Source WS ID</label>
-    <input type="text" id="node-input-sourceWorkspaceId" />
-  </div>
-  <!-- [end source workspace hide] -->
   <div class="form-row">
     <label for="node-input-paramsKey"><i class="fa fa-code"></i> Params JSON</label>
     <input type="text" id="node-input-paramsKey" />
   </div>
   <div class="form-row">
-    <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Additional params</label>
-    <ol id="node-input-params-container"></ol>
+    <label for="node-input-workspaceId">
+      <i class="icon-tasks"></i> <abbr title="Override Seqera config: workspace ID">Workspace ID</abbr>
+    </label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-sourceWorkspaceId">
+      <i class="icon-tasks"></i>
+      <abbr title="Override Seqera config: Source workspace ID (if a shared workflow and different to workspaceId)">
+        Source WS ID
+      </abbr>
+    </label>
+    <input type="text" id="node-input-sourceWorkspaceId" />
   </div>
 </script>
 
@@ -61,8 +64,8 @@ Launches a workflow using the Seqera Platform API.
 : launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
 : params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
 : runName (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
-: sessionId (string) : Session ID from a previous workflow run to resume (optional). Get from `msg.payload.workflow.sessionId` after monitoring a workflow.
-: resume (boolean) : Enable Nextflow resume to restart from last successful process (optional, default: false).
+: sessionId (string) : Session ID from a previous workflow run to resume (optional).
+: resume (boolean) : Enable Nextflow resume to restart from last successful process (optional, default false).
 : workspaceId (string) : Override the workspace ID from the config node.
 : sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
 : body (object) : A full launch request body (alternative to using launchpadName).
@@ -95,11 +98,6 @@ To resume a failed workflow, provide:
 2. **resume** - Set to `true` to enable Nextflow resume functionality
 
 The resumed workflow must use the same work directory as the original run, so ensure your compute environment has access to the cached results.
-
-**Example resume pattern:**
-```
-[Launch] → [Monitor] → (Failed) → [Function: Extract sessionId] → [Launch with Resume]
-```
 
 ### References
 
@@ -268,37 +266,35 @@ The resumed workflow must use the same work directory as the original run, so en
       });
 
       // Initialize params editableList
-      $("#node-input-params-container")
-        .css("min-height", "150px")
-        .css("min-width", "450px")
-        .editableList({
-          addItem: function (container, index, param) {
-            const row = $("<div/>").css({ display: "flex", alignItems: "center", gap: "5px" }).appendTo(container);
+      $("#node-input-params-container").editableList({
+        height: "auto",
+        addItem: function (container, index, param) {
+          const row = $("<div/>").css({ display: "flex", alignItems: "center", gap: "5px" }).appendTo(container);
 
-            // Parameter name input (string only)
-            const nameLabel = $('<span style="margin-left: 5px; min-width: 40px;">Name:</span>').appendTo(row);
-            const nameInput = $('<input type="text" style="width: 150px;">')
-              .val(param.name || "")
-              .appendTo(row);
+          // Parameter name input (string only)
+          const nameLabel = $('<span style="margin-left: 5px; min-width: 40px;">Name:</span>').appendTo(row);
+          const nameInput = $('<input type="text" style="width: 150px;">')
+            .val(param.name || "")
+            .appendTo(row);
 
-            // Parameter value input (typed)
-            const valueLabel = $('<span style="margin-left: 10px; min-width: 40px;">Value:</span>').appendTo(row);
-            const valueInput = $('<input type="text" style="flex: 1; min-width: 200px;">').appendTo(row);
+          // Parameter value input (typed)
+          const valueLabel = $('<span style="margin-left: 10px; min-width: 40px;">Value:</span>').appendTo(row);
+          const valueInput = $('<input type="text" style="flex: 1; min-width: 200px;">').appendTo(row);
 
-            valueInput.typedInput({
-              default: "str",
-              types: ["str", "msg", "flow", "global", "env", "jsonata", "json", "bool", "num"],
-            });
-            valueInput.typedInput("value", param.value || "");
-            valueInput.typedInput("type", param.valueType || "str");
+          valueInput.typedInput({
+            default: "str",
+            types: ["str", "msg", "flow", "global", "env", "jsonata", "json", "bool", "num"],
+          });
+          valueInput.typedInput("value", param.value || "");
+          valueInput.typedInput("type", param.valueType || "str");
 
-            // Store references for retrieval
-            param.nameInput = nameInput;
-            param.valueInput = valueInput;
-          },
-          removable: true,
-          sortable: true,
-        });
+          // Store references for retrieval
+          param.nameInput = nameInput;
+          param.valueInput = valueInput;
+        },
+        removable: true,
+        sortable: true,
+      });
 
       // Populate existing params
       if (this.params && Array.isArray(this.params)) {
