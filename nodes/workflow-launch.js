@@ -95,8 +95,8 @@ module.exports = function (RED) {
     node.workspaceIdPropType = config.workspaceIdType;
     node.sourceWorkspaceIdProp = config.sourceWorkspaceId;
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
-    node.sessionIdProp = config.sessionId;
-    node.sessionIdPropType = config.sessionIdType;
+    node.resumeWorkflowIdProp = config.resumeWorkflowId;
+    node.resumeWorkflowIdPropType = config.resumeWorkflowIdType;
 
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
@@ -136,7 +136,7 @@ module.exports = function (RED) {
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
-      const sessionId = await evalProp(node.sessionIdProp, node.sessionIdPropType);
+      const resumeWorkflowId = await evalProp(node.resumeWorkflowIdProp, node.resumeWorkflowIdPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -218,12 +218,58 @@ module.exports = function (RED) {
         body.launch.runName = runName.trim();
       }
 
-      // Set sessionId for resuming failed workflows if provided
-      // When sessionId is provided (non-empty string), automatically enable resume
-      if (sessionId && sessionId.trim && sessionId.trim()) {
-        body.launch = body.launch || {};
-        body.launch.sessionId = sessionId.trim();
-        body.launch.resume = true;
+      // Resume from a previous workflow if workflow ID is provided
+      // Fetch the launch config from the workflow (includes sessionId and resumeCommitId)
+      if (resumeWorkflowId && resumeWorkflowId.trim && resumeWorkflowId.trim()) {
+        const wfId = resumeWorkflowId.trim();
+
+        try {
+          // Fetch the workflow launch config (includes sessionId and resumeCommitId)
+          const workflowLaunchUrl = `${baseUrl.replace(/\/$/, "")}/workflow/${wfId}/launch?workspaceId=${workspaceId}`;
+          const workflowLaunchResp = await apiCall(node, "get", workflowLaunchUrl, {
+            headers: { Accept: "application/json" },
+          });
+
+          if (!workflowLaunchResp.data || !workflowLaunchResp.data.launch) {
+            throw new Error("Invalid workflow launch config response");
+          }
+
+          const wfLaunch = workflowLaunchResp.data.launch;
+
+          // Create minimal resume launch config matching what the CLI sends
+          const resumeLaunch = {
+            id: wfLaunch.id,
+            computeEnvId: wfLaunch.computeEnv?.id || wfLaunch.computeEnvId,
+            pipeline: wfLaunch.pipeline,
+            workDir: wfLaunch.workDir || wfLaunch.resumeDir,
+            sessionId: wfLaunch.sessionId,
+            resume: true,
+            pullLatest: wfLaunch.pullLatest || false,
+            stubRun: wfLaunch.stubRun || false,
+            dateCreated: new Date().toISOString(),
+          };
+
+          // Use resumeCommitId as revision (this is the commit from the original workflow)
+          if (wfLaunch.resumeCommitId) {
+            resumeLaunch.revision = wfLaunch.resumeCommitId;
+          }
+
+          // Merge in paramsText if it was set via the params fields
+          if (body.launch && body.launch.paramsText) {
+            resumeLaunch.paramsText = body.launch.paramsText;
+          }
+
+          // Include runName if it was set
+          if (runName && runName.trim()) {
+            resumeLaunch.runName = runName.trim();
+          }
+
+          body.launch = resumeLaunch;
+        } catch (errResume) {
+          node.error(`Failed to fetch workflow launch config for resume: ${errResume.message}`, msg);
+          node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
+          return;
+        }
       }
 
       // Build URL with query params
@@ -270,8 +316,8 @@ module.exports = function (RED) {
       baseUrlType: { value: "str" },
       sourceWorkspaceId: { value: "sourceWorkspaceId" },
       sourceWorkspaceIdType: { value: "str" },
-      sessionId: { value: "" },
-      sessionIdType: { value: "str" },
+      resumeWorkflowId: { value: "" },
+      resumeWorkflowIdType: { value: "str" },
       token: { value: "token" },
       tokenType: { value: "str" },
     },
