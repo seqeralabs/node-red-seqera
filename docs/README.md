@@ -149,8 +149,10 @@ The flow implements an automatic resume pattern:
 3. **Failure Detection** - If the workflow fails (output port 3 of the monitor node), the failure path is triggered
 4. **Extract Workflow ID** - The workflow ID is available in `msg.workflowId` from the monitor node output
 5. **Resume Launch** - The Launch workflow node is triggered with:
-   - The workflow ID set in the "Resume from" field (e.g., from `msg.workflowId`)
-   - The node automatically fetches the session ID and enables resume
+   - The workflow ID set in the "Resume from" field (reading from `msg.workflowId`)
+   - The node automatically fetches the session ID and commit hash
+   - If the previous workflow ran tasks, resume is enabled to skip completed work
+   - If the workflow was cancelled before tasks ran, it relaunches from the start
 6. **Monitor Resumed** - The resumed workflow is monitored for completion
 
 ### Setup

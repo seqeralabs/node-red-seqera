@@ -132,7 +132,7 @@ Launch a new workflow (pipeline run) on Seqera Platform.
 - **Node name**: Optional custom name for the node in the editor.
 - **Launchpad**: Name of a Launchpad entry. The node will look up the pipeline, fetch its default launch configuration and submit the run. Supports autocomplete.
 - **Run name**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
-- **Resume from**: Workflow ID (Run ID) from a previous workflow run to resume. Optional - typically extracted from `msg.workflowId` of a monitored workflow. When a workflow ID is provided, the node automatically fetches the workflow's session ID and enables Nextflow resume.
+- **Resume from**: Workflow ID (Run ID) from a previous workflow run to resume. Optional - typically extracted from `msg.workflowId` of a monitored workflow.
 - **Parameters**: Individual parameter key-value pairs configured in the node editor's editable list. Each parameter can be a string, number, boolean, JSON object, or evaluated from message properties. These take highest precedence when merging.
 - **Params JSON**: A complete JSON object containing multiple parameters. By default this is a JSON literal (`{}`), but can be changed to read from a message property like `msg.params`. Merged before individual parameters.
 - **Workspace ID**: Override the workspace ID from the Config node.

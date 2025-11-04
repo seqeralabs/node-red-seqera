@@ -219,11 +219,24 @@ module.exports = function (RED) {
       }
 
       // Resume from a previous workflow if workflow ID is provided
-      // Fetch the launch config from the workflow (includes sessionId and resumeCommitId)
+      // This fetches the workflow's launch config and sessionId, then relaunches with resume enabled
       if (resumeWorkflowId && resumeWorkflowId.trim && resumeWorkflowId.trim()) {
         const wfId = resumeWorkflowId.trim();
 
         try {
+          // Fetch the workflow details to get the commitId (may be null if workflow was cancelled early)
+          const workflowUrl = `${baseUrl.replace(/\/$/, "")}/workflow/${wfId}?workspaceId=${workspaceId}`;
+          const workflowResp = await apiCall(node, "get", workflowUrl, {
+            headers: { Accept: "application/json" },
+          });
+
+          if (!workflowResp.data || !workflowResp.data.workflow) {
+            throw new Error("Invalid workflow response");
+          }
+
+          const workflow = workflowResp.data.workflow;
+          const commitId = workflow.commitId;
+
           // Fetch the workflow launch config (includes sessionId and resumeCommitId)
           const workflowLaunchUrl = `${baseUrl.replace(/\/$/, "")}/workflow/${wfId}/launch?workspaceId=${workspaceId}`;
           const workflowLaunchResp = await apiCall(node, "get", workflowLaunchUrl, {
@@ -236,6 +249,13 @@ module.exports = function (RED) {
 
           const wfLaunch = workflowLaunchResp.data.launch;
 
+          // Determine resume behavior based on whether workflow actually ran tasks:
+          // - If workflow ran tasks (has commitId), set resume=true and include revision field
+          // - If workflow was cancelled before tasks (no commitId), set resume=false and omit revision
+          // Priority: resumeCommitId > revision from launch config > commitId from workflow
+          const hasCommitId = wfLaunch.resumeCommitId || wfLaunch.revision || commitId;
+          const shouldSetResumeFlag = !!hasCommitId;
+
           // Create minimal resume launch config matching what the CLI sends
           const resumeLaunch = {
             id: wfLaunch.id,
@@ -243,15 +263,15 @@ module.exports = function (RED) {
             pipeline: wfLaunch.pipeline,
             workDir: wfLaunch.workDir || wfLaunch.resumeDir,
             sessionId: wfLaunch.sessionId,
-            resume: true,
+            resume: shouldSetResumeFlag,
             pullLatest: wfLaunch.pullLatest || false,
             stubRun: wfLaunch.stubRun || false,
             dateCreated: new Date().toISOString(),
           };
 
-          // Use resumeCommitId as revision (this is the commit from the original workflow)
-          if (wfLaunch.resumeCommitId) {
-            resumeLaunch.revision = wfLaunch.resumeCommitId;
+          // Include revision field only if we have a valid commit hash
+          if (hasCommitId) {
+            resumeLaunch.revision = hasCommitId;
           }
 
           // Merge in paramsText if it was set via the params fields

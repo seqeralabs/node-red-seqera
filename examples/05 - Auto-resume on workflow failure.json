@@ -30,7 +30,7 @@
     "seqera": "",
     "launchpadName": "nf-core-rnaseq",
     "launchpadNameType": "str",
-    "paramsKey": "",
+    "paramsKey": "{}",
     "paramsKeyType": "json",
     "params": [
       {
