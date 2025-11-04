@@ -128,18 +128,17 @@ Launch a new workflow (pipeline run) on Seqera Platform.
 
 ### Inputs
 
-- **launchpadName**: Name of a Launchpad entry. If supplied the node will look up the pipeline, fetch its default launch configuration and submit the run.
-- **params**: Pipeline parameters can be specified in two ways:
-  - **Params JSON**: A complete JSON object containing multiple parameters. By default this is a JSON literal (`{}`), but can be changed to read from a message property like `msg.params`
-  - **Additional params**: Individual key-value pairs configured in the node editor's editable list
-  - When both are provided, they are merged together with individual params taking highest precedence
-- **runName**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
-- **body**: A fully-formed request body placed on `msg.body` or `msg.payload`. If present it is sent as-is and the `launchpadName` lookup is skipped.
-- **workspaceId**: Override the workspace ID from the Config node.
-- **sourceWorkspaceId**: Workspace that owns the source pipeline when launching a shared workflow.
-- **baseUrl**: Override the Seqera API URL.
+- **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
+- **Node name**: Optional custom name for the node in the editor.
+- **Launchpad**: Name of a Launchpad entry. The node will look up the pipeline, fetch its default launch configuration and submit the run. Supports autocomplete.
+- **Run name**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
+- **Resume from**: Workflow ID (Run ID) from a previous workflow run to resume. Optional - typically extracted from `msg.workflowId` of a monitored workflow.
+- **Parameters**: Individual parameter key-value pairs configured in the node editor's editable list. Each parameter can be a string, number, boolean, JSON object, or evaluated from message properties. These take highest precedence when merging.
+- **Params JSON**: A complete JSON object containing multiple parameters. By default this is a JSON literal (`{}`), but can be changed to read from a message property like `msg.params`. Merged before individual parameters.
+- **Workspace ID**: Override the workspace ID from the Config node.
+- **Source WS ID**: Workspace that owns the source pipeline when launching a shared workflow.
 
-### Outputs (one)
+### Outputs
 
 - `msg.payload` – Raw API response.
 - `msg.workflowId` – Convenience copy of the submitted workflow ID.

@@ -18,24 +18,34 @@
     <input type="text" id="node-input-runName" />
   </div>
   <div class="form-row">
-    <label for="node-input-workspaceId">
-      <i class="icon-tasks"></i> <abbr title="Override Seqera config: workspace ID">Workspace ID</abbr>
+    <label for="node-input-resumeWorkflowId">
+      <i class="fa fa-history"></i>
+      <abbr title="Workflow ID from previous run to resume">Resume from</abbr>
     </label>
-    <input type="text" id="node-input-workspaceId" />
+    <input type="text" id="node-input-resumeWorkflowId" />
   </div>
-  <!-- [Phil] Honestly, I've never figured out what the source workspace is. Hiding for now. -->
-  <div class="form-row" style="display: none;">
-    <label for="node-input-sourceWorkspaceId"><i class="icon-tasks"></i> Source WS ID</label>
-    <input type="text" id="node-input-sourceWorkspaceId" />
+  <div class="form-row">
+    <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Parameters</label>
+    <ol id="node-input-params-container"></ol>
   </div>
-  <!-- [end source workspace hide] -->
   <div class="form-row">
     <label for="node-input-paramsKey"><i class="fa fa-code"></i> Params JSON</label>
     <input type="text" id="node-input-paramsKey" />
   </div>
   <div class="form-row">
-    <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Additional params</label>
-    <ol id="node-input-params-container"></ol>
+    <label for="node-input-workspaceId">
+      <i class="icon-tasks"></i> <abbr title="Override Seqera config: workspace ID">Workspace ID</abbr>
+    </label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-sourceWorkspaceId">
+      <i class="icon-tasks"></i>
+      <abbr title="Override Seqera config: Source workspace ID (if a shared workflow and different to workspaceId)">
+        Source WS ID
+      </abbr>
+    </label>
+    <input type="text" id="node-input-sourceWorkspaceId" />
   </div>
 </script>
 
@@ -45,12 +55,15 @@ Launches a workflow using the Seqera Platform API.
 
 ### Inputs
 
-: launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
-: params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
-: runName (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
-: workspaceId (string) : Override the workspace ID from the config node.
-: sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
-: body (object) : A full launch request body (alternative to using launchpadName).
+: Seqera config (seqera-config) : Reference to the seqera-config node containing API credentials and default workspace settings.
+: Node name (string) : Optional custom name for the node in the editor.
+: Launchpad (string) : The human-readable name of a pipeline in the launchpad to launch. Supports autocomplete.
+: Run name (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
+: Resume from (string) : Workflow ID from a previous run to resume (optional). Can be extracted from workflow monitor output using `msg.workflowId`.
+: Parameters (array) : Individual parameter key-value pairs added via the editable list. Each parameter can be configured with a name and a value of any type (string, number, boolean, JSON, etc.). These take highest precedence when merging.
+: Params JSON (object) : A JSON object containing multiple parameters to merge with the launchpad's default parameters. Merged before individual parameters.
+: Workspace ID (string) : Override the workspace ID from the Seqera config node (optional).
+: Source WS ID (string) : The source workspace ID, required if launching a shared workflow from a different workspace than the target workspace (optional).
 
 ### Outputs
 
@@ -72,9 +85,20 @@ Workflow parameters can be provided in two ways:
 
 When both are provided, they are merged together with individual params taking highest precedence. All parameters are then merged with the default parameters from the launchpad.
 
+#### Resuming Failed Workflows
+
+To resume a failed workflow, provide the **workflow ID** from the previous run (available in `msg.workflowId` from the workflow monitor output). The node will automatically:
+
+1. Fetch the workflow's session ID and commit ID
+2. Enable Nextflow resume functionality
+3. Use the same pipeline revision as the original run
+
+The resumed workflow must use the same work directory as the original run, so ensure your compute environment has access to the cached results.
+
 ### References
 
 - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching workflows
+- [Seqera Resume docs](https://docs.seqera.io/platform-cloud/launch/cache-resume#resume-a-workflow-run) - information about resume functionality
 </script>
 
 <script type="text/javascript">
@@ -99,6 +123,8 @@ When both are provided, they are merged together with individual params taking h
       params: { value: [] },
       runName: { value: "" },
       runNameType: { value: "str" },
+      resumeWorkflowId: { value: "" },
+      resumeWorkflowIdType: { value: "str" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
       sourceWorkspaceId: { value: "" },
@@ -121,6 +147,15 @@ When both are provided, they are merged together with individual params taking h
 
       ti("#node-input-launchpadName", this.launchpadName || "", this.launchpadNameType || "str");
       ti("#node-input-runName", this.runName || "", this.runNameType || "str");
+
+      // Initialize resumeWorkflowId typedInput (supports msg for extracting from workflow monitor output)
+      $("#node-input-resumeWorkflowId").typedInput({
+        default: "str",
+        types: ["str", "msg", "flow", "global", "env", "jsonata"],
+      });
+      $("#node-input-resumeWorkflowId").typedInput("value", this.resumeWorkflowId || "");
+      $("#node-input-resumeWorkflowId").typedInput("type", this.resumeWorkflowIdType || "str");
+
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
       ti("#node-input-sourceWorkspaceId", this.sourceWorkspaceId || "", this.sourceWorkspaceIdType || "str");
 
@@ -217,37 +252,35 @@ When both are provided, they are merged together with individual params taking h
       });
 
       // Initialize params editableList
-      $("#node-input-params-container")
-        .css("min-height", "150px")
-        .css("min-width", "450px")
-        .editableList({
-          addItem: function (container, index, param) {
-            const row = $("<div/>").css({ display: "flex", alignItems: "center", gap: "5px" }).appendTo(container);
+      $("#node-input-params-container").editableList({
+        height: "auto",
+        addItem: function (container, index, param) {
+          const row = $("<div/>").css({ display: "flex", alignItems: "center", gap: "5px" }).appendTo(container);
 
-            // Parameter name input (string only)
-            const nameLabel = $('<span style="margin-left: 5px; min-width: 40px;">Name:</span>').appendTo(row);
-            const nameInput = $('<input type="text" style="width: 150px;">')
-              .val(param.name || "")
-              .appendTo(row);
+          // Parameter name input (string only)
+          const nameLabel = $('<span style="margin-left: 5px; min-width: 40px;">Name:</span>').appendTo(row);
+          const nameInput = $('<input type="text" style="width: 150px;">')
+            .val(param.name || "")
+            .appendTo(row);
 
-            // Parameter value input (typed)
-            const valueLabel = $('<span style="margin-left: 10px; min-width: 40px;">Value:</span>').appendTo(row);
-            const valueInput = $('<input type="text" style="flex: 1; min-width: 200px;">').appendTo(row);
+          // Parameter value input (typed)
+          const valueLabel = $('<span style="margin-left: 10px; min-width: 40px;">Value:</span>').appendTo(row);
+          const valueInput = $('<input type="text" style="flex: 1; min-width: 200px;">').appendTo(row);
 
-            valueInput.typedInput({
-              default: "str",
-              types: ["str", "msg", "flow", "global", "env", "jsonata", "json", "bool", "num"],
-            });
-            valueInput.typedInput("value", param.value || "");
-            valueInput.typedInput("type", param.valueType || "str");
+          valueInput.typedInput({
+            default: "str",
+            types: ["str", "msg", "flow", "global", "env", "jsonata", "json", "bool", "num"],
+          });
+          valueInput.typedInput("value", param.value || "");
+          valueInput.typedInput("type", param.valueType || "str");
 
-            // Store references for retrieval
-            param.nameInput = nameInput;
-            param.valueInput = valueInput;
-          },
-          removable: true,
-          sortable: true,
-        });
+          // Store references for retrieval
+          param.nameInput = nameInput;
+          param.valueInput = valueInput;
+        },
+        removable: true,
+        sortable: true,
+      });
 
       // Populate existing params
       if (this.params && Array.isArray(this.params)) {
@@ -264,6 +297,7 @@ When both are provided, they are merged together with individual params taking h
       save.call(this, "#node-input-launchpadName", "launchpadName", "launchpadNameType");
       save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
       save.call(this, "#node-input-runName", "runName", "runNameType");
+      save.call(this, "#node-input-resumeWorkflowId", "resumeWorkflowId", "resumeWorkflowIdType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
 

@@ -95,6 +95,8 @@ module.exports = function (RED) {
     node.workspaceIdPropType = config.workspaceIdType;
     node.sourceWorkspaceIdProp = config.sourceWorkspaceId;
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
+    node.resumeWorkflowIdProp = config.resumeWorkflowId;
+    node.resumeWorkflowIdPropType = config.resumeWorkflowIdType;
 
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
@@ -134,6 +136,7 @@ module.exports = function (RED) {
       const baseUrlOverride = await evalProp(node.baseUrlProp, node.baseUrlPropType);
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
+      const resumeWorkflowId = await evalProp(node.resumeWorkflowIdProp, node.resumeWorkflowIdPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -215,6 +218,80 @@ module.exports = function (RED) {
         body.launch.runName = runName.trim();
       }
 
+      // Resume from a previous workflow if workflow ID is provided
+      // This fetches the workflow's launch config and sessionId, then relaunches with resume enabled
+      if (resumeWorkflowId && resumeWorkflowId.trim && resumeWorkflowId.trim()) {
+        const wfId = resumeWorkflowId.trim();
+
+        try {
+          // Fetch the workflow details to get the commitId (may be null if workflow was cancelled early)
+          const workflowUrl = `${baseUrl.replace(/\/$/, "")}/workflow/${wfId}?workspaceId=${workspaceId}`;
+          const workflowResp = await apiCall(node, "get", workflowUrl, {
+            headers: { Accept: "application/json" },
+          });
+
+          if (!workflowResp.data || !workflowResp.data.workflow) {
+            throw new Error("Invalid workflow response");
+          }
+
+          const workflow = workflowResp.data.workflow;
+          const commitId = workflow.commitId;
+
+          // Fetch the workflow launch config (includes sessionId and resumeCommitId)
+          const workflowLaunchUrl = `${baseUrl.replace(/\/$/, "")}/workflow/${wfId}/launch?workspaceId=${workspaceId}`;
+          const workflowLaunchResp = await apiCall(node, "get", workflowLaunchUrl, {
+            headers: { Accept: "application/json" },
+          });
+
+          if (!workflowLaunchResp.data || !workflowLaunchResp.data.launch) {
+            throw new Error("Invalid workflow launch config response");
+          }
+
+          const wfLaunch = workflowLaunchResp.data.launch;
+
+          // Determine resume behavior based on whether workflow actually ran tasks:
+          // - If workflow ran tasks (has commitId), set resume=true and include revision field
+          // - If workflow was cancelled before tasks (no commitId), set resume=false and omit revision
+          // Priority: resumeCommitId > revision from launch config > commitId from workflow
+          const hasCommitId = wfLaunch.resumeCommitId || wfLaunch.revision || commitId;
+          const shouldSetResumeFlag = !!hasCommitId;
+
+          // Create minimal resume launch config matching what the CLI sends
+          const resumeLaunch = {
+            id: wfLaunch.id,
+            computeEnvId: wfLaunch.computeEnv?.id || wfLaunch.computeEnvId,
+            pipeline: wfLaunch.pipeline,
+            workDir: wfLaunch.workDir || wfLaunch.resumeDir,
+            sessionId: wfLaunch.sessionId,
+            resume: shouldSetResumeFlag,
+            pullLatest: wfLaunch.pullLatest || false,
+            stubRun: wfLaunch.stubRun || false,
+            dateCreated: new Date().toISOString(),
+          };
+
+          // Include revision field only if we have a valid commit hash
+          if (hasCommitId) {
+            resumeLaunch.revision = hasCommitId;
+          }
+
+          // Merge in paramsText if it was set via the params fields
+          if (body.launch && body.launch.paramsText) {
+            resumeLaunch.paramsText = body.launch.paramsText;
+          }
+
+          // Include runName if it was set
+          if (runName && runName.trim()) {
+            resumeLaunch.runName = runName.trim();
+          }
+
+          body.launch = resumeLaunch;
+        } catch (errResume) {
+          node.error(`Failed to fetch workflow launch config for resume: ${errResume.message}`, msg);
+          node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
+          return;
+        }
+      }
+
       // Build URL with query params
       let url = `${baseUrl.replace(/\/$/, "")}/workflow/launch`;
       const qs = new URLSearchParams();
@@ -259,6 +336,8 @@ module.exports = function (RED) {
       baseUrlType: { value: "str" },
       sourceWorkspaceId: { value: "sourceWorkspaceId" },
       sourceWorkspaceIdType: { value: "str" },
+      resumeWorkflowId: { value: "" },
+      resumeWorkflowIdType: { value: "str" },
       token: { value: "token" },
       tokenType: { value: "str" },
     },

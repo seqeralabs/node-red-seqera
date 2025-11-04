@@ -1,0 +1,147 @@
+[
+  {
+    "id": "resume_example_tab",
+    "type": "tab",
+    "label": "Auto-resume on workflow failure",
+    "disabled": false,
+    "info": "# Auto-resume on workflow failure\n\nThis example demonstrates how to automatically resume a failed workflow using a **simple loop pattern**. When a workflow fails, it loops directly back to the launch node which automatically retries with resume enabled.\n\n## How it works (Loop Pattern)\n\n1. **Trigger** - Click inject to start (or use any trigger)\n2. **Launch** - Launches workflow (reads workflow ID from msg.workflowId for resume)\n3. **Monitor** - Monitors workflow status with three outputs\n4. **On Success** - Flow completes (output 2)\n5. **On Failure** - Loops directly back to Launch node (output 3)\n\n## Key Features\n\n- **Single Launch Node**: The same node handles both initial launch and resume\n- **Direct Loop**: Failed workflows loop directly back - no intermediate nodes needed!\n- **Automatic resume**: The launch node reads msg.workflowId and automatically:\n  - Fetches the session ID from the failed workflow\n  - Enables Nextflow resume\n  - Uses the correct commit/revision\n\n## Setup Instructions\n\n1. Double click the **\"Launch workflow\"** node:\n   - Configure Seqera Platform credentials\n   - Set launchpad name\n   - **Important**: \"Resume from\" field is set to read from \"msg.workflowId\" (type: msg)\n\n2. Configure the **\"Monitor workflow\"** node with same Seqera config\n\n3. Click **\"Deploy\"** in Node-RED (top right)\n\n4. Click the **Inject** node to start\n\n## Important Notes\n\n- The resumed workflow must use the same work directory as the original\n- Your compute environment must have access to the cached results\n- **This creates an infinite loop** that retries until success - add retry limit logic if needed\n- Each retry uses Nextflow's `-resume` to skip completed tasks",
+    "env": []
+  },
+  {
+    "id": "inject_trigger",
+    "type": "inject",
+    "z": "resume_example_tab",
+    "name": "Trigger workflow",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 140,
+    "y": 180,
+    "wires": [["launch_node"]]
+  },
+  {
+    "id": "launch_node",
+    "type": "seqera-workflow-launch",
+    "z": "resume_example_tab",
+    "name": "Launch workflow",
+    "seqera": "",
+    "launchpadName": "nf-core-rnaseq",
+    "launchpadNameType": "str",
+    "paramsKey": "{}",
+    "paramsKeyType": "json",
+    "params": [
+      {
+        "name": "ourdir",
+        "value": "./results",
+        "valueType": "str"
+      }
+    ],
+    "runName": "",
+    "runNameType": "str",
+    "resumeWorkflowId": "workflowId",
+    "resumeWorkflowIdType": "msg",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "sourceWorkspaceId": "",
+    "sourceWorkspaceIdType": "str",
+    "x": 350,
+    "y": 180,
+    "wires": [["monitor_node"]]
+  },
+  {
+    "id": "monitor_node",
+    "type": "seqera-workflow-monitor",
+    "z": "resume_example_tab",
+    "name": "Monitor workflow",
+    "seqera": "",
+    "workflowId": "workflowId",
+    "workflowIdType": "msg",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "keepPolling": true,
+    "poll": "15",
+    "pollUnits": "seconds",
+    "x": 570,
+    "y": 160,
+    "wires": [[], ["debug_success"], ["launch_node"]]
+  },
+  {
+    "id": "debug_success",
+    "type": "debug",
+    "z": "resume_example_tab",
+    "name": "✓ Success!",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 780,
+    "y": 160,
+    "wires": []
+  },
+  {
+    "id": "comment_trigger",
+    "type": "comment",
+    "z": "resume_example_tab",
+    "name": "1. Trigger",
+    "info": "Click this inject node to start the workflow.\n\nIn a real automation, you might trigger this\nfrom a file upload, scheduled time, or other event.\n\nThe initial message has no workflow ID,\nso the launch node will start fresh.",
+    "x": 140,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "comment_launch",
+    "type": "comment",
+    "z": "resume_example_tab",
+    "name": "2. Launch (with loop)",
+    "info": "This node handles BOTH initial launch AND resume.\n\n**Configuration:**\n- Resume from: `msg.workflowId` (type: msg)\n\n**First run:** `msg.workflowId` is `undefined` → launches fresh\n**Loop back:** `msg.workflowId` is populated → fetches session ID and resumes\n\nThe same node works for both cases! When a workflow ID is provided,\nthe node automatically fetches the session ID from the API and enables resume.",
+    "x": 350,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "comment_monitor",
+    "type": "comment",
+    "z": "resume_example_tab",
+    "name": "3. Monitor",
+    "info": "Monitors the workflow status.\n\n**Three outputs:**\n1. Running status (not connected - no action needed)\n2. Success (workflow completed) → Flow ends here with debug output\n3. Failed (workflow errored) → Loops directly back to Launch node\n\nOutput 3 connects directly back to the launch node, creating the resume loop.",
+    "x": 560,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "comment_outputs",
+    "type": "comment",
+    "z": "resume_example_tab",
+    "name": "Outputs",
+    "info": "**Success** - Final successful completion (debug output)\n\nThe loop continues until:\n- Workflow succeeds (output 2)\n- Manual intervention stops the flow",
+    "x": 770,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "59ebff648cf0649e",
+    "type": "comment",
+    "z": "resume_example_tab",
+    "name": "Warning! ⚠️",
+    "info": "Please note: this flow will loop _forever_.\nOr at least, until the workflow succeeds.\n\n**You don't want this in practice**.\nIf there is some problem which means the workflow\nwill never succeed, ie. it keeps failing for the same\nreason, it'll just go on and on and on.\n\nYou'll want some custom logic in this loop to\nadd some safeguards.",
+    "x": 470,
+    "y": 240,
+    "wires": [],
+    "icon": "font-awesome/fa-warning"
+  },
+  {
+    "id": "ce068971d6f3f1f0",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@seqera/node-red-seqera": "1.2.0"
+    }
+  }
+]
