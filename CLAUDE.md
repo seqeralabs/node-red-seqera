@@ -88,8 +88,11 @@ Always evaluate properties inside the `node.on("input", ...)` handler so they re
 
 - Launches pipelines via `/workflow/launch` endpoint
 - Can resolve launchpad names (fetches pipeline config from `/pipelines` then `/pipelines/{id}/launch`)
-- Merges `paramsObj` into `launch.paramsText` as JSON
+- Supports two methods for providing parameters:
+  - `paramsKey` (Params JSON): A JSON object that gets merged into `launch.paramsText`
+  - `paramsArray` (Parameters list): Individual key-value pairs from editable list (highest precedence)
 - Sets custom `runName` if provided
+- Supports resuming failed workflows via `sessionId` and `resume` flag
 - Returns `msg.workflowId` for chaining with monitor node
 
 **[workflow-monitor.js](nodes/workflow-monitor.js):**

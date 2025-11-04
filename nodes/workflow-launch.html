@@ -61,14 +61,16 @@ Launches a workflow using the Seqera Platform API.
 
 ### Inputs
 
-: launchpadName (string) : The human-readable name of a pipeline in the launchpad to use.
-: params (object) : JSON object containing parameters to merge with the launchpad's default parameters.
-: runName (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
-: sessionId (string) : Session ID from a previous workflow run to resume (optional).
-: resume (boolean) : Enable Nextflow resume to restart from last successful process (optional, default false).
-: workspaceId (string) : Override the workspace ID from the config node.
-: sourceWorkspaceId (string) : The source workspace ID (if a shared workflow and different to workspaceId).
-: body (object) : A full launch request body (alternative to using launchpadName).
+: Seqera config (seqera-config) : Reference to the seqera-config node containing API credentials and default workspace settings.
+: Node name (string) : Optional custom name for the node in the editor.
+: Launchpad (string) : The human-readable name of a pipeline in the launchpad to launch. Supports autocomplete.
+: Run name (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
+: Session ID (string) : Session ID from a previous workflow run to resume (optional). Can be extracted from workflow monitor output using `msg.payload.workflow.sessionId`.
+: Resume (boolean) : Enable Nextflow resume to restart from last successful process (optional, default false).
+: Parameters (array) : Individual parameter key-value pairs added via the editable list. Each parameter can be configured with a name and a value of any type (string, number, boolean, JSON, etc.). These take highest precedence when merging.
+: Params JSON (object) : A JSON object containing multiple parameters to merge with the launchpad's default parameters. Merged before individual parameters.
+: Workspace ID (string) : Override the workspace ID from the Seqera config node (optional).
+: Source WS ID (string) : The source workspace ID, required if launching a shared workflow from a different workspace than the target workspace (optional).
 
 ### Outputs
 
