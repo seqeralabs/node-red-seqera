@@ -304,10 +304,13 @@ module.exports = function (RED) {
 
       try {
         const response = await apiCall(node, "post", url, { headers, data: body });
-        msg.payload = response.data;
-        msg.workflowId = response.data?.workflowId || response.data?.workflow?.id;
+        const outMsg = {
+          ...msg,
+          payload: response.data,
+          workflowId: response.data?.workflowId || response.data?.workflow?.id,
+        };
         node.status({ fill: "green", shape: "dot", text: `launched: ${formatDateTime()}` });
-        send(msg);
+        send(outMsg);
         if (done) done();
       } catch (err) {
         node.error(`Seqera API request failed: ${err.message}\nRequest: POST ${url}`, msg);

@@ -165,10 +165,13 @@ module.exports = function (RED) {
         if (qs.toString()) url += `?${qs.toString()}`;
 
         const resp = await apiCall(node, "post", url, { headers: { "Content-Type": "application/json" }, data: body });
-        msg.payload = resp.data;
-        msg.studioId = resp.data?.studio?.sessionId || resp.data?.sessionId;
+        const outMsg = {
+          ...msg,
+          payload: resp.data,
+          studioId: resp.data?.studio?.sessionId || resp.data?.sessionId,
+        };
         node.status({ fill: "green", shape: "dot", text: `created: ${formatDateTime()}` });
-        send(msg);
+        send(outMsg);
         if (done) done();
       } catch (err) {
         node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });

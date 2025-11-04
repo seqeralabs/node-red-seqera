@@ -49,15 +49,18 @@ module.exports = function (RED) {
 
       try {
         const result = await datalinkUtils.listDataLink(RED, node, msg);
-        msg.payload = {
-          files: result.items,
-          resourceType: result.resourceType,
-          resourceRef: result.resourceRef,
-          provider: result.provider,
+        const outMsg = {
+          ...msg,
+          payload: {
+            files: result.items,
+            resourceType: result.resourceType,
+            resourceRef: result.resourceRef,
+            provider: result.provider,
+          },
+          files: result.files.map((it) => `${result.resourceRef}/${it}`),
         };
-        msg.files = result.files.map((it) => `${result.resourceRef}/${it}`);
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
-        send(msg);
+        send(outMsg);
         if (done) done();
       } catch (err) {
         node.error(`Seqera datalink list failed: ${err.message}`, msg);

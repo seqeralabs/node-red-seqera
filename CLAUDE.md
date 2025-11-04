@@ -82,6 +82,36 @@ const evalProp = async (p, t, msg) => {
 
 Always evaluate properties inside the `node.on("input", ...)` handler so they reflect current message context.
 
+### Message Property Passthrough
+
+**All nodes preserve unrecognized input message properties in their output.**
+
+This is implemented using the spread operator pattern:
+
+```javascript
+const outputMsg = {
+  ...msg, // Spreads all input properties first
+  payload: response.data, // Then overwrites specific properties
+  workflowId: workflowId,
+  // etc.
+};
+send(outputMsg);
+```
+
+**Key behaviors:**
+
+- Any custom properties on the input `msg` object (e.g., `msg._context`, `msg.customId`, `msg.correlationId`) are automatically copied to the output
+- Node-specific properties (like `payload`, `workflowId`, `datasetId`, `studioId`) are set/overwritten as documented
+- This enables flow-wide context tracking and message correlation without modifying node code
+- Works for all node types including monitor nodes with multiple outputs (all outputs receive the same passthrough properties)
+
+**Common use cases:**
+
+- `msg._context` - Preserve context across multiple nodes in a flow
+- `msg.correlationId` - Track messages across parallel branches
+- `msg.userId` - Maintain user session information through workflow
+- Any custom metadata needed for flow logic or debugging
+
 ### Node Types
 
 **[workflow-launch.js](nodes/workflow-launch.js):**
