@@ -1,33 +1,37 @@
----
-title: Poll Files
----
+# Poll files
 
-# Poll Data Link Files
-
-Periodically list a Data Link and emit messages when new objects appear.
+**Periodically list a Seqera Data Explorer Data Link and emit messages when new objects appear.**
 
 This node automatically monitors a Data Link for changes, making it perfect for event-driven workflows that trigger when new files are uploaded.
 
 !!! note
-The node starts polling as soon as the flow is deployed – it has **no message inputs**.
+
+    The node starts polling as soon as the flow is deployed – it has **no message inputs**.
+
+<figure markdown="span">
+    ![poll files node](../img/poll_files_node.png){ width=400}
+    ![poll files node edit panel](../img/poll_files_node_edit.png){ width=600}
+</figure>
 
 ## Configuration
 
-All properties from the [List Files from Data Explorer](list_files.md) node, plus:
+-   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
+-   **Node name**: Optional custom name for the node in the editor.
+-   **Data Link name** (required): Display name of the Data Link. Supports autocomplete.
+-   **Base path**: Path within the Data Link to start from.
+-   **Prefix**: Prefix filter applied to both files and folders.
+-   **Pattern**: Regular-expression filter applied to files after the prefix filter.
+-   **Return type** (default **files**): `files`, `folders` or `all`.
+-   **Max results** (default **100**): Maximum number of objects to return per poll.
+-   **Depth** (default **0**): Folder recursion depth.
+-   **Poll frequency** (default **15 min**): Interval between polls.
+-   **Workspace ID**: Override the workspace ID from the Config node.
 
--   **dataLinkName** (required): Display name of the Data Link. Supports autocomplete.
--   **basePath**: Path within the Data Link to start from.
--   **prefix**: Prefix filter applied to both files and folders.
--   **pattern**: Regular-expression filter applied to files after the prefix filter.
--   **returnType** (default **files**): `files`, `folders` or `all`.
--   **maxResults** (default **100**): Maximum number of objects to return per poll.
--   **depth** (default **0**): Folder recursion depth.
--   **pollFrequency** (default **15 min**): Interval between polls.
--   **workspaceId**: Override the workspace ID from the Config node.
+All properties work the same as the [list files](list_files.md) node, plus automatic polling.
 
-## Poll frequency format
+### Poll frequency format
 
-The **pollFrequency** field accepts several formats:
+The **Poll frequency** field accepts several formats:
 
 -   **Seconds only**: `90` (90 seconds)
 -   **MM:SS**: `05:30` (5 minutes, 30 seconds)
@@ -69,6 +73,8 @@ The comparison is based on the full file path. Files that are deleted and re-upl
 ## Required permissions
 
 Minimum required role: **Maintain**
+
+See the [configuration documentation](configuration.md#required-token-permissions) for a full table of required permissions for all nodes.
 
 ## Example usage
 

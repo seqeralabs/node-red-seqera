@@ -1,18 +1,26 @@
-# Monitor Studio
+# Monitor studio
 
-Poll the status of an existing **Studio** session until it reaches a terminal state.
+**Poll the status of an existing Studio session until it reaches a terminal state.**
 
 This node continuously monitors a Studio's status, allowing you to trigger automation when the Studio becomes ready or terminates.
 
-## Inputs
+Trigger by passing an event message to the input handle. Typically this will include a studio ID to track.
+The config field Studio ID defaults to `msg.studioId` which is a default output name from the [add studio node](add_studio.md).
 
--   **studioId** (required, default: `msg.studioId`): ID of the Studio session to monitor.
--   **workspaceId**: Override the workspace ID from the Config node.
+<figure markdown="span">
+    ![monitor studio node](../img/monitor_studio_node.png){ width=400}
+    ![monitor studio node edit panel](../img/monitor_studio_node_edit.png){ width=600}
+</figure>
 
 ## Configuration
 
--   **keepPolling** (default **true**): Continue polling until the Studio reaches a terminal state (stopped, errored, or buildFailed).
--   **pollInterval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
+-   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
+-   **Node name**: Optional custom name for the node in the editor.
+-   **Studio ID** (required): ID of the Studio session to monitor.
+    -   Defaults to `msg.studioId`, one of the outputs provided by the [add studio node](add_studio.md).
+-   **Workspace ID**: Override the workspace ID from the Config node.
+-   **Keep polling status** (default **true**): Continue polling until the Studio reaches a terminal state (stopped, errored, or buildFailed).
+-   **Poll interval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
 
 ## Outputs (three)
 
@@ -39,13 +47,17 @@ The Studio status progression typically follows this sequence:
 -   **errored** → Runtime error occurred (red) - **Output 3 fires here**
 -   **buildFailed** → Container build failed (red) - **Output 3 fires here**
 
-When **keepPolling** is disabled, the node performs a single status check and outputs the result immediately without waiting for terminal states.
+When **Keep polling status** is disabled, the node performs a single status check and outputs the result immediately without waiting for terminal states.
 
-**Tip:** Connect Output 2 to subsequent automation (e.g., send a Slack notification when Studio is ready). This output only fires once on the state transition to `running`, making it perfect for triggering actions without duplicate messages. Use Output 3 for cleanup or error handling.
+!!! tip
+
+    Connect Output 2 to subsequent automation (e.g., send a Slack notification when Studio is ready). This output only fires once on the state transition to `running`, making it perfect for triggering actions without duplicate messages. Use Output 3 for cleanup or error handling.
 
 ## Required permissions
 
 Minimum required role: **View**
+
+See the [configuration documentation](configuration.md#required-token-permissions) for a full table of required permissions for all nodes.
 
 ## Example usage
 
@@ -53,7 +65,7 @@ Minimum required role: **View**
 
 1. Add a **add-studio** node
 2. Add a **monitor-studio** node
-3. Wire create → monitor (the `msg.studioId` is passed automatically)
+3. Wire add → monitor (the `msg.studioId` is passed automatically)
 4. Add three **debug** nodes connected to each output
 5. Deploy and trigger the creation
 
@@ -138,6 +150,6 @@ The node:
 
 ## See also
 
--   [Add Studio](create_studio.md) – Create a new Studio
+-   [Add Studio](add_studio.md) – Add a new Studio
 -   [Studio + Slack webhook example](../examples/05-studio-slack-webhook.md) – Complete workflow with notifications
 -   [Seqera Studios documentation](https://docs.seqera.io/platform/latest/studios/overview)

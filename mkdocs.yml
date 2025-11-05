@@ -18,7 +18,7 @@ nav:
       - seqera_nodes/add_dataset.md
       - seqera_nodes/list_files.md
       - seqera_nodes/poll_files.md
-      - seqera_nodes/create_studio.md
+      - seqera_nodes/add_studio.md
       - seqera_nodes/monitor_studio.md
   - Examples:
       - examples/index.md

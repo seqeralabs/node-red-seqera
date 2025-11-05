@@ -19,7 +19,7 @@ This image comes with Node-RED and the Seqera plugin pre-installed. It also has 
     Running within Seqera Studios means that you get authentication and workspace-level
     permissions for free! It's also super easy to get up and running.
 
-To use, create a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
+To use, add a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
 
 ```
 ghcr.io/seqeralabs/node-red-seqera-studios:latest

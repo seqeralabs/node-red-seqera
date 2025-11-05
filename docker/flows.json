@@ -212,7 +212,7 @@
     "z": "dae5714e049c0d25",
     "g": "2b76ac110625033d",
     "name": "Datasets",
-    "info": "This node creates a _Dataset_ in Seqera Platform for you.\n\nIt takes a CSV as input (which can be created dynamically in Node-RED) and returns the API response.\nThis includes the resolved CSV URL of the dataset (`payload.version.url`), which can be used to populate a workflow parameter.",
+    "info": "This node adds a _Dataset_ in Seqera Platform for you.\n\nIt takes a CSV as input (which can be created dynamically in Node-RED) and returns the API response.\nThis includes the resolved CSV URL of the dataset (`payload.version.url`), which can be used to populate a workflow parameter.",
     "x": 160,
     "y": 620,
     "wires": []
@@ -243,7 +243,7 @@
     "z": "dae5714e049c0d25",
     "g": "2b76ac110625033d",
     "name": "Studios",
-    "info": "Use this node to create a new Seqera Studios instance.",
+    "info": "Use this node to add a new Seqera Studios instance.",
     "x": 370,
     "y": 620,
     "wires": []

@@ -12,10 +12,10 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 -   [Launch a workflow](#launch-a-workflow)
 -   [Monitor a workflow](#monitor-a-workflow)
--   [Add Dataset](#create-a-dataset)
+-   [Add Dataset](#add-a-dataset)
 -   [List Files from Data Explorer](#list-data-link-files)
 -   [Poll Data Link Files](#poll-data-link-files)
--   [Create a Seqera Studio](#add-studio)
+-   [Add a Seqera Studio](#add-studio)
 -   [Monitor a Seqera Studio](#monitor-studio)
 
 !!! warning

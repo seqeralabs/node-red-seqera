@@ -1,34 +1,43 @@
-# Add Studio
+# Add studio
 
-Create a new **Studio** (interactive workspace) on Seqera Platform.
+**Add a new Studio (interactive workspace) on Seqera Platform.**
 
 [Seqera Studios](https://docs.seqera.io/platform/latest/studios/overview) provide interactive development environments (like JupyterLab, RStudio, VS Code) running on cloud compute with access to your data.
 
-## Inputs
+Trigger a studio creation by passing any event message to the input. Configure the studio properties in one or more of the following ways:
 
--   **studioName** (required): Display name for the Studio.
--   **containerUri** (required): Container image URI for the Studio tool (e.g., `jupyter/datascience-notebook:latest`).
--   **computeEnvId** (required): ID of the Compute Environment to run on.
--   **description**: Optional text description for the Studio.
--   **mountData**: One or more Data Link names to mount inside the Studio. These appear as accessible paths in the Studio environment.
--   **cpu** (default **2**): Number of CPU cores.
--   **memory** (default **8192**): Memory in MB.
--   **gpu** (default **0**): Number of GPUs.
--   **initialCheckpointId**: Checkpoint ID to restore from (for continuing previous work).
--   **condaEnvironment**: Conda environment configuration.
--   **lifespanHours**: Maximum lifetime before auto-stop (in hours).
--   **isPrivate** (default **false**): Whether the Studio is private to the creator.
--   **spot** (default **false**): Use spot/preemptible instances.
--   **autoStart** (default **true**): Automatically start the Studio after creation.
--   **workspaceId**: Override the workspace ID from the Config node.
--   **baseUrl**: Override the Seqera API URL.
+1. With static values set the node config fields
+2. By passing input payloads to the node config fields
+
+<figure markdown="span">
+    ![add studio node](../img/add_studio_node.png){ width=400}
+    ![add studio node edit panel](../img/add_studio_node_edit.png){ width=600}
+</figure>
+
+## Configuration
+
+-   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
+-   **Node name**: Optional custom name for the node in the editor.
+-   **Studio name** (required): Display name for the Studio.
+-   **Container URI** (required): Container image URI for the Studio tool (e.g., `jupyter/datascience-notebook:latest`).
+-   **Compute Env ID** (required): ID of the Compute Environment to run on.
+-   **Description**: Optional text description for the Studio.
+-   **Mount data**: One or more Data Link names to mount inside the Studio. These appear as accessible paths in the Studio environment.
+-   **CPU** (default **2**): Number of CPU cores.
+-   **Memory** (default **8192**): Memory in MB.
+-   **GPU** (default **0**): Number of GPUs.
+-   **Initial checkpoint ID**: Checkpoint ID to restore from (for continuing previous work).
+-   **Conda environment**: Conda environment configuration.
+-   **Lifespan hours**: Maximum lifetime before auto-stop (in hours).
+-   **Is private** (default **false**): Whether the Studio is private to the creator.
+-   **Spot** (default **false**): Use spot/preemptible instances.
+-   **Auto-start** (default **true**): Automatically start the Studio after creation.
+-   **Workspace ID**: Override the workspace ID from the Config node.
 
 ## Outputs
 
 -   `msg.payload` – Full API response from the Studio creation.
--   `msg.studioId` – ID of the created Studio.
-
-## Configuration
+-   `msg.studioId` – ID of the added Studio.
 
 ### Container image
 
@@ -72,9 +81,11 @@ Set **lifespanHours** to automatically stop the Studio after a certain time to c
 
 Minimum required role: **Maintain**
 
+See the [configuration documentation](configuration.md#required-token-permissions) for a full table of required permissions for all nodes.
+
 ## Example usage
 
-### Create a JupyterLab studio
+### Add a JupyterLab studio
 
 1. Add an **inject** node to trigger creation
 2. Add a **add-studio** node and configure:
@@ -87,12 +98,12 @@ Minimum required role: **Maintain**
 3. Add a **debug** node to see the output
 4. Deploy and click inject
 
-### Create and monitor
+### Add and monitor
 
 Chain studio creation with monitoring:
 
 1. inject → add-studio → monitor-studio
-2. The `msg.studioId` is passed automatically from create to monitor
+2. The `msg.studioId` is passed automatically from add to monitor
 3. Connect monitor output 2 (Ready to use) to a notification node
 4. Deploy
 
@@ -117,7 +128,7 @@ Connect this to a add-studio node with fields set to their respective `msg` prop
 
 The node makes a single API call:
 
--   `POST /studios` – Creates the Studio with all configuration
+-   `POST /studios` – Adds the Studio with all configuration
 
 The API returns immediately with the Studio ID. The Studio will begin provisioning in the background. Use the [Monitor Studio](monitor_studio.md) node to track when it's ready.
 

@@ -4,7 +4,7 @@
     "type": "tab",
     "label": "Studio on run fail + Slack webhook",
     "disabled": false,
-    "info": "This workflow has three parts to it:\n\n1. Launch and monitor a workflow\n    - Just a manual click trigger, in reality you should set this up to some other automation\n2. On failure, create a Seqera Studio\n    - Create + start a Studio with VSCode and the Data Link mounted\n3. Send a message to a Slack workflow webhook\n    - Includes workflow status and a button that links to either the workflow run details (on success) or the new Seqera Studios for debugging (on failure)\n\nThis workflow needs some setup:\n\n- All Seqera nodes need a Seqera configuration to be assigned\n- Data Links, Pipelines, and Compute Environments need to be entered\n- Slack workflow needs to be created and webook URL entered.",
+    "info": "This workflow has three parts to it:\n\n1. Launch and monitor a workflow\n    - Just a manual click trigger, in reality you should set this up to some other automation\n2. On failure, add a Seqera Studio\n    - Add + start a Studio with VSCode and the Data Link mounted\n3. Send a message to a Slack workflow webhook\n    - Includes workflow status and a button that links to either the workflow run details (on success) or the new Seqera Studios for debugging (on failure)\n\nThis workflow needs some setup:\n\n- All Seqera nodes need a Seqera configuration to be assigned\n- Data Links, Pipelines, and Compute Environments need to be entered\n- Slack workflow needs to be created and webook URL entered.",
     "env": []
   },
   {

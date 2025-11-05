@@ -2,10 +2,11 @@
 
 ## [1.3.0] - 2025-11-06
 
+-   New `mkdocs material` website with totally revamped and rewritten documentation
 -   Breaking change! Renamed `create` to `add` to match Seqera Platform terminology
     -   Renamed `create-dataset` to `add-dataset`
     -   Renamed `create-studio` to `add-studio`
-    -   Edit your workflow JSON to fix your flows if needed
+    -   Export your node as JSON, rename and reimport to fix your flows if needed
 
 ## [1.2.0] - 2025-10-27
 

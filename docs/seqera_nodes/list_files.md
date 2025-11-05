@@ -1,24 +1,28 @@
----
-title: List Files
----
+# List files
 
-# List Files from Data Explorer
-
-Retrieve objects from a Seqera **Data Explorer** link (Data Link).
+**Retrieve objects from Seqera Data Explorer (Data Link).**
 
 Data Links provide a way to browse and access files in cloud storage (S3, Azure Blob, Google Cloud Storage, etc.) through the Seqera Platform. This node lists files and folders within a Data Link, with filtering and recursion options.
 
-## Inputs
+Trigger a file listing by passing any event message to the input.
 
--   **dataLinkName** (required): Display name of the Data Link. Supports autocomplete in the node editor.
--   **basePath**: Path within the Data Link to start from (optional).
--   **prefix**: Prefix filter applied to both files and folders.
--   **pattern**: Regular-expression filter applied to files _after_ the prefix filter.
--   **returnType** (default **files**): `files`, `folders` or `all`.
--   **maxResults** (default **100**): Maximum number of objects to return.
--   **depth** (default **0**): Folder recursion depth (`0` = current directory only, negative = unlimited).
--   **workspaceId**: Override the workspace ID from the Config node.
--   **baseUrl**: Override the Seqera API URL.
+<figure markdown="span">
+    ![list files node](../img/list_files_node.png){ width=400}
+    ![list files node edit panel](../img/list_files_node_edit.png){ width=600}
+</figure>
+
+## Configuration
+
+-   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
+-   **Node name**: Optional custom name for the node in the editor.
+-   **Data Link name** (required): Display name of the Data Link. Supports autocomplete in the node editor.
+-   **Base path**: Path within the Data Link to start from (optional).
+-   **Prefix**: Prefix filter applied to both files and folders.
+-   **Pattern**: Regular-expression filter applied to files _after_ the prefix filter.
+-   **Return type** (default **files**): `files`, `folders` or `all`.
+-   **Max results** (default **100**): Maximum number of objects to return.
+-   **Depth** (default **0**): Folder recursion depth (`0` = current directory only, negative = unlimited).
+-   **Workspace ID**: Override the workspace ID from the Config node.
 
 ## Outputs
 
@@ -27,8 +31,6 @@ Data Links provide a way to browse and access files in cloud storage (S3, Azure 
 -   `msg.payload.resourceRef` – Reference ID of the Data Link.
 -   `msg.payload.provider` – Cloud provider (e.g., "aws", "azure", "google").
 -   `msg.files` – Convenience array containing fully-qualified object names (strings only).
-
-## Configuration
 
 ### Data Link name
 
@@ -65,11 +67,14 @@ Control how deep to search subdirectories:
 -   `-1`: Unlimited recursion (search all subdirectories)
 
 !!! warning
-Setting depth to `-1` with a large Data Link can result in many API calls and long processing time. Use with caution.
+
+    Setting depth to `-1` with a large Data Link can result in many API calls and long processing time. Use with caution.
 
 ## Required permissions
 
 Minimum required role: **Maintain**
+
+See the [configuration documentation](configuration.md#required-token-permissions) for a full table of required permissions for all nodes.
 
 ## Example usage
 

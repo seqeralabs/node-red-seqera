@@ -8,8 +8,8 @@ This workflow has three parts to it:
 
 1. Launch and monitor a workflow
     - Just a manual click trigger, in reality you should set this up to some other automation
-2. On failure, create a Seqera Studio
-    - Create + start a Studio with VSCode and the Data Link mounted
+2. On failure, add a Seqera Studio
+    - Add + start a Studio with VSCode and the Data Link mounted
 3. Send a message to a Slack workflow webhook
     - Includes workflow status and a button that links to either the workflow run details (on success) or the new Seqera Studios for debugging (on failure)
     - Could equally be any other webhook

@@ -138,7 +138,7 @@ send(outputMsg);
 
 **[dataset-add.js](nodes/dataset-add.js):**
 
--   Creates dataset via POST `/datasets` then uploads file via POST `/datasets/{id}/upload`
+-   Adds dataset via POST `/datasets` then uploads file via POST `/datasets/{id}/upload`
 -   Supports CSV/TSV file types with MIME type selection
 -   Uses `form-data` for multipart upload
 -   Returns `msg.datasetId`
@@ -159,7 +159,7 @@ send(outputMsg);
 
 **[studios-add.js](nodes/studios-add.js):**
 
--   Creates Seqera Studios via POST `/studios`
+-   Adds Seqera Studios via POST `/studios`
 -   Configures container, compute environment, resources (CPU/memory/GPU)
 -   Mounts Data Links specified in `mountData` array
 -   Returns `msg.studioId`
