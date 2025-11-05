@@ -134,9 +134,9 @@ send(outputMsg);
 -   Polls workflow status at configurable interval (default 5s)
 -   Three outputs: Active (yellow), Succeeded (green), Failed (red)
 -   Stops polling when workflow reaches terminal state or `keepPolling` is false
--   Status mapping: `submitted|pending` → yellow, `running` → blue, `completed|succeeded` → green, `failed|error|cancelled` → red
+-   Status mapping: `submitted` → yellow, `running` → blue, `succeeded` → green, `failed` → red, `cancelled|unknown` → grey
 
-**[dataset-create.js](nodes/dataset-create.js):**
+**[dataset-add.js](nodes/dataset-add.js):**
 
 -   Creates dataset via POST `/datasets` then uploads file via POST `/datasets/{id}/upload`
 -   Supports CSV/TSV file types with MIME type selection
@@ -157,7 +157,7 @@ send(outputMsg);
 -   Two outputs: "All results" (every poll) and "New results" (only new files detected)
 -   Tracks seen files in node context to detect changes
 
-**[studios-create.js](nodes/studios-create.js):**
+**[studios-add.js](nodes/studios-add.js):**
 
 -   Creates Seqera Studios via POST `/studios`
 -   Configures container, compute environment, resources (CPU/memory/GPU)
@@ -217,9 +217,9 @@ From README, minimum required roles:
 
 -   Launch workflow: **Maintain**
 -   Monitor workflow: **View**
--   Create Dataset: **Launch**
+-   Add Dataset: **Launch**
 -   List/Poll Data Link Files: **Maintain**
--   Create Studio: **Maintain**
+-   Add Studio: **Maintain**
 
 For full automation, use **Maintain** role token.
 

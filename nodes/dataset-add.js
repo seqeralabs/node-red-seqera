@@ -82,7 +82,7 @@ module.exports = function (RED) {
         let apiStep = "create";
         node.status({ fill: "blue", shape: "ring", text: `creating: ${formatDateTime()}` });
 
-        // 1) Create dataset
+        // 1) Add dataset
         let createUrl = `${baseUrl.replace(/\/$/, "")}/datasets`;
         if (workspaceId != null) createUrl += `?workspaceId=${workspaceId}`;
 
@@ -140,7 +140,7 @@ module.exports = function (RED) {
     });
   }
 
-  RED.nodes.registerType("seqera-dataset-create", SeqeraDatasetCreateNode, {
+  RED.nodes.registerType("seqera-dataset-add", SeqeraDatasetCreateNode, {
     credentials: { token: { type: "password" } },
     defaults: {
       name: { value: "" },

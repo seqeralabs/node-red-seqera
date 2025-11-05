@@ -62,7 +62,7 @@ Monitors the status of an existing workflow in Seqera Platform.
 
 ### Details
 
-This node queries the Seqera Platform API for the current status of a workflow run. When *Keep polling status* is enabled (default) the node will keep polling at the configured interval until the workflow reaches a terminal state (success, failed, cancelled, etc.).
+This node queries the Seqera Platform API for the current status of a workflow run. When *Keep polling status* is enabled (default) the node will keep polling at the configured interval until the workflow reaches a terminal state (succeeded, failed, cancelled, or unknown).
 
 If *Keep polling status* is disabled the node performs a single status check and outputs the result immediately.
 

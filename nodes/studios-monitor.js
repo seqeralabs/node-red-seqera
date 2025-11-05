@@ -64,12 +64,12 @@ module.exports = function (RED) {
 
     // Status-colour mapping
     const mapColor = (s) => {
-      const stat = (s || "").toLowerCase();
-      if (/^(starting|building|stopping)$/.test(stat)) return "yellow";
+      const stat = (s || "").toLowerCase().replace(/\s+/g, ""); // normalize "build failed" -> "buildfailed"
+      if (/^(starting|building)$/.test(stat)) return "yellow";
       if (/^(running)$/.test(stat)) return "blue";
-      if (/^(stopped)$/.test(stat)) return "green";
+      if (/^(stopping|stopped)$/.test(stat)) return "grey";
       if (/^(errored|buildfailed)$/.test(stat)) return "red";
-      return "grey";
+      return "grey"; // unknown
     };
 
     async function fetchStatus(msg, send) {
@@ -91,9 +91,11 @@ module.exports = function (RED) {
         const studioStatus = response.data?.statusInfo?.status || "unknown";
         const statusLower = studioStatus.toLowerCase();
 
+        const statusNormalized = statusLower.replace(/\s+/g, ""); // normalize "build failed" -> "buildfailed"
+
         node.status({
           fill: mapColor(statusLower),
-          shape: /^(starting|running|building|stopping)$/.test(statusLower) ? "ring" : "dot",
+          shape: /^(starting|running|building|stopping)$/.test(statusNormalized) ? "ring" : "dot",
           text: `${statusLower}: ${formatDateTime()}`,
         });
 
@@ -105,10 +107,11 @@ module.exports = function (RED) {
 
         // Output 1: Always send on every check
         // Output 2: Send only on transition to running (ready to use) - not on every poll while running
-        // Output 3: Send when studio is no longer running (stopped, errored, buildFailed)
-        const isRunning = /^(running)$/.test(statusLower);
-        const isTerminated = /^(stopped|errored|buildfailed)$/.test(statusLower);
-        const justBecameRunning = isRunning && previousStatus !== "running";
+        // Output 3: Send when studio is no longer running (stopped, errored, buildfailed)
+        const isRunning = /^(running)$/.test(statusNormalized);
+        const isTerminated = /^(stopped|errored|buildfailed)$/.test(statusNormalized);
+        const previousNormalized = (previousStatus || "").replace(/\s+/g, "");
+        const justBecameRunning = isRunning && previousNormalized !== "running";
 
         send([outMsg, justBecameRunning ? outMsg : null, isTerminated ? outMsg : null]);
 
@@ -121,7 +124,7 @@ module.exports = function (RED) {
         }
 
         // Adjust poll interval dynamically if value changed
-        if (node.keepPolling && /^(starting|running|building|stopping)$/.test(statusLower)) {
+        if (node.keepPolling && /^(starting|running|building|stopping)$/.test(statusNormalized)) {
           const pollSec = convertToSeconds(node.pollIntervalProp, node.pollUnitsProp);
           if (pollSec * 1000 !== node._currentPollMs) {
             clearPolling();

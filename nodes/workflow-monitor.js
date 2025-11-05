@@ -57,11 +57,11 @@ module.exports = function (RED) {
     // Helper to map workflow status to Node-RED colour
     const mapColor = (stat) => {
       const s = (stat || "").toLowerCase();
-      if (/^(submitted|pending)$/.test(s)) return "yellow";
+      if (/^(submitted)$/.test(s)) return "yellow";
       if (/^(running)$/.test(s)) return "blue";
-      if (/^(completed|succeeded|success)$/.test(s)) return "green";
-      if (/^(failed|error|cancelled|canceled)$/.test(s)) return "red";
-      return "grey";
+      if (/^(succeeded)$/.test(s)) return "green";
+      if (/^(failed)$/.test(s)) return "red";
+      return "grey"; // cancelled, unknown
     };
 
     async function fetchStatus(msg, send) {
@@ -90,7 +90,7 @@ module.exports = function (RED) {
         // Set node status in editor
         node.status({
           fill: mapColor(statusLower),
-          shape: /^(submitted|running|pending)$/.test(statusLower) ? "ring" : "dot",
+          shape: /^(submitted|running)$/.test(statusLower) ? "ring" : "dot",
           text: `${statusLower}: ${formatDateTime()}`,
         });
 
@@ -101,21 +101,25 @@ module.exports = function (RED) {
         };
 
         // Decide which output to send to
-        if (/^(submitted|running|pending)$/.test(statusLower)) {
+        // Output 1: Active (submitted, running)
+        // Output 2: Succeeded
+        // Output 3: Failed/Cancelled/Unknown
+        if (/^(submitted|running)$/.test(statusLower)) {
           send([outMsg, null, null]);
-        } else if (/^(completed|succeeded|success)$/.test(statusLower)) {
+        } else if (/^(succeeded)$/.test(statusLower)) {
           send([null, outMsg, null]);
         } else {
+          // failed, cancelled, unknown
           send([null, null, outMsg]);
         }
 
         // If keepPolling disabled OR workflow reached a final state, stop polling
-        if (!node.keepPolling || !/^(submitted|running|pending)$/.test(statusLower)) {
+        if (!node.keepPolling || !/^(submitted|running)$/.test(statusLower)) {
           clearPolling();
         }
 
         // Update polling interval if changed dynamically
-        if (node.keepPolling && /^(submitted|running|pending)$/.test(statusLower)) {
+        if (node.keepPolling && /^(submitted|running)$/.test(statusLower)) {
           const pollSec = parseInt(pollInterval, 10) || 5;
           if (pollSec * 1000 !== node._currentPollMs) {
             clearPolling();

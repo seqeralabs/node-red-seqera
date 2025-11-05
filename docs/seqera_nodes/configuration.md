@@ -1,7 +1,3 @@
----
-title: Seqera Config Node
----
-
 # Seqera Config Node
 
 Create a Seqera Config node to store your API credentials and default settings.
@@ -31,9 +27,9 @@ Different operations require different permission levels.
 | ------------------------- | --------------------- |
 | Launch workflow           | Maintain              |
 | Monitor workflow          | View                  |
-| Create Dataset            | Launch                |
+| Add Dataset               | Launch                |
 | List/Poll Data Link Files | Maintain              |
-| Create Studio             | Maintain              |
+| Add Studio                | Maintain              |
 | Monitor Studio            | View                  |
 
 ## Setting up the config node

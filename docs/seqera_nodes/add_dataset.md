@@ -1,8 +1,4 @@
----
-title: Create Dataset
----
-
-# Create Dataset
+# Add Dataset
 
 Create a new Dataset and upload its tabular contents in one step.
 
@@ -79,7 +75,7 @@ Connect this function node to a **create-dataset** node with:
 -   **datasetName**: `msg.datasetName`
 -   **fileContents**: `msg.payload`
 
-### Create dataset on file upload
+### Add dataset on file upload
 
 See the [Launch on file upload example](../examples/02-launch-on-file-upload.md) for a complete flow that creates a dataset whenever a new file appears in a Data Link.
 

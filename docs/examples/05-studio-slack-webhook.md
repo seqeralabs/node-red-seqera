@@ -1,4 +1,4 @@
-# 03 - Pipeline → Create Studio → Slack webhook
+# 03 - Pipeline → Add Studio → Slack webhook
 
 `examples/03 - Studio on run fail + Slack webhook.json`
 

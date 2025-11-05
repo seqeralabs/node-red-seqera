@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0] - 2025-11-06
+
+-   Breaking change! Renamed `create` to `add` to match Seqera Platform terminology
+    -   Renamed `create-dataset` to `add-dataset`
+    -   Renamed `create-studio` to `add-studio`
+    -   Edit your workflow JSON to fix your flows if needed
+
 ## [1.2.0] - 2025-10-27
 
 -   Launch node: added ability to provide key/value pairs for params in the editor interface
@@ -60,7 +67,7 @@
 ## [0.2.3] - 2025-05-22
 
 -   New nodes for Seqera Studios:
-    -   `seqera-studios-create`
+    -   `seqera-studios-add`
 -   Set various node inputs to "required"
 -   Improved common library of functions for calling API endpoints
 -   Better error handling and reporting to the debug console
@@ -98,7 +105,7 @@
 -   Initial release of the Node-RED Seqera integration.
 -   Custom Node-RED nodes for Seqera workflows:
     -   `seqera-config`
-    -   `seqera-dataset-create`
+    -   `seqera-dataset-add`
     -   `seqera-launch`
     -   `seqera-launch-monitor`
     -   `seqera-workflow`

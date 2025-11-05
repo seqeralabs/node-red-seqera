@@ -1,5 +1,5 @@
 ---
-title: List Files from Data Explorer
+title: List Files
 ---
 
 # List Files from Data Explorer

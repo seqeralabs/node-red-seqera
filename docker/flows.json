@@ -219,7 +219,7 @@
   },
   {
     "id": "767870dfc9296cf3",
-    "type": "seqera-dataset-create",
+    "type": "seqera-dataset-add",
     "z": "dae5714e049c0d25",
     "g": "2b76ac110625033d",
     "name": "",
@@ -250,7 +250,7 @@
   },
   {
     "id": "cf0d89173f4a7a19",
-    "type": "seqera-studios-create",
+    "type": "seqera-studios-add",
     "z": "dae5714e049c0d25",
     "g": "2b76ac110625033d",
     "name": "",

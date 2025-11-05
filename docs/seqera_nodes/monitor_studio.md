@@ -1,7 +1,3 @@
----
-title: Monitor Studio
----
-
 # Monitor Studio
 
 Poll the status of an existing **Studio** session until it reaches a terminal state.
@@ -55,7 +51,7 @@ Minimum required role: **View**
 
 ### Simple monitoring
 
-1. Add a **create-studio** node
+1. Add a **add-studio** node
 2. Add a **monitor-studio** node
 3. Wire create → monitor (the `msg.studioId` is passed automatically)
 4. Add three **debug** nodes connected to each output
@@ -67,7 +63,7 @@ The monitor will poll every 5 seconds and show status updates.
 
 Connect output 2 to a notification service:
 
-1. create-studio → monitor-studio
+1. add-studio → monitor-studio
 2. monitor-studio (output 2) → slack notification / email / etc.
 3. This notifies users as soon as the Studio is accessible
 
@@ -142,6 +138,6 @@ The node:
 
 ## See also
 
--   [Create Studio](create_studio.md) – Create a new Studio
+-   [Add Studio](create_studio.md) – Create a new Studio
 -   [Studio + Slack webhook example](../examples/05-studio-slack-webhook.md) – Complete workflow with notifications
 -   [Seqera Studios documentation](https://docs.seqera.io/platform/latest/studios/overview)

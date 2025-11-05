@@ -1,8 +1,4 @@
----
-title: Create Studio
----
-
-# Create Studio
+# Add Studio
 
 Create a new **Studio** (interactive workspace) on Seqera Platform.
 
@@ -81,7 +77,7 @@ Minimum required role: **Maintain**
 ### Create a JupyterLab studio
 
 1. Add an **inject** node to trigger creation
-2. Add a **create-studio** node and configure:
+2. Add a **add-studio** node and configure:
     - **studioName**: `My Analysis Studio`
     - **containerUri**: `jupyter/datascience-notebook:latest`
     - **computeEnvId**: `your-compute-env-id`
@@ -95,7 +91,7 @@ Minimum required role: **Maintain**
 
 Chain studio creation with monitoring:
 
-1. inject → create-studio → monitor-studio
+1. inject → add-studio → monitor-studio
 2. The `msg.studioId` is passed automatically from create to monitor
 3. Connect monitor output 2 (Ready to use) to a notification node
 4. Deploy
@@ -115,7 +111,7 @@ msg.mountData = ["shared-data", msg.userDataLink];
 return msg;
 ```
 
-Connect this to a create-studio node with fields set to their respective `msg` properties.
+Connect this to a add-studio node with fields set to their respective `msg` properties.
 
 ## Implementation details
 

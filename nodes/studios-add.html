@@ -1,4 +1,4 @@
-<script type="text/html" data-template-name="seqera-studios-create">
+<script type="text/html" data-template-name="seqera-studios-add">
   <div class="form-row">
     <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
@@ -66,7 +66,7 @@
 </script>
 
 <!-- prettier-ignore -->
-<script type="text/markdown" data-help-name="seqera-studios-create">
+<script type="text/markdown" data-help-name="seqera-studios-add">
 Creates a new Studio in Seqera Platform.
 
 ### Inputs
@@ -95,16 +95,16 @@ Creates a new Studio in Seqera Platform.
 </script>
 
 <script type="text/javascript">
-  RED.nodes.registerType("seqera-studios-create", {
+  RED.nodes.registerType("seqera-studios-add", {
     category: "seqera",
     color: "#A9A1C6",
     inputs: 1,
     outputs: 1,
     icon: "icons/studios.svg",
     align: "left",
-    paletteLabel: "Create studio",
+    paletteLabel: "Add studio",
     label: function () {
-      return this.name || "Create studio";
+      return this.name || "Add studio";
     },
     outputLabels: ["success"],
     defaults: {

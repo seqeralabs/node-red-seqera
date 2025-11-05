@@ -1,4 +1,4 @@
-<script type="text/html" data-template-name="seqera-dataset-create">
+<script type="text/html" data-template-name="seqera-dataset-add">
   <div class="form-row">
     <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
@@ -37,7 +37,7 @@
 </script>
 
 <!-- prettier-ignore -->
-<script type="text/markdown" data-help-name="seqera-dataset-create">
+<script type="text/markdown" data-help-name="seqera-dataset-add">
 Creates a new dataset and uploads its file contents to Seqera Platform.
 
 ### Inputs
@@ -70,7 +70,7 @@ by Seqera Platform to validate the file contents.
 </script>
 
 <script type="text/javascript">
-  RED.nodes.registerType("seqera-dataset-create", {
+  RED.nodes.registerType("seqera-dataset-add", {
     category: "seqera",
     color: "#A9A1C6",
     inputs: 1,
@@ -79,7 +79,7 @@ by Seqera Platform to validate the file contents.
     align: "left",
     paletteLabel: "Add dataset",
     label: function () {
-      return this.name || "Create dataset";
+      return this.name || "Add dataset";
     },
     outputLabels: ["success"],
     defaults: {

@@ -1,17 +1,19 @@
----
-title: Launch workflow
----
-
 # Launch workflow
 
-Launch a new workflow (pipeline run) on Seqera Platform.
+**Launch a new workflow (pipeline run) on Seqera Platform.**
+
+Trigger a launch by passing any event message to the input. Configure the pipeline in one or more of the following ways:
+
+1. Within the Seqera Platform launchpad
+2. With static values set the node config fields
+3. By passing input payloads to the node config fields
 
 <figure markdown="span">
     ![launch node](../img/launch_node.png){ width=400}
     ![launch node edit panel](../img/launch_node_edit.png){ width=600}
 </figure>
 
-## Inputs
+## Configuration
 
 -   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
 -   **Node name**: Optional custom name for the node in the editor.

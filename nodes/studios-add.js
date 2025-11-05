@@ -181,7 +181,7 @@ module.exports = function (RED) {
     });
   }
 
-  RED.nodes.registerType("seqera-studios-create", SeqeraStudiosCreateNode, {
+  RED.nodes.registerType("seqera-studios-add", SeqeraStudiosCreateNode, {
     credentials: { token: { type: "password" } },
     defaults: {
       name: { value: "" },
