@@ -2,14 +2,6 @@
 
 Thank you for your interest in contributing to this project! This document provides guidelines and instructions for setting up your development environment and contributing code.
 
-## Table of Contents
-
-- [Development Setup](#development-setup)
-- [Running Node-RED Locally](#running-node-red-locally)
-- [Docker Development](#docker-development)
-- [Getting Help](#getting-help)
-- [License](#license)
-
 ## Development Setup
 
 ### Prerequisites
@@ -17,7 +9,7 @@ Thank you for your interest in contributing to this project! This document provi
 - Node.js >= 12.0.0
 - Node-RED >= 2.0.0
 - Git
-- (Optional) Python 3 with pip for pre-commit hooks
+- Python with pip for pre-commit hooks
 
 ### Clone the Repository
 
@@ -26,15 +18,11 @@ git clone https://github.com/seqeralabs/node-red-seqera.git
 cd node-red-seqera
 ```
 
-### Install Dependencies
+### Set Up pre-commit Hooks
 
-```bash
-npm install
-```
+This project uses [pre-commit](https://pre-commit.com/) hooks for code quality checks.
 
-### Set Up Pre-commit Hooks (Optional but Recommended)
-
-This project uses pre-commit hooks for code quality checks:
+First, install pre-commit and initialise it within the cloned repo:
 
 ```bash
 # Install pre-commit (requires Python)
@@ -42,22 +30,26 @@ pip install pre-commit
 
 # Install the git hooks
 pre-commit install
-
-# Run manually on all files
-pre-commit run --all-files
 ```
+
+Now, every time you run `git commit`, a range of checks will run.
+Formatting errors will be automatically corrected, just run `git add` and `git commit` again and they should pass.
+You can also run `pre-commit run --all-files` at any time to run checks.
 
 ## Running Node-RED Locally
 
 ### Installing Node-RED
 
-If you don't already have Node-RED installed, you can install it globally via npm:
+First, [download and install Node.js](https://nodejs.org/en/download) locally.
+
+Then install Node-RED globally via npm:
 
 ```bash
 npm install -g node-red
 ```
 
-This will make the `node-red` command available globally on your system. See the [Node-RED Getting Started guide](https://nodered.org/docs/getting-started/local) for more installation options and troubleshooting.
+This will make the `node-red` command available globally on your system.
+See the [Node-RED Getting Started guide](https://nodered.org/docs/getting-started/local) for more installation options and troubleshooting.
 
 ### Installing the Package for Development
 
@@ -81,11 +73,8 @@ See [official npm-link docs](https://docs.npmjs.com/cli/v8/commands/npm-link) fo
 ### Starting Node-RED
 
 ```bash
-# Start Node-RED
+# Start Node-RED (command can be run anywhere)
 node-red
-
-# Or if installed globally
-npm start
 ```
 
 Open your browser to `http://localhost:1880` to access the Node-RED editor.
@@ -97,22 +86,9 @@ After making code changes:
 - **JavaScript files (`.js`)**: Restart Node-RED
 - **HTML files (`.html`)**: Refresh your browser (Ctrl+Shift+R / Cmd+Shift+R)
 
-### Running Linters Manually
-
-The project uses [pre-commit](https://pre-commit.com/).
-
-```bash
-# First run
-pre-commit install
-
-# Optional: Run all pre-commit checks
-pre-commit run --all-files
-
-# Optional: Run on specific files
-pre-commit run --files nodes/workflow-launch.js
-```
-
 ## Docker Development
+
+The project has two Docker images includeed, that bundle and customise a Node-RED installation and come with the Seqera nodes pre-installed.
 
 ### Directory Structure
 
@@ -125,17 +101,20 @@ docker/
 
 ### Building Images
 
+Images are automatically built and published via GitHub actions.
+However, if you would like to build and test locally, you can:
+
 ```bash
 # Base image
-docker build -f docker/Dockerfile -t ghcr.io/seqeralabs/node-red-seqera:latest .
+docker build -f docker/Dockerfile -t node-red-seqera:latest .
 
 # Studios image
-docker build -f docker/Dockerfile.studios -t ghcr.io/seqeralabs/node-red-seqera-studios:latest .
+docker build -f docker/Dockerfile.studios -t node-red-seqera-studios:latest-studios .
 ```
 
 ## Getting Help
 
-- **Documentation**: Check [CLAUDE.md](CLAUDE.md) for detailed architecture notes
+- **Documentation**: Check `CLAUDE.md` for detailed architecture notes
 - **Issues**: Search existing [GitHub issues](https://github.com/seqeralabs/node-red-seqera/issues)
 
 ## License

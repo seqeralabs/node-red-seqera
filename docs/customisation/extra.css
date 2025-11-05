@@ -1,0 +1,20 @@
+:root > * {
+  --md-primary-fg-color: #160f26;
+
+  --md-typeset-a-color: #6c5e9d;
+  --md-accent-fg-color: #a9a1c6;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-typeset-a-color: #a9a1c6;
+  --md-accent-fg-color: #eae8f1;
+}
+
+/* Theme-aware image display */
+[data-md-color-scheme="default"] .only-dark {
+  display: none;
+}
+
+[data-md-color-scheme="slate"] .only-light {
+  display: none;
+}
