@@ -22,9 +22,26 @@ module.exports = function (RED) {
   // Server-side HTTP endpoint for connectivity check
   RED.httpAdmin.get("/seqera-config/connectivity-check", async function (req, res) {
     try {
-      const { baseUrl, token } = req.query;
+      const { baseUrl, token, nodeId } = req.query;
 
-      if (!token) {
+      let actualToken = token;
+
+      // If nodeId is provided instead of token, retrieve the stored token
+      if (nodeId && !token) {
+        const credentials = RED.nodes.getCredentials(nodeId);
+
+        if (credentials && credentials.token) {
+          actualToken = credentials.token;
+        } else {
+          return res.json({
+            success: false,
+            message: "No stored token found",
+            isEmptyToken: true,
+          });
+        }
+      }
+
+      if (!actualToken) {
         return res.json({
           success: false,
           message: "No API token provided",
@@ -41,7 +58,7 @@ module.exports = function (RED) {
 
       const response = await axios.get(`${baseUrl}/user-info`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${actualToken}`,
           "Content-Type": "application/json",
         },
         timeout: 10000, // 10 second timeout
@@ -87,9 +104,24 @@ module.exports = function (RED) {
   // Server-side HTTP endpoint for fetching organizations and workspaces
   RED.httpAdmin.get("/seqera-config/workspaces", async function (req, res) {
     try {
-      const { baseUrl, token } = req.query;
+      const { baseUrl, token, nodeId } = req.query;
 
-      if (!token) {
+      let actualToken = token;
+
+      // If nodeId is provided instead of token, retrieve the stored token
+      if (nodeId && !token) {
+        const credentials = RED.nodes.getCredentials(nodeId);
+        if (credentials && credentials.token) {
+          actualToken = credentials.token;
+        } else {
+          return res.json({
+            success: false,
+            message: "No stored token found",
+          });
+        }
+      }
+
+      if (!actualToken) {
         return res.json({
           success: false,
           message: "No API token provided",
@@ -104,7 +136,7 @@ module.exports = function (RED) {
       }
 
       const headers = {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${actualToken}`,
         "Content-Type": "application/json",
       };
 
