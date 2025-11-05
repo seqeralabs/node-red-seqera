@@ -67,8 +67,10 @@
       return this.baseUrl ? `Seqera (${this.baseUrl}${wsPart})` : "Seqera config";
     },
     oneditprepare: function () {
+      const node = this;
       let debounceTimer;
       const debounceDelay = 1000; // 1 second debounce
+      const hasExistingToken = node.credentials && node.credentials.has_token;
 
       function updateConnectivityStatus(message, isValid = null, userInfo = null) {
         const statusElement = document.getElementById("connectivity-message");
@@ -108,7 +110,22 @@
         const token = document.getElementById("node-config-input-token").value.trim();
         const workspaceSelect = document.getElementById("node-config-input-workspaceId");
 
-        if (!token || !baseUrl) {
+        // Check if token is empty or is Node-RED's password placeholder
+        const isTokenPlaceholder = !token || token === "__PWRD__";
+
+        // If no token in field or it's a placeholder, check if we have an existing token
+        if (isTokenPlaceholder) {
+          if (hasExistingToken) {
+            // Token exists but is not visible (editing existing config)
+            // Keep workspace dropdown enabled but don't update it
+            return;
+          } else {
+            clearWorkspaceDropdown();
+            return;
+          }
+        }
+
+        if (!baseUrl) {
           clearWorkspaceDropdown();
           return;
         }
@@ -116,8 +133,15 @@
         try {
           const queryParams = new URLSearchParams({
             baseUrl: baseUrl,
-            token: token,
           });
+
+          // If we have a real token (not placeholder), send it
+          // Otherwise, send the node ID so server can look up the saved token
+          if (isTokenPlaceholder && hasExistingToken) {
+            queryParams.set("nodeId", node.id);
+          } else {
+            queryParams.set("token", token);
+          }
 
           const response = await fetch(`/seqera-config/workspaces?${queryParams}`, {
             method: "GET",
@@ -174,14 +198,18 @@
         const baseUrl = document.getElementById("node-config-input-baseUrl").value.trim();
         const token = document.getElementById("node-config-input-token").value.trim();
 
-        if (!token) {
-          updateConnectivityStatus("No API token");
+        // Check if token is empty or is Node-RED's password placeholder
+        const isTokenPlaceholder = !token || token === "__PWRD__";
+
+        if (!baseUrl) {
+          updateConnectivityStatus("No base URL specified", false);
           clearWorkspaceDropdown();
           return;
         }
 
-        if (!baseUrl) {
-          updateConnectivityStatus("No base URL specified", false);
+        // If token is placeholder but no existing token, show error
+        if (isTokenPlaceholder && !hasExistingToken) {
+          updateConnectivityStatus("No API token");
           clearWorkspaceDropdown();
           return;
         }
@@ -191,8 +219,15 @@
         try {
           const queryParams = new URLSearchParams({
             baseUrl: baseUrl,
-            token: token,
           });
+
+          // If we have a real token (not placeholder), send it
+          // Otherwise, send the node ID so server can look up the saved token
+          if (isTokenPlaceholder && hasExistingToken) {
+            queryParams.set("nodeId", node.id);
+          } else {
+            queryParams.set("token", token);
+          }
 
           const response = await fetch(`/seqera-config/connectivity-check?${queryParams}`, {
             method: "GET",
@@ -203,6 +238,7 @@
 
           if (response.ok) {
             const data = await response.json();
+
             if (data.success) {
               updateConnectivityStatus("API token is valid", true, data.user);
               // Populate workspace dropdown when connectivity check succeeds
