@@ -10,8 +10,9 @@ edit_uri: edit/main/docs/
 nav:
   - Home: index.md
   - installation.md
-  - getting_started.md
+  - Node-RED fundamentals: getting_started.md
   - Seqera nodes:
+      - seqera_nodes/configuration.md
       - seqera_nodes/launch_workflow.md
       - seqera_nodes/monitor_workflow.md
       - seqera_nodes/add_dataset.md

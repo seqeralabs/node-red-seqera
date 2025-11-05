@@ -4,7 +4,7 @@ title: Getting started
 
 # Node-RED fundamentals
 
-This guide introduces the basics of working with Node-RED and the Seqera nodes.
+This guide introduces the basics of working with Node-RED.
 
 !!! info "Prerequisites"
 
@@ -247,3 +247,92 @@ Node-RED flows are stored as JSON. You can share flows by copying the JSON repre
     - **Reference documentation**: The LLM can read the node help text and suggest configurations
 
     Combine JSON exports with debug outputs (the sidebar has an icon to copy debug blocks in one click) for help with debugging flows that aren't working as you expect.
+
+## Seqera-specific concepts
+
+### Seqera Config Node
+
+Before using any Seqera nodes, you need to create a **Seqera Config** node to store your API credentials and workspace settings.
+
+This configuration node is shared by all Seqera nodes in your flows, so you only need to set up your credentials once.
+
+#### Configuration
+
+- **Base URL**: The base URL for the Seqera API (default: `https://api.cloud.seqera.io`)
+- **Token**: Your Seqera API token. Create one via [Your Tokens](https://cloud.seqera.io/tokens) in the user menu.
+- **Workspace ID**: Your Seqera workspace ID
+
+#### Required Token Permissions
+
+Different operations require different permission levels:
+
+| Node                      | Minimum Role Required |
+| ------------------------- | --------------------- |
+| Launch workflow           | Maintain              |
+| Monitor workflow          | View                  |
+| Create Dataset            | Launch                |
+| List/Poll Data Link Files | Maintain              |
+| Create Studio             | Maintain              |
+| Monitor Studio            | View                  |
+
+For full automation functionality, use a token with the **Maintain** role.
+
+#### Creating the config
+
+1. Drag any Seqera node onto the canvas
+2. Double-click to edit it
+3. Click the pencil icon next to the **Seqera config** dropdown
+4. Enter your Base URL, Token, and Workspace ID
+5. Click **Add** to save
+
+The configuration node will be available to all Seqera nodes in your flows.
+
+### Message Property Passthrough
+
+**All Seqera nodes automatically preserve unrecognized message properties from input to output.**
+
+This is a powerful feature that allows you to maintain context and track messages through complex flows without modifying node code.
+
+#### How it works
+
+Each node uses the JavaScript spread operator to copy all input properties before adding node-specific outputs:
+
+```javascript
+const outputMsg = {
+  ...msg,              // All input properties preserved
+  payload: ...,        // Node-specific properties added/overwritten
+  workflowId: ...,
+};
+```
+
+#### Common use cases
+
+- **`msg._context`** - Preserve shared context across multiple nodes in a flow
+- **`msg.correlationId`** - Track messages through parallel branches or complex flows
+- **`msg.userId`** - Maintain user session information throughout a workflow
+- **Custom metadata** - Any debugging, logging, or business logic data
+
+#### Example
+
+```javascript
+// Input message to a workflow-launch node
+{
+  _context: { requestId: "abc123", source: "webhook" },
+  correlationId: "order-789",
+  payload: { /* launch parameters */ }
+}
+
+// Output message from the workflow-launch node
+{
+  _context: { requestId: "abc123", source: "webhook" },  // Preserved
+  correlationId: "order-789",                            // Preserved
+  payload: { /* API response */ },                       // Overwritten
+  workflowId: "xyz456"                                   // Added by node
+}
+```
+
+This works for **all node types**, including monitor nodes with multiple outputs (all outputs receive the same passthrough properties).
+
+!!! tip
+
+    Use `msg._context` or similar custom properties to maintain state across nodes, especially in complex flows with parallel branches or multiple event sources.
