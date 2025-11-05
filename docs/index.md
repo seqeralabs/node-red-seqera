@@ -8,13 +8,13 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" class="only-light">
 <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes-dark.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" class="only-dark">
 
-- [Launch a workflow](#launch-a-workflow)
-- [Monitor a workflow](#monitor-a-workflow)
-- [Create Dataset](#create-a-dataset)
-- [List Files from Data Explorer](#list-data-link-files)
-- [Poll Data Link Files](#poll-data-link-files)
-- [Create a Seqera Studio](#create-studio)
-- [Monitor a Seqera Studio](#monitor-studio)
+-   [Launch a workflow](#launch-a-workflow)
+-   [Monitor a workflow](#monitor-a-workflow)
+-   [Create Dataset](#create-a-dataset)
+-   [List Files from Data Explorer](#list-data-link-files)
+-   [Poll Data Link Files](#poll-data-link-files)
+-   [Create a Seqera Studio](#create-studio)
+-   [Monitor a Seqera Studio](#monitor-studio)
 
 !!! warning
 
@@ -22,10 +22,10 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 # Typical Use cases
 
-- Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
-- Link triggers and actions to build automation logic using a graphical builder
-- Chain workflows, launching downstream automatically
-- (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
+-   Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
+-   Link triggers and actions to build automation logic using a graphical builder
+-   Chain workflows, launching downstream automatically
+-   (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
 
 > [!TIP]
 > This package includes several example flows which you can import and repurpose.
@@ -111,10 +111,10 @@ const outputMsg = {
 
 ### Common use cases
 
-- **`msg._context`** - Preserve shared context across multiple nodes in a flow
-- **`msg.correlationId`** - Track messages through parallel branches or complex flows
-- **`msg.userId`** - Maintain user session information throughout a workflow
-- **Custom metadata** - Any debugging, logging, or business logic data
+-   **`msg._context`** - Preserve shared context across multiple nodes in a flow
+-   **`msg.correlationId`** - Track messages through parallel branches or complex flows
+-   **`msg.userId`** - Maintain user session information throughout a workflow
+-   **Custom metadata** - Any debugging, logging, or business logic data
 
 ### Example
 
@@ -144,9 +144,9 @@ Create a Seqera Config node to store your API credentials and default settings.
 This is used by all other Seqera Node-RED nodes, so that you only
 have to enter your Seqera credentials once.
 
-- **Base URL**: The base URL for the Seqera API (default: https://api.cloud.seqera.io)
-- **Token**: Your Seqera API token. Create a Seqera access token via [_Your Tokens_](https://cloud.seqera.io/tokens) in the user menu.
-- **Workspace ID**: Your Seqera workspace ID
+-   **Base URL**: The base URL for the Seqera API (default: https://api.cloud.seqera.io)
+-   **Token**: Your Seqera API token. Create a Seqera access token via [_Your Tokens_](https://cloud.seqera.io/tokens) in the user menu.
+-   **Workspace ID**: Your Seqera workspace ID
 
 ### Required Token Permissions
 
@@ -167,20 +167,20 @@ Launch a new workflow (pipeline run) on Seqera Platform.
 
 ### Inputs
 
-- **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
-- **Node name**: Optional custom name for the node in the editor.
-- **Launchpad**: Name of a Launchpad entry. The node will look up the pipeline, fetch its default launch configuration and submit the run. Supports autocomplete.
-- **Run name**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
-- **Resume from**: Workflow ID (Run ID) from a previous workflow run to resume. Optional - typically extracted from `msg.workflowId` of a monitored workflow.
-- **Parameters**: Individual parameter key-value pairs configured in the node editor's editable list. Each parameter can be a string, number, boolean, JSON object, or evaluated from message properties. These take highest precedence when merging.
-- **Params JSON**: A complete JSON object containing multiple parameters. By default this is a JSON literal (`{}`), but can be changed to read from a message property like `msg.params`. Merged before individual parameters.
-- **Workspace ID**: Override the workspace ID from the Config node.
-- **Source WS ID**: Workspace that owns the source pipeline when launching a shared workflow.
+-   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
+-   **Node name**: Optional custom name for the node in the editor.
+-   **Launchpad**: Name of a Launchpad entry. The node will look up the pipeline, fetch its default launch configuration and submit the run. Supports autocomplete.
+-   **Run name**: Custom name for the workflow run. Optional - if left blank, Seqera Platform will generate a default name automatically.
+-   **Resume from**: Workflow ID (Run ID) from a previous workflow run to resume. Optional - typically extracted from `msg.workflowId` of a monitored workflow.
+-   **Parameters**: Individual parameter key-value pairs configured in the node editor's editable list. Each parameter can be a string, number, boolean, JSON object, or evaluated from message properties. These take highest precedence when merging.
+-   **Params JSON**: A complete JSON object containing multiple parameters. By default this is a JSON literal (`{}`), but can be changed to read from a message property like `msg.params`. Merged before individual parameters.
+-   **Workspace ID**: Override the workspace ID from the Config node.
+-   **Source WS ID**: Workspace that owns the source pipeline when launching a shared workflow.
 
 ### Outputs
 
-- `msg.payload` – Raw API response.
-- `msg.workflowId` – Convenience copy of the submitted workflow ID.
+-   `msg.payload` – Raw API response.
+-   `msg.workflowId` – Convenience copy of the submitted workflow ID.
 
 ## Monitor a workflow
 
@@ -188,13 +188,13 @@ Poll the status of an existing workflow run until it reaches a terminal state.
 
 ### Inputs
 
-- **workflowId** (required, default: `msg.workflowId`): ID of the workflow to monitor.
-- **workspaceId**: Override the workspace ID from the Config node.
+-   **workflowId** (required, default: `msg.workflowId`): ID of the workflow to monitor.
+-   **workspaceId**: Override the workspace ID from the Config node.
 
 ### Configuration
 
-- **keepPolling** (default **true**): Continue polling until the workflow is finished.
-- **pollInterval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
+-   **keepPolling** (default **true**): Continue polling until the workflow is finished.
+-   **pollInterval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
 
 ### Outputs (three)
 
@@ -204,8 +204,8 @@ Poll the status of an existing workflow run until it reaches a terminal state.
 
 Each message contains:
 
-- `msg.payload` – Full workflow object from the API.
-- `msg.workflowId` – Convenience copy of the workflow ID.
+-   `msg.payload` – Full workflow object from the API.
+-   `msg.workflowId` – Convenience copy of the workflow ID.
 
 ## Create Dataset
 
@@ -213,17 +213,17 @@ Create a new Dataset and upload its tabular contents in one step.
 
 ### Inputs
 
-- **datasetName** (required): Name of the Dataset to create.
-- **fileContents** (required, default `msg.payload`): CSV/TSV content to upload.
-- **fileType** (default **csv**): Either `csv` or `tsv`. Determines the MIME type and file extension.
-- **description**: Dataset description.
-- **workspaceId**: Override the workspace ID from the Config node.
-- **baseUrl**: Override the Seqera API URL.
+-   **datasetName** (required): Name of the Dataset to create.
+-   **fileContents** (required, default `msg.payload`): CSV/TSV content to upload.
+-   **fileType** (default **csv**): Either `csv` or `tsv`. Determines the MIME type and file extension.
+-   **description**: Dataset description.
+-   **workspaceId**: Override the workspace ID from the Config node.
+-   **baseUrl**: Override the Seqera API URL.
 
 ### Outputs (one)
 
-- `msg.payload` – API response from the upload request.
-- `msg.datasetId` – ID of the newly-created Dataset.
+-   `msg.payload` – API response from the upload request.
+-   `msg.datasetId` – ID of the newly-created Dataset.
 
 ## List Files from Data Explorer
 
@@ -231,21 +231,21 @@ Retrieve objects from a Seqera **Data Explorer** link (Data Link).
 
 ### Inputs
 
-- **dataLinkName** (required): Display name of the Data Link.
-- **basePath**: Path within the Data Link to start from.
-- **prefix**: Prefix filter applied to both files and folders.
-- **pattern**: Regular-expression filter applied to files _after_ the prefix filter.
-- **returnType** (default **files**): `files`, `folders` or `all`.
-- **maxResults** (default **100**): Maximum number of objects to return.
-- **depth** (default **0**): Folder recursion depth (`0` = current dir only).
-- **workspaceId**: Override the workspace ID from the Config node.
-- **baseUrl**: Override the Seqera API URL.
+-   **dataLinkName** (required): Display name of the Data Link.
+-   **basePath**: Path within the Data Link to start from.
+-   **prefix**: Prefix filter applied to both files and folders.
+-   **pattern**: Regular-expression filter applied to files _after_ the prefix filter.
+-   **returnType** (default **files**): `files`, `folders` or `all`.
+-   **maxResults** (default **100**): Maximum number of objects to return.
+-   **depth** (default **0**): Folder recursion depth (`0` = current dir only).
+-   **workspaceId**: Override the workspace ID from the Config node.
+-   **baseUrl**: Override the Seqera API URL.
 
 ### Outputs (one)
 
-- `msg.payload.files` – Array of objects returned by the API (after filtering).
-- `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Metadata describing the Data Link.
-- `msg.files` – Convenience array containing fully-qualified object names.
+-   `msg.payload.files` – Array of objects returned by the API (after filtering).
+-   `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Metadata describing the Data Link.
+-   `msg.files` – Convenience array containing fully-qualified object names.
 
 ## Poll Data Link Files
 
@@ -255,7 +255,7 @@ Periodically list a Data Link and emit messages when new objects appear. The nod
 
 All of the inputs from _List Files from Data Explorer_ node, plus:
 
-- **pollFrequency** (default **15 min**): Interval between polls expressed as seconds (`90`), `MM:SS`, `HH:MM:SS` or `DD-HH:MM:SS`.
+-   **pollFrequency** (default **15 min**): Interval between polls expressed as seconds (`90`), `MM:SS`, `HH:MM:SS` or `DD-HH:MM:SS`.
 
 ### Outputs (two)
 
@@ -264,9 +264,9 @@ All of the inputs from _List Files from Data Explorer_ node, plus:
 
 Both messages include the same properties:
 
-- `msg.payload.files`, `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider`.
-- `msg.files` – Convenience array of fully-qualified object names.
-- `msg.payload.nextPoll` (only on the _All results_ output) – ISO timestamp of the next scheduled poll.
+-   `msg.payload.files`, `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider`.
+-   `msg.files` – Convenience array of fully-qualified object names.
+-   `msg.payload.nextPoll` (only on the _All results_ output) – ISO timestamp of the next scheduled poll.
 
 ## Create Studio
 
@@ -274,27 +274,27 @@ Create a new **Studio** (interactive workspace) on Seqera Platform.
 
 ### Inputs
 
-- **studioName** (required): Studio display name.
-- **containerUri** (required): Container image URI for the Studio tool.
-- **computeEnvId** (required): ID of the Compute Environment to run on.
-- **description**: Text description for the Studio.
-- **mountData**: One or more Data Link names to mount inside the Studio.
-- **cpu** (default **2**)
-- **memory** (default **8192**)
-- **gpu** (default **0**)
-- **initialCheckpointId**
-- **condaEnvironment**
-- **lifespanHours**: Maximum lifetime before auto-stop.
-- **isPrivate** (default **false**)
-- **spot** (default **false**)
-- **autoStart** (default **true**)
-- **workspaceId**: Override the workspace ID from the Config node.
-- **baseUrl**: Override the Seqera API URL.
+-   **studioName** (required): Studio display name.
+-   **containerUri** (required): Container image URI for the Studio tool.
+-   **computeEnvId** (required): ID of the Compute Environment to run on.
+-   **description**: Text description for the Studio.
+-   **mountData**: One or more Data Link names to mount inside the Studio.
+-   **cpu** (default **2**)
+-   **memory** (default **8192**)
+-   **gpu** (default **0**)
+-   **initialCheckpointId**
+-   **condaEnvironment**
+-   **lifespanHours**: Maximum lifetime before auto-stop.
+-   **isPrivate** (default **false**)
+-   **spot** (default **false**)
+-   **autoStart** (default **true**)
+-   **workspaceId**: Override the workspace ID from the Config node.
+-   **baseUrl**: Override the Seqera API URL.
 
 ### Outputs (one)
 
-- `msg.payload` – Full API response.
-- `msg.studioId` – ID of the created Studio.
+-   `msg.payload` – Full API response.
+-   `msg.studioId` – ID of the created Studio.
 
 ## Monitor Studio
 
@@ -302,13 +302,13 @@ Poll the status of an existing **Studio** session until it reaches a terminal st
 
 ### Inputs
 
-- **studioId** (required, default: `msg.studioId`): ID of the Studio session to monitor.
-- **workspaceId**: Override the workspace ID from the Config node.
+-   **studioId** (required, default: `msg.studioId`): ID of the Studio session to monitor.
+-   **workspaceId**: Override the workspace ID from the Config node.
 
 ### Configuration
 
-- **keepPolling** (default **true**): Continue polling until the Studio reaches a terminal state (stopped, errored, or buildFailed).
-- **pollInterval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
+-   **keepPolling** (default **true**): Continue polling until the Studio reaches a terminal state (stopped, errored, or buildFailed).
+-   **pollInterval** (default **5 seconds**): Frequency of status checks. Can be configured in seconds, minutes, or hours.
 
 ### Outputs (three)
 
@@ -318,20 +318,20 @@ Poll the status of an existing **Studio** session until it reaches a terminal st
 
 Each message contains:
 
-- `msg.payload` – Full Studio object from the API, including `statusInfo` with current status details.
-- `msg.studioId` – ID of the Studio session.
+-   `msg.payload` – Full Studio object from the API, including `statusInfo` with current status details.
+-   `msg.studioId` – ID of the Studio session.
 
 ### Status Details
 
 The Studio status progression typically follows this sequence:
 
-- **starting** → Initial provisioning (yellow)
-- **building** → Container image is being built (yellow)
-- **running** → Studio is active and ready to use (blue) - **Output 2 fires here**
-- **stopping** → Shutdown in progress (yellow)
-- **stopped** → Successfully terminated (green) - **Output 3 fires here**
-- **errored** → Runtime error occurred (red) - **Output 3 fires here**
-- **buildFailed** → Container build failed (red) - **Output 3 fires here**
+-   **starting** → Initial provisioning (yellow)
+-   **building** → Container image is being built (yellow)
+-   **running** → Studio is active and ready to use (blue) - **Output 2 fires here**
+-   **stopping** → Shutdown in progress (yellow)
+-   **stopped** → Successfully terminated (green) - **Output 3 fires here**
+-   **errored** → Runtime error occurred (red) - **Output 3 fires here**
+-   **buildFailed** → Container build failed (red) - **Output 3 fires here**
 
 When **keepPolling** is disabled, the node performs a single status check and outputs the result immediately without waiting for terminal states.
 
@@ -341,10 +341,10 @@ When **keepPolling** is disabled, the node performs a single status check and ou
 
 Contributions are welcome! If you'd like to contribute to this project, please see [CONTRIBUTING.md](contributing.md) for:
 
-- Development setup instructions
-- How to install and run Node-RED locally with your changes
-- Docker development setup
-- Getting help and resources
+-   Development setup instructions
+-   How to install and run Node-RED locally with your changes
+-   Docker development setup
+-   Getting help and resources
 
 # License
 

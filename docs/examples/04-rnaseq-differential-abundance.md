@@ -14,20 +14,20 @@ The output directory is automatically generated from the CSV filename, and all p
 
 This workflow comes **pre-configured with test data** and works out of the box!
 
-- All Seqera nodes need a Seqera configuration to be assigned
-- Two Launchpad entries are required: `nf-core-rnaseq` and `nf-core-differentialabundance`
-- Open the **"Set user inputs"** function node to configure file paths
-- The workflow uses small test data from this repository: S. cerevisiae (yeast) RNA-seq with ~7 samples
+-   All Seqera nodes need a Seqera configuration to be assigned
+-   Two Launchpad entries are required: `nf-core-rnaseq` and `nf-core-differentialabundance`
+-   Open the **"Set user inputs"** function node to configure file paths
+-   The workflow uses small test data from this repository: S. cerevisiae (yeast) RNA-seq with ~7 samples
 
 **Test files (GitHub-hosted):**
 
-- Samplesheet: `examples/data/rnaseq-tests-datasets.csv` - includes `sample`, `fastq_1`, `fastq_2`, `strandedness`, `treatment`, and `replicate` columns
-- Contrasts: `examples/data/rnaseq-test-contrasts.csv` - defines comparisons like WT vs RAP1_UNINDUCED
-- Genome: `R64-1-1` (S. cerevisiae from iGenomes)
+-   Samplesheet: `examples/data/rnaseq-tests-datasets.csv` - includes `sample`, `fastq_1`, `fastq_2`, `strandedness`, `treatment`, and `replicate` columns
+-   Contrasts: `examples/data/rnaseq-test-contrasts.csv` - defines comparisons like WT vs RAP1_UNINDUCED
+-   Genome: `R64-1-1` (S. cerevisiae from iGenomes)
 
 **To use your own data**, edit the function node:
 
-- Set `msg.rnaseqSamplesheet` to your samplesheet path (must include a grouping column like `treatment` or `group`)
-- Set `msg.contrastsCSV` to your contrasts file
-- Set `msg.basePath` to your output location (e.g., `s3://my-bucket/results`)
-- Set `msg.genome` or provide explicit `msg.gtfFile` and `msg.fasta` paths
+-   Set `msg.rnaseqSamplesheet` to your samplesheet path (must include a grouping column like `treatment` or `group`)
+-   Set `msg.contrastsCSV` to your contrasts file
+-   Set `msg.basePath` to your output location (e.g., `s3://my-bucket/results`)
+-   Set `msg.genome` or provide explicit `msg.gtfFile` and `msg.fasta` paths

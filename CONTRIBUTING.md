@@ -6,10 +6,10 @@ Thank you for your interest in contributing to this project! This document provi
 
 ### Prerequisites
 
-- Node.js >= 12.0.0
-- Node-RED >= 2.0.0
-- Git
-- Python with pip for pre-commit hooks
+-   Node.js >= 12.0.0
+-   Node-RED >= 2.0.0
+-   Git
+-   Python with pip for pre-commit hooks
 
 ### Clone the Repository
 
@@ -83,8 +83,8 @@ Open your browser to `http://localhost:1880` to access the Node-RED editor.
 
 After making code changes:
 
-- **JavaScript files (`.js`)**: Restart Node-RED
-- **HTML files (`.html`)**: Refresh your browser (Ctrl+Shift+R / Cmd+Shift+R)
+-   **JavaScript files (`.js`)**: Restart Node-RED
+-   **HTML files (`.html`)**: Refresh your browser (Ctrl+Shift+R / Cmd+Shift+R)
 
 ## Docker Development
 
@@ -114,8 +114,8 @@ docker build -f docker/Dockerfile.studios -t node-red-seqera-studios:latest-stud
 
 ## Getting Help
 
-- **Documentation**: Check `CLAUDE.md` for detailed architecture notes
-- **Issues**: Search existing [GitHub issues](https://github.com/seqeralabs/node-red-seqera/issues)
+-   **Documentation**: Check `CLAUDE.md` for detailed architecture notes
+-   **Issues**: Search existing [GitHub issues](https://github.com/seqeralabs/node-red-seqera/issues)
 
 ## License
 

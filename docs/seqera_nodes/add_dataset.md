@@ -10,17 +10,17 @@ Datasets in Seqera Platform store tabular data (CSV/TSV files) that can be used 
 
 ## Inputs
 
-- **datasetName** (required): Name of the Dataset to create.
-- **fileContents** (required, default `msg.payload`): CSV/TSV content to upload. Can be a string or Buffer.
-- **fileType** (default **csv**): Either `csv` or `tsv`. Determines the MIME type and file extension.
-- **description**: Optional description for the Dataset.
-- **workspaceId**: Override the workspace ID from the Config node.
-- **baseUrl**: Override the Seqera API URL.
+-   **datasetName** (required): Name of the Dataset to create.
+-   **fileContents** (required, default `msg.payload`): CSV/TSV content to upload. Can be a string or Buffer.
+-   **fileType** (default **csv**): Either `csv` or `tsv`. Determines the MIME type and file extension.
+-   **description**: Optional description for the Dataset.
+-   **workspaceId**: Override the workspace ID from the Config node.
+-   **baseUrl**: Override the Seqera API URL.
 
 ## Outputs
 
-- `msg.payload` – API response from the upload request.
-- `msg.datasetId` – ID of the newly-created Dataset.
+-   `msg.payload` – API response from the upload request.
+-   `msg.datasetId` – ID of the newly-created Dataset.
 
 ## Configuration
 
@@ -28,8 +28,8 @@ Datasets in Seqera Platform store tabular data (CSV/TSV files) that can be used 
 
 The node supports two tabular formats:
 
-- **CSV** (Comma-Separated Values): `text/csv`
-- **TSV** (Tab-Separated Values): `text/tab-separated-values`
+-   **CSV** (Comma-Separated Values): `text/csv`
+-   **TSV** (Tab-Separated Values): `text/tab-separated-values`
 
 The file type determines the MIME type sent to the API and the file extension used.
 
@@ -37,9 +37,9 @@ The file type determines the MIME type sent to the API and the file extension us
 
 The **fileContents** field expects the complete file content as a string or Buffer. You can:
 
-- Read from a file using the **file in** node
-- Generate dynamically using a **function** node
-- Pass through from a previous node via `msg.payload`
+-   Read from a file using the **file in** node
+-   Generate dynamically using a **function** node
+-   Pass through from a previous node via `msg.payload`
 
 ## Required permissions
 
@@ -63,9 +63,9 @@ Use a **function** node to create CSV content:
 
 ```javascript
 const data = [
-  ["sample", "fastq_1", "fastq_2"],
-  ["sample1", "s3://bucket/sample1_R1.fastq.gz", "s3://bucket/sample1_R2.fastq.gz"],
-  ["sample2", "s3://bucket/sample2_R1.fastq.gz", "s3://bucket/sample2_R2.fastq.gz"],
+    ["sample", "fastq_1", "fastq_2"],
+    ["sample1", "s3://bucket/sample1_R1.fastq.gz", "s3://bucket/sample1_R2.fastq.gz"],
+    ["sample2", "s3://bucket/sample2_R1.fastq.gz", "s3://bucket/sample2_R2.fastq.gz"],
 ];
 
 msg.payload = data.map((row) => row.join(",")).join("\n");
@@ -76,8 +76,8 @@ return msg;
 
 Connect this function node to a **create-dataset** node with:
 
-- **datasetName**: `msg.datasetName`
-- **fileContents**: `msg.payload`
+-   **datasetName**: `msg.datasetName`
+-   **fileContents**: `msg.payload`
 
 ### Create dataset on file upload
 
@@ -94,7 +94,7 @@ The upload uses the `form-data` package to construct the multipart request with 
 
 ## Notes
 
-- Dataset names must be unique within a workspace
-- File size limits depend on your Seqera Platform configuration
-- The uploaded file is validated by Seqera Platform (must be valid CSV/TSV)
-- Custom message properties are preserved in the output (e.g., `msg._context`)
+-   Dataset names must be unique within a workspace
+-   File size limits depend on your Seqera Platform configuration
+-   The uploaded file is validated by Seqera Platform (must be valid CSV/TSV)
+-   Custom message properties are preserved in the output (e.g., `msg._context`)

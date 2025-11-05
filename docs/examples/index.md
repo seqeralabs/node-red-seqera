@@ -2,11 +2,11 @@
 
 You can find the Seqera nodes in the sidebar on the left, under the heading "Seqera". To jump-start your development, take a look at the examples that come with the extension:
 
-- Menu (top right `≡` button)
-- Import
-- Examples (modal's left sidebar)
-- @seqera/node-red-seqera dropdown
-- Choose an example and import into your current workflow
+-   Menu (top right `≡` button)
+-   Import
+-   Examples (modal's left sidebar)
+-   @seqera/node-red-seqera dropdown
+-   Choose an example and import into your current workflow
 
 ![Importing examples](../img/import_examples.png)
 

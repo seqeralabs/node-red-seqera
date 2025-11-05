@@ -1,13 +1,13 @@
 :root > * {
   --md-primary-fg-color: #160f26;
 
-  --md-typeset-a-color: #6c5e9d;
+  --md-typeset-a-color: #4924ce;
   --md-accent-fg-color: #a9a1c6;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-typeset-a-color: #a9a1c6;
-  --md-accent-fg-color: #eae8f1;
+  --md-typeset-a-color: #8876c7;
+  --md-accent-fg-color: #a9a1c6;
 }
 
 /* Theme-aware image display */
@@ -17,4 +17,9 @@
 
 [data-md-color-scheme="slate"] .only-light {
   display: none;
+}
+
+.md-content a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

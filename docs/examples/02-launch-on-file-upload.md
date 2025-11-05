@@ -22,7 +22,7 @@ Finally, this is passed to the _Launch workflow_ node, which fires off a pipelin
 
 Some configuration is needed to make this flow work:
 
-- All Seqera nodes need a Seqera configuration to be assigned
-- _Poll files_ and _List files_ need to be configured with the name of a Data Link within Platform
-- _Create dataset_ needs a dataset name to be set somehow (dynamically to avoid name clashes)
-- _Launch workflow_ needs configuring with the name of a Launchpad pipeline, and parameters.
+-   All Seqera nodes need a Seqera configuration to be assigned
+-   _Poll files_ and _List files_ need to be configured with the name of a Data Link within Platform
+-   _Create dataset_ needs a dataset name to be set somehow (dynamically to avoid name clashes)
+-   _Launch workflow_ needs configuring with the name of a Launchpad pipeline, and parameters.

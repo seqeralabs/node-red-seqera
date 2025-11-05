@@ -22,9 +22,9 @@ Each node performs a specific task - triggering on events, transforming data, ca
 
 The Node-RED editor has three main sections:
 
-- **Left sidebar**: Palette of available nodes organized by category
-- **Center canvas**: Visual workspace where you build your flows
-- **Right sidebar**: Context panel showing help, debug messages, and node configuration
+-   **Left sidebar**: Palette of available nodes organized by category
+-   **Center canvas**: Visual workspace where you build your flows
+-   **Right sidebar**: Context panel showing help, debug messages, and node configuration
 
 !!! tip
 
@@ -37,10 +37,10 @@ The Node-RED editor has three main sections:
 
 The left sidebar contains the **node palette** - a searchable list of all available nodes organized by category. Common categories include:
 
-- **Common**: Basic nodes like inject, debug, function, and switch
-- **Seqera**: All Seqera Platform nodes (after installation)
-- **Network**: HTTP request, WebSocket, MQTT, and other protocol nodes
-- **Storage**: File operations and database nodes
+-   **Common**: Basic nodes like inject, debug, function, and switch
+-   **Seqera**: All Seqera Platform nodes (after installation)
+-   **Network**: HTTP request, WebSocket, MQTT, and other protocol nodes
+-   **Storage**: File operations and database nodes
 
 Use the search box at the top to quickly find nodes by name or description.
 
@@ -101,19 +101,19 @@ Select multiple nodes and right-click > **Group selection** to create a visual g
 
 The right sidebar has several useful tabs:
 
-- **Info**: Shows documentation for the selected node
-- **Help**: Show contextual help for the selected canvas element
-- **Debug**: Displays messages sent to debug nodes
-- **Context**: View and edit flow and global variables
+-   **Info**: Shows documentation for the selected node
+-   **Help**: Show contextual help for the selected canvas element
+-   **Debug**: Displays messages sent to debug nodes
+-   **Context**: View and edit flow and global variables
 
 ### Built-in help
 
 Every node includes built-in documentation. Select any node on the canvas and click the **Help** tab in the right sidebar to see:
 
-- What the node does
-- Required configuration
-- Input/output message format
-- Usage examples
+-   What the node does
+-   Required configuration
+-   Input/output message format
+-   Usage examples
 
 The Seqera nodes all have detailed help text explaining their configuration options and message properties.
 
@@ -218,9 +218,9 @@ Node-RED flows are stored as JSON. You can share flows by copying the JSON repre
 ### Importing a flow
 
 1. Either:
-   - Go to the hamburger menu (top-right) > **Import**
-   - Right click the canvas, then **Insert** > **Import**
-   - Keyboard shortcut ++cmd+i++
+    - Go to the hamburger menu (top-right) > **Import**
+    - Right click the canvas, then **Insert** > **Import**
+    - Keyboard shortcut ++cmd+i++
 2. Paste the JSON or select a file
 3. Click **Import**
 
@@ -232,9 +232,9 @@ Node-RED flows are stored as JSON. You can share flows by copying the JSON repre
 
 1. Select the nodes you want to export (or select none to export all nodes)
 2. Either:
-   - Go to the hamburger menu > **Export**
-   - Right click the canvas, then **Export**
-   - Keyboard shortcut ++cmd+e++
+    - Go to the hamburger menu > **Export**
+    - Right click the canvas, then **Export**
+    - Keyboard shortcut ++cmd+e++
 3. Choose the tab/flow to export
 4. Copy the JSON or download as a file
 
@@ -248,81 +248,25 @@ Node-RED flows are stored as JSON. You can share flows by copying the JSON repre
 
     Combine JSON exports with debug outputs (the sidebar has an icon to copy debug blocks in one click) for help with debugging flows that aren't working as you expect.
 
-## Seqera-specific concepts
+## Message property passthrough
 
-### Seqera Config Node
-
-Before using any Seqera nodes, you need to create a **Seqera Config** node to store your API credentials and workspace settings.
-
-This configuration node is shared by all Seqera nodes in your flows, so you only need to set up your credentials once.
-
-#### Configuration
-
-- **Base URL**: The base URL for the Seqera API (default: `https://api.cloud.seqera.io`)
-- **Token**: Your Seqera API token. Create one via [Your Tokens](https://cloud.seqera.io/tokens) in the user menu.
-- **Workspace ID**: Your Seqera workspace ID
-
-#### Required Token Permissions
-
-Different operations require different permission levels:
-
-| Node                      | Minimum Role Required |
-| ------------------------- | --------------------- |
-| Launch workflow           | Maintain              |
-| Monitor workflow          | View                  |
-| Create Dataset            | Launch                |
-| List/Poll Data Link Files | Maintain              |
-| Create Studio             | Maintain              |
-| Monitor Studio            | View                  |
-
-For full automation functionality, use a token with the **Maintain** role.
-
-#### Creating the config
-
-1. Drag any Seqera node onto the canvas
-2. Double-click to edit it
-3. Click the pencil icon next to the **Seqera config** dropdown
-4. Enter your Base URL, Token, and Workspace ID
-5. Click **Add** to save
-
-The configuration node will be available to all Seqera nodes in your flows.
-
-### Message Property Passthrough
-
-**All Seqera nodes automatically preserve unrecognized message properties from input to output.**
+Most Node-RED nodes will ignore unrecognised input `msg` properties and _pass them through_ to their outputs.
+All Seqera nodes do this.
 
 This is a powerful feature that allows you to maintain context and track messages through complex flows without modifying node code.
+You can use `msg._context` (or any custom properties) to maintain state across nodes, which is especially useful in complex flows with parallel branches or multiple event sources.
 
-#### How it works
+For example:
 
-Each node uses the JavaScript spread operator to copy all input properties before adding node-specific outputs:
-
-```javascript
-const outputMsg = {
-  ...msg,              // All input properties preserved
-  payload: ...,        // Node-specific properties added/overwritten
-  workflowId: ...,
-};
-```
-
-#### Common use cases
-
-- **`msg._context`** - Preserve shared context across multiple nodes in a flow
-- **`msg.correlationId`** - Track messages through parallel branches or complex flows
-- **`msg.userId`** - Maintain user session information throughout a workflow
-- **Custom metadata** - Any debugging, logging, or business logic data
-
-#### Example
-
-```javascript
-// Input message to a workflow-launch node
+```javascript title="Input message to a workflow-launch node"
 {
   _context: { requestId: "abc123", source: "webhook" },
   correlationId: "order-789",
   payload: { /* launch parameters */ }
 }
+```
 
-// Output message from the workflow-launch node
+```javascript title="Output message from the workflow-launch node"
 {
   _context: { requestId: "abc123", source: "webhook" },  // Preserved
   correlationId: "order-789",                            // Preserved
@@ -331,8 +275,5 @@ const outputMsg = {
 }
 ```
 
-This works for **all node types**, including monitor nodes with multiple outputs (all outputs receive the same passthrough properties).
-
-!!! tip
-
-    Use `msg._context` or similar custom properties to maintain state across nodes, especially in complex flows with parallel branches or multiple event sources.
+The [auto-resume on failure example](examples/03-auto-resume-on-failure.md) example workflow uses this behaviour to keep track of the number of retry attempts.
+This works even when multiple different pipelines have been triggered in the same flow, as the retry counter travels with the node events.

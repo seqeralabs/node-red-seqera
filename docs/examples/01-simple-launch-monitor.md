@@ -17,7 +17,7 @@ The flow consists of a simple sequence:
 
 To get this example working, you'll need to configure:
 
-- **Seqera configuration** - Add your Platform API token and endpoint to both Seqera nodes
-- **Launch workflow node** - Set the correct launchpad name and update any pipeline parameters as needed
+-   **Seqera configuration** - Add your Platform API token and endpoint to both Seqera nodes
+-   **Launch workflow node** - Set the correct launchpad name and update any pipeline parameters as needed
 
 Once configured, click "Deploy" in Node-RED, then click the inject node to trigger a workflow launch. You can follow the progress in the Debug panel on the right sidebar.
