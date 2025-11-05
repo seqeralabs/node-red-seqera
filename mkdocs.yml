@@ -39,7 +39,6 @@ theme:
     - navigation.tracking
     - navigation.top
     - navigation.path
-    - navigation.expand
     - search.suggest
     - search.highlight
     - search.share
