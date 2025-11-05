@@ -274,9 +274,9 @@ The resumed workflow must use the same work directory as the original run, so en
           valueInput.typedInput("value", param.value || "");
           valueInput.typedInput("type", param.valueType || "str");
 
-          // Store references for retrieval
-          param.nameInput = nameInput;
-          param.valueInput = valueInput;
+          // Store references in container data
+          container.data("nameInput", nameInput);
+          container.data("valueInput", valueInput);
         },
         removable: true,
         sortable: true,
@@ -306,10 +306,9 @@ The resumed workflow must use the same work directory as the original run, so en
       $("#node-input-params-container")
         .editableList("items")
         .each(function () {
-          const param = $(this).data("data");
-          const name = param.nameInput.val().trim();
-          const value = param.valueInput.typedInput("value");
-          const valueType = param.valueInput.typedInput("type");
+          const name = $(this).data("nameInput").val().trim();
+          const value = $(this).data("valueInput").typedInput("value");
+          const valueType = $(this).data("valueInput").typedInput("type");
           if (name) {
             // Only save if name is not empty
             params.push({ name, value, valueType });

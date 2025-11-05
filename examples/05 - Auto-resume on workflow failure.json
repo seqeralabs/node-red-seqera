@@ -34,7 +34,7 @@
     "paramsKeyType": "json",
     "params": [
       {
-        "name": "ourdir",
+        "name": "outdir",
         "value": "./results",
         "valueType": "str"
       }
