@@ -79,11 +79,11 @@ Adds a new Studio in Seqera Platform.
 : memory (number) : Memory (MB) (default 8192).
 : gpu (number) : Number of GPUs (default 0).
 : condaEnvironment (string) : Conda environment name (optional).
-: lifespanHours (number) : Lifespan hours before shutdown (optional).
+: lifespanHours (number) : Lifespan hours before shutdown. Leave empty for no automatic stop.
 : description (string) : Description text (optional).
 : isPrivate (bool) : If true, studio will be private (default false).
 : spot (bool) : If true, enable spot resources (default false).
-: autoStart (bool) : Whether to automatically start after creation (default true).
+: autoStart (bool) : Whether to automatically start after addition (default true).
 : workspaceId (string) : Override workspace ID.
 
 ### Outputs

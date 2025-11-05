@@ -234,9 +234,9 @@ nodes/           - Node implementation files (.js + .html pairs)
   _utils.js      - Shared helper functions
   config.js      - Seqera configuration node
   workflow-*.js  - Workflow launch/monitor nodes
-  dataset-*.js   - Dataset creation node
+  dataset-*.js   - Dataset addition node
   datalink-*.js  - Data Link list/poll nodes + shared utils
-  studios-*.js   - Studio creation node
+  studios-*.js   - Studio addition node
 examples/        - Example flows (.json) and test data
 docker/          - Dockerfiles and Node-RED config for containers
 docs/            - Documentation and images

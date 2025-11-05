@@ -21,20 +21,9 @@ Trigger a file listing by passing any event message to the input.
 -   **Pattern**: Regular-expression filter applied to files _after_ the prefix filter.
 -   **Return type** (default **files**): `files`, `folders` or `all`.
 -   **Max results** (default **100**): Maximum number of objects to return.
--   **Depth** (default **0**): Folder recursion depth (`0` = current directory only, negative = unlimited).
+-   **Depth** (default **0**): Folder recursion depth
+    -   `0` = current directory only, negative = unlimited.
 -   **Workspace ID**: Override the workspace ID from the Config node.
-
-## Outputs
-
--   `msg.payload.files` – Array of objects returned by the API (after filtering).
--   `msg.payload.resourceType` – Type of the Data Link resource.
--   `msg.payload.resourceRef` – Reference ID of the Data Link.
--   `msg.payload.provider` – Cloud provider (e.g., "aws", "azure", "google").
--   `msg.files` – Convenience array containing fully-qualified object names (strings only).
-
-### Data Link name
-
-The **dataLinkName** field supports autocomplete. Start typing to see available Data Links in your workspace.
 
 ### Filtering
 
@@ -43,11 +32,17 @@ The node provides two filtering mechanisms:
 1. **Prefix filter**: Applied to both files and folders. Useful for narrowing to a specific subdirectory or file prefix.
 2. **Pattern filter**: Regular expression applied only to files after the prefix filter. Useful for selecting specific file types or naming patterns.
 
-Example:
+These can be combined, for example:
 
--   Prefix: `samples/batch1/`
--   Pattern: `.*\.fastq\.gz$`
--   Result: Only `.fastq.gz` files in the `samples/batch1/` directory
+-   **Prefix**: `samples/batch1/`
+-   **Pattern**: `.*\.fastq\.gz$`
+
+This would result in oly `.fastq.gz` files in the `samples/batch1/` directory being listed.
+
+!!! tip
+
+    **Prefix** is preferred, as this is passed to the Seqera Platform API and happens server side.
+    **Pattern** is done within Node-RED after results are returned.
 
 ### Return type
 
@@ -70,6 +65,14 @@ Control how deep to search subdirectories:
 
     Setting depth to `-1` with a large Data Link can result in many API calls and long processing time. Use with caution.
 
+## Outputs
+
+-   `msg.payload.files` – Array of objects returned by the API (after filtering).
+-   `msg.payload.resourceType` – Type of the Data Link resource.
+-   `msg.payload.resourceRef` – Reference ID of the Data Link.
+-   `msg.payload.provider` – Cloud provider (e.g., "aws", "azure", "google").
+-   `msg.files` – Convenience array containing fully-qualified object names (strings only).
+
 ## Required permissions
 
 Minimum required role: **Maintain**
@@ -83,23 +86,23 @@ See the [configuration documentation](configuration.md#required-token-permission
 1. Add an **inject** node to trigger the listing
 2. Add a **list-files** node
 3. Configure:
-    - **dataLinkName**: Your Data Link name
-    - **pattern**: `.*\.csv$`
-    - **returnType**: `files`
+    - **Data Link name**: Your Data Link name
+    - **Pattern**: `.*\.csv$`
+    - **Return type**: `files`
 4. Add a **debug** node to see the results
 5. Deploy and click inject
 
 ### List files in subdirectory
 
-1. Set **basePath**: `data/2024/january/`
-2. Set **depth**: `0`
+1. Set **Base path**: `data/2024/january/`
+2. Set **Depth**: `0`
 3. This will list only files directly in that subdirectory
 
 ### Recursive search for FASTQ files
 
-1. Set **pattern**: `.*\.fastq(\.gz)?$`
-2. Set **depth**: `-1`
-3. Set **maxResults**: `1000` (or appropriate limit)
+1. Set **Pattern**: `.*\.fastq(\.gz)?$`
+2. Set **Depth**: `-1`
+3. Set **Max results**: `1000` (or appropriate limit)
 4. This will recursively find all FASTQ files in the Data Link
 
 ### Process results in a loop
@@ -109,15 +112,6 @@ Use a **split** node after the list-files node:
 1. list-files → split (set to `msg.files`)
 2. split → your processing logic (runs once per file)
 3. Each iteration receives one file path in `msg.payload`
-
-## Implementation details
-
-The node makes two API calls:
-
-1. `GET /data-links` – Fetch the Data Link by name to get its resource details
-2. `GET /data-browser` – Browse the Data Link contents with filters
-
-The filtering and recursion logic is implemented in the node to handle the depth-first traversal and regex pattern matching.
 
 ## Notes
 

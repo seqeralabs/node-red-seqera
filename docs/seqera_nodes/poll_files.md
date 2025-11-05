@@ -2,7 +2,7 @@
 
 **Periodically list a Seqera Data Explorer Data Link and emit messages when new objects appear.**
 
-This node automatically monitors a Data Link for changes, making it perfect for event-driven workflows that trigger when new files are uploaded.
+This node automatically monitors a Data Link for _changes_, making it perfect for event-driven workflows that trigger when new files are uploaded.
 
 !!! note
 
@@ -14,6 +14,10 @@ This node automatically monitors a Data Link for changes, making it perfect for 
 </figure>
 
 ## Configuration
+
+!!! info
+
+    This node works much like the [list files node](list_files.md), but instead of triggering when recieving a message input, it polls repeatedly and outputs events when it detects a change.
 
 -   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
 -   **Node name**: Optional custom name for the node in the editor.
@@ -28,22 +32,6 @@ This node automatically monitors a Data Link for changes, making it perfect for 
 -   **Workspace ID**: Override the workspace ID from the Config node.
 
 All properties work the same as the [list files](list_files.md) node, plus automatic polling.
-
-### Poll frequency format
-
-The **Poll frequency** field accepts several formats:
-
--   **Seconds only**: `90` (90 seconds)
--   **MM:SS**: `05:30` (5 minutes, 30 seconds)
--   **HH:MM:SS**: `01:30:00` (1 hour, 30 minutes)
--   **DD-HH:MM:SS**: `01-12:00:00` (1 day, 12 hours)
-
-Examples:
-
--   `30` = 30 seconds
--   `10:00` = 10 minutes
--   `1:00:00` = 1 hour
--   `00-01:00:00` = 1 hour
 
 ## Outputs (two)
 
@@ -70,6 +58,10 @@ The node tracks seen files in its context storage. On each poll:
 
 The comparison is based on the full file path. Files that are deleted and re-uploaded will be detected as "new".
 
+!!! info
+
+    The very first poll after the node is created sees everything as new and is handled as a special case. It does not output new results.
+
 ## Required permissions
 
 Minimum required role: **Maintain**
@@ -88,46 +80,26 @@ See the [configuration documentation](configuration.md#required-token-permission
 
 Now every time a new file appears in the Data Link, a workflow will automatically launch.
 
-### Monitor with notifications
-
-1. poll-files (output 1) → function node:
-    ```javascript
-    msg.payload = `Found ${msg.files.length} files. Next poll: ${msg.payload.nextPoll}`;
-    return msg;
-    ```
-2. function → debug node
-
-This shows the current file count and next poll time on every check.
-
 ### Trigger only on specific file types
 
 1. Set **pattern**: `.*\.bam$` to only detect BAM files
 2. Connect output 2 to your processing logic
 3. The node will only emit when new BAM files appear
 
-## Implementation details
-
-The node uses Node-RED's context storage to persist the list of seen files between deployments. This means:
-
--   The tracking survives Node-RED restarts
--   Each poll-files node maintains its own independent state
--   Deleting and re-adding the node will reset the tracking (all files will appear "new" on first poll)
-
 ## Notes
 
--   The first poll after deployment considers all matching files as "new"
--   To reset the tracking, delete and re-add the node
+-   The first poll after deployment/restart does **not** emit to the "New results" output (it initializes the tracking state)
+-   The tracking is reset on each Node-RED restart or flow redeployment
 -   Very frequent polling (< 30 seconds) may impact API rate limits
--   The node status shows the last poll time and next poll time
 -   Custom message properties are preserved in outputs (e.g., `msg._context`)
 -   Large Data Links with deep recursion may take time to process on each poll
 
-## Best practices
+### Best practices
 
 -   Set **pollFrequency** based on how quickly you need to respond to new files
-    -   For near-real-time: `30` seconds to `2:00` minutes
-    -   For batch processing: `15:00` to `1:00:00`
-    -   For daily checks: `24:00:00`
+    -   For near-real-time: `30` seconds to `2` minutes
+    -   For batch processing: `15` minutes to `1` hour
+    -   For daily checks: `24` hours
 -   Use **prefix** to narrow the search space and reduce API calls
 -   Set **maxResults** high enough to capture all expected files per poll
 -   Consider the trade-off between poll frequency and API usage
