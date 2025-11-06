@@ -2,11 +2,15 @@
 
 ## [1.3.0] - 2025-11-06
 
--   New `mkdocs material` website with totally revamped and rewritten documentation
--   Breaking change! Renamed `create` to `add` to match Seqera Platform terminology
+-   💥 Breaking change! Renamed `create` to `add` to match Seqera Platform terminology
     -   Renamed `create-dataset` to `add-dataset`
     -   Renamed `create-studio` to `add-studio`
     -   Export your node as JSON, rename and reimport to fix your flows if needed
+-   📚 New `mkdocs material` website with totally revamped and rewritten documentation: https://seqeralabs.github.io/node-red-seqera/ [#17](https://github.com/seqeralabs/node-red-seqera/pull/17)
+-   ♻️ New: Ability to launch a _resume_ pipeline [#12](https://github.com/seqeralabs/node-red-seqera/pull/12)
+-   New example workflow showing pipeline resume [#12](https://github.com/seqeralabs/node-red-seqera/pull/12)
+-   Update all Seqera nodes to support passing through unrecognised `msg` variables [#15](https://github.com/seqeralabs/node-red-seqera/pull/15)
+-   Make config API check work for previously saved API tokens [#16](https://github.com/seqeralabs/node-red-seqera/pull/16)
 
 ## [1.2.0] - 2025-10-27
 
