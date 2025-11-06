@@ -6,7 +6,7 @@ One benefit of Node-RED is that is very lightweight and can be run just about an
 
 The Node-RED [Getting Started docs](https://nodered.org/docs/getting-started/) include walkthroughs to get Node-RED up and running locally on your laptop, in Docker, on AWS, Azure, even on a Raspberry Pi or an Android device.
 
-![Node-RED installation locations](img/node-red-install-icons.png)
+![Node-RED installation locations](img/node-red-install-icons.svg)
 
 ### Using Seqera Studios
 
