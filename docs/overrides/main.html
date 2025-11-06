@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block extrahead %} {{ super() }}
+<script type="module">
+  import FlowRenderer from "{{ base_url }}/customisation/flow-renderer.min.js";
+  // Make FlowRenderer available globally
+  window.FlowRenderer = FlowRenderer;
+
+  // Auto-render all flow containers on page load
+  function renderAllFlows() {
+    const renderer = new FlowRenderer();
+
+    // Find all flow-renderer containers
+    document.querySelectorAll(".flow-renderer[data-flow-id]").forEach((container) => {
+      const flowId = container.getAttribute("data-flow-id");
+      const flowDataElement = document.getElementById(flowId);
+
+      if (flowDataElement) {
+        try {
+          const flow = JSON.parse(flowDataElement.textContent);
+          renderer.renderFlows(flow, { container: container });
+        } catch (e) {
+          console.error(`Failed to render flow ${flowId}:`, e);
+        }
+      } else {
+        console.error(`Flow data element not found: ${flowId}`);
+      }
+    });
+  }
+
+  // Render flows when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", renderAllFlows);
+  } else {
+    renderAllFlows();
+  }
+
+  // Dispatch event to signal that FlowRenderer is ready
+  window.dispatchEvent(new Event("flowRendererReady"));
+</script>
+{% endblock %}

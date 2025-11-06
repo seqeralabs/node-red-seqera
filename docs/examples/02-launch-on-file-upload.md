@@ -2,6 +2,11 @@
 
 `examples/02 - Launch on file upload.json`
 
+<script id="flow-01" type="application/json">
+--8<-- "examples/02 - Launch on file upload.json"
+</script>
+<div class="flow-renderer" data-flow-id="flow-01" style="height: 400px"></div>
+
 ![02 - Launch on file upload.json](../img/example_flow_02.png)
 
 This flow uses the _Poll files_ node to periodically check for the presence
