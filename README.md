@@ -30,7 +30,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 -   🛠️ Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
 -   🎨 Link triggers and actions to build automation logic using a graphical builder
 -   🔗 Chain workflows, launching downstream automatically
--   🪩 (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🕺🏻 🎉
+-   🪩 (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office go into disco mode when a pipeline completes 🕺🏻 🎉
 
 This package includes several example flows which you can import and repurpose. See the [example docs](./docs/README.md) for more information.
 
