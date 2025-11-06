@@ -7,6 +7,7 @@
     -   Renamed `create-studio` to `add-studio`
     -   Export your node as JSON, rename and reimport to fix your flows if needed
 -   📚 New `mkdocs material` website with totally revamped and rewritten documentation: https://seqeralabs.github.io/node-red-seqera/ [#17](https://github.com/seqeralabs/node-red-seqera/pull/17)
+-   ✨ New _Monitor Studios_ node to report on the status of a Studio after creation [#1](https://github.com/seqeralabs/node-red-seqera/pull/1)
 -   ♻️ New: Ability to launch a _resume_ pipeline [#12](https://github.com/seqeralabs/node-red-seqera/pull/12)
 -   New example workflow showing pipeline resume [#12](https://github.com/seqeralabs/node-red-seqera/pull/12)
 -   Update all Seqera nodes to support passing through unrecognised `msg` variables [#15](https://github.com/seqeralabs/node-red-seqera/pull/15)
