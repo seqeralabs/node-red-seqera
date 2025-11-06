@@ -25,8 +25,8 @@ This workflow comes **pre-configured with test data** and works out of the box!
 
 **Test files (GitHub-hosted):**
 
--   Samplesheet: `examples/data/rnaseq-tests-datasets.csv` - includes `sample`, `fastq_1`, `fastq_2`, `strandedness`, `treatment`, and `replicate` columns
--   Contrasts: `examples/data/rnaseq-test-contrasts.csv` - defines comparisons like WT vs RAP1_UNINDUCED
+-   Samplesheet: `docs/examples/data/rnaseq-tests-datasets.csv` - includes `sample`, `fastq_1`, `fastq_2`, `strandedness`, `treatment`, and `replicate` columns
+-   Contrasts: `docs/examples/data/rnaseq-test-contrasts.csv` - defines comparisons like WT vs RAP1_UNINDUCED
 -   Genome: `R64-1-1` (S. cerevisiae from iGenomes)
 
 **To use your own data**, edit the function node:

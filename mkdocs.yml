@@ -79,6 +79,8 @@ extra_css:
 
 plugins:
   - search
+  - glightbox:
+      manual: true
 
 markdown_extensions:
   - admonition

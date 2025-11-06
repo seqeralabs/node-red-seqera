@@ -16,6 +16,11 @@ To jump-start your development, take a look at the examples that come with the e
 
 ## Available Examples
 
+!!! info "More examples wanted"
+
+    Do you have a workflow that you think would be interesting to other people?
+    We'd love to build up our library of examples! Please open a PR! ✨
+
 1. [**Simple launch & monitor**](01-simple-launch-monitor.md) - The most basic workflow demonstrating core Launch and Monitor nodes
 2. [**Launch on file upload**](02-launch-on-file-upload.md) - Automatically launch pipelines when files are detected using Data Link polling
 3. [**Auto-resume on workflow failure**](03-auto-resume-on-failure.md) - Automatically resume failed workflows to recover from transient errors
