@@ -6,7 +6,7 @@ title: Studio + Slack webhook
 
 `examples/05 - Studio on run fail + Slack webhook.json`
 
-![03 - Studio on run fail + Slack webhook.json](../img/example_flow_03.png)
+![05 - Studio on run fail + Slack webhook.json](../img/example_flow_03.png)
 
 This workflow has three parts to it:
 
@@ -35,8 +35,8 @@ This workflow needs some setup:
 To make the automated Slack message, first you need to create a Slack Workflow.
 Selelct _"From a webhook"_ as the trigger:
 
-![Create Slack workflow](../../img/example_flow_03_slack_workflow_create.png)
+![Create Slack workflow](../img/example_flow_05_slack_workflow_create.png)
 
 Then configure with some input variables and a button, and copy the webhook URL. You'll need this later!
 
-![Slack workflow](../../img/example_flow_03_slack_workflow.png)
+![Slack workflow](../img/example_flow_05_slack_workflow.png)

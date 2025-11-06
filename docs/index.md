@@ -10,13 +10,13 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" class="only-light">
 <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes-dark.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" class="only-dark">
 
--   [Launch a workflow](#launch-a-workflow)
--   [Monitor a workflow](#monitor-a-workflow)
--   [Add Dataset](#add-a-dataset)
--   [List Files from Data Explorer](#list-data-link-files)
--   [Poll Data Link Files](#poll-data-link-files)
--   [Add a Seqera Studio](#add-studio)
--   [Monitor a Seqera Studio](#monitor-studio)
+-   [Launch a workflow](seqera_nodes/launch_workflow.md)
+-   [Monitor a workflow](seqera_nodes/monitor_workflow.md)
+-   [Add Dataset](seqera_nodes/add_dataset.md)
+-   [List Files from Data Explorer](seqera_nodes/list_files.md)
+-   [Poll Data Link Files](seqera_nodes/poll_files.md)
+-   [Add a Seqera Studio](seqera_nodes/add_studio.md)
+-   [Monitor a Seqera Studio](seqera_nodes/monitor_studio.md)
 
 !!! warning
 
@@ -32,7 +32,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 !!! tip
 
     This package includes several example flows which you can import and repurpose.
-    **See the [example docs](examples.md) for more information.**
+    **See the [example docs](examples/index.md) for more information.**
 
 # License
 
