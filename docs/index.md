@@ -1,6 +1,16 @@
-# ![@seqera/node-red-seqera](img/logo.svg#only-light){ width=650 } ![@seqera/node-red-seqera](img/logo-dark.svg#only-dark){ width=650 }
+<h1>
+<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo.svg" alt="@seqera/node-red-seqera" class="only-light" width="90%">
+<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo-dark.svg" alt="@seqera/node-red-seqera" class="only-dark" width="90%">
+</h1>
+
+# ![@seqera/node-red-seqera](img/logo.svg#only-light) ![@seqera/node-red-seqera](img/logo-dark.svg#only-dark)
 
 **A set of Node-RED nodes for interacting with Seqera Platform.**
+
+-   <img alt="Node-RED icon" src="img/github-icon.svg" width=15> GitHub: https://github.com/seqeralabs/node-red-seqera
+-   <img alt="Node-RED icon" src="img/node-red-icon.svg" width=15> Node-RED Flows library: https://flows.nodered.org/node/@seqera/node-red-seqera
+-   <img alt="npm icon" src="img/npm-icon.svg" width=15> npm package: https://www.npmjs.com/package/@seqera/node-red-seqera
+-   <img alt="npm icon" src="img/favicon.svg" width=15> Seqera Platform: https://seqera.io/platform/
 
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
@@ -23,7 +33,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 -   🛠️ Integration with events _coming from_ and _going to_ **third-party services** (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
 -   🎨 Link triggers and actions to build automation logic using a **graphical builder**
 -   🔗 **Chain workflows**, launching downstream automatically
--   🪩 _(Bonus)_ Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office go into disco mode when a pipeline completes 🕺🏻 🎉
+-   🪩 _(Bonus)_ Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🕺🏻 🎉
 
 !!! tip
 
