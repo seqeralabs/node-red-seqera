@@ -4,7 +4,7 @@
     "type": "tab",
     "label": "Launch on file upload",
     "disabled": false,
-    "info": "This flow uses the _Poll files_ node to periodically check for the presence\nof a file called `RTAcomplete.txt` within a Seqera Data Link (eg. an s3 bucket).\n\nThese files are typically uploaded by illumina sequencers when base calling is complete.\nBut you could configure it to look for the upload of any file path.\n\nWhen the file is detected, a _List files_ node is used to list all of the files within\nthat Data Link (bucket - could be configured to use the location that the `RTAcomplete.txt` file is found).\n\nA Node-RED _Function_ node with some javascript then constructs a sample sheet from these filenames.\nThis is passed to the \"Create Dataset\" node, which saves it as a Seqera Platform Dataset.\n\nFinally, this is passed to the _Launch workflow_ node, which fires off a pipeline run.\n\nSome configuration is needed to make this flow work:\n\n* All Seqera nodes need a Seqera configuration to be assigned\n* _Poll files_ and _List files_ need to be configured with the name of a Data Link within Platform\n* _Create dataset_ needs a dataset name to be set somehow (dynamically to avoid name clashes)\n* _Launch workflow_ needs configuring with the name of a Launchpad pipeline, and parameters.",
+    "info": "This flow uses the _Poll files_ node to periodically check for the presence\nof a file called `RTAcomplete.txt` within a Seqera Data Link (eg. an s3 bucket).\n\nThese files are typically uploaded by illumina sequencers when base calling is complete.\nBut you could configure it to look for the upload of any file path.\n\nWhen the file is detected, a _List files_ node is used to list all of the files within\nthat Data Link (bucket - could be configured to use the location that the `RTAcomplete.txt` file is found).\n\nA Node-RED _Function_ node with some javascript then constructs a sample sheet from these filenames.\nThis is passed to the \"Add Dataset\" node, which saves it as a Seqera Platform Dataset.\n\nFinally, this is passed to the _Launch workflow_ node, which fires off a pipeline run.\n\nSome configuration is needed to make this flow work:\n\n* All Seqera nodes need a Seqera configuration to be assigned\n* _Poll files_ and _List files_ need to be configured with the name of a Data Link within Platform\n* _Add dataset_ needs a dataset name to be set somehow (dynamically to avoid name clashes)\n* _Launch workflow_ needs configuring with the name of a Launchpad pipeline, and parameters.",
     "env": []
   },
   {
@@ -76,7 +76,7 @@
   },
   {
     "id": "0b4091f89d0bd588",
-    "type": "seqera-dataset-create",
+    "type": "seqera-dataset-add",
     "z": "2bb4977ed09ed3de",
     "name": "",
     "seqera": "",

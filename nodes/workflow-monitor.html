@@ -4,6 +4,10 @@
     <input type="text" id="node-input-seqera" data-type="seqera-config" />
   </div>
   <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Node Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
     <label for="node-input-workflowId"><i class="fa fa-code"></i> Workflow ID</label>
     <input type="text" id="node-input-workflowId" />
   </div>
@@ -25,10 +29,6 @@
       <option value="minutes">Minutes</option>
       <option value="hours">Hours</option>
     </select>
-  </div>
-  <div class="form-row">
-    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" />
   </div>
 </script>
 
@@ -62,7 +62,7 @@ Monitors the status of an existing workflow in Seqera Platform.
 
 ### Details
 
-This node queries the Seqera Platform API for the current status of a workflow run. When *Keep polling status* is enabled (default) the node will keep polling at the configured interval until the workflow reaches a terminal state (success, failed, cancelled, etc.).
+This node queries the Seqera Platform API for the current status of a workflow run. When *Keep polling status* is enabled (default) the node will keep polling at the configured interval until the workflow reaches a terminal state (succeeded, failed, cancelled, or unknown).
 
 If *Keep polling status* is disabled the node performs a single status check and outputs the result immediately.
 

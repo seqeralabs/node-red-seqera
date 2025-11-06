@@ -1,0 +1,102 @@
+site_name: Node-RED + Seqera
+site_description: A set of Node-RED nodes for interacting with Seqera Platform
+site_author: Seqera
+site_url: https://seqeralabs.github.io/node-red-seqera/
+
+repo_name: seqeralabs/node-red-seqera
+repo_url: https://github.com/seqeralabs/node-red-seqera
+edit_uri: edit/main/docs/
+
+nav:
+  - Home: index.md
+  - installation.md
+  - Node-RED fundamentals: getting_started.md
+  - Seqera nodes:
+      - seqera_nodes/configuration.md
+      - seqera_nodes/launch_workflow.md
+      - seqera_nodes/monitor_workflow.md
+      - seqera_nodes/add_dataset.md
+      - seqera_nodes/list_files.md
+      - seqera_nodes/poll_files.md
+      - seqera_nodes/add_studio.md
+      - seqera_nodes/monitor_studio.md
+  - Examples:
+      - examples/index.md
+      - examples/01-simple-launch-monitor.md
+      - examples/02-launch-on-file-upload.md
+      - examples/03-auto-resume-on-failure.md
+      - examples/04-rnaseq-differential-abundance.md
+      - examples/05-studio-slack-webhook.md
+  - contributing.md
+
+theme:
+  name: material
+  logo: img/node-red-seqera.svg
+  favicon: img/favicon.svg
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.top
+    - navigation.path
+    - search.suggest
+    - search.highlight
+    - search.share
+    - toc.follow
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to automatic mode
+
+extra_css:
+  - customisation/extra.css
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.critic
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
