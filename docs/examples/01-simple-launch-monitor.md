@@ -2,6 +2,11 @@
 
 `examples/01 - Simple launch + monitor.json`
 
+<script id="flow-01" type="application/json">
+--8<-- "examples/01 - Simple launch + monitor.json"
+</script>
+<div class="flow-renderer" data-flow-id="flow-01" style="height: 400px"></div>
+
 ![01 - Simple launch + monitor.json](../img/example_flow_01.png)
 
 This is the most basic example workflow that demonstrates the core _Launch workflow_ and _Monitor workflow_ nodes.

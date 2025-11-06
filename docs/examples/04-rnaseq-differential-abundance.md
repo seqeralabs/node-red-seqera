@@ -6,6 +6,11 @@ title: Pipeline chaining
 
 `examples/04 - RNA-seq to DifferentialAbundance.json`
 
+<script id="flow-01" type="application/json">
+--8<-- "examples/04 - RNA-seq to DifferentialAbundance.json"
+</script>
+<div class="flow-renderer" data-flow-id="flow-01" style="height: 400px"></div>
+
 ![04 - RNA-seq to DifferentialAbundance.json](../img/example_flow_04.png)
 
 This workflow demonstrates chaining nf-core/rnaseq and nf-core/differentialabundance pipelines together.

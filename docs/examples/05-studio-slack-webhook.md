@@ -6,6 +6,11 @@ title: Studio + Slack webhook
 
 `examples/05 - Studio on run fail + Slack webhook.json`
 
+<script id="flow-01" type="application/json">
+--8<-- "examples/05 - Studio on run fail + Slack webhook.json"
+</script>
+<div class="flow-renderer" data-flow-id="flow-01" style="height: 400px"></div>
+
 ![03 - Studio on run fail + Slack webhook.json](../img/example_flow_03.png)
 
 This workflow has three parts to it:
