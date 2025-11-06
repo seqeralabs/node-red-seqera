@@ -7,10 +7,10 @@
 
 **A set of Node-RED nodes for interacting with Seqera Platform.**
 
--   <img alt="Node-RED icon" src="img/github-icon.svg" width=15> GitHub: https://github.com/seqeralabs/node-red-seqera
--   <img alt="Node-RED icon" src="img/node-red-icon.svg" width=15> Node-RED Flows library: https://flows.nodered.org/node/@seqera/node-red-seqera
--   <img alt="npm icon" src="img/npm-icon.svg" width=15> npm package: https://www.npmjs.com/package/@seqera/node-red-seqera
--   <img alt="npm icon" src="img/favicon.svg" width=15> Seqera Platform: https://seqera.io/platform/
+-   <img alt="Node-RED icon" src="img/github-icon.svg" width=15> GitHub: <https://github.com/seqeralabs/node-red-seqera>
+-   <img alt="Node-RED icon" src="img/node-red-icon.svg" width=15> Node-RED Flows library: <https://flows.nodered.org/node/@seqera/node-red-seqera>
+-   <img alt="npm icon" src="img/npm-icon.svg" width=15> npm package: <https://www.npmjs.com/package/@seqera/node-red-seqera>
+-   <img alt="npm icon" src="img/favicon.svg" width=15> Seqera Platform: <https://seqera.io/platform/>
 
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
