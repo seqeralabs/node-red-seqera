@@ -1,9 +1,4 @@
-<h1>
-<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo.svg" alt="@seqera/node-red-seqera" class="only-light" width="90%">
-<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo-dark.svg" alt="@seqera/node-red-seqera" class="only-dark" width="90%">
-</h1>
-
-# ![@seqera/node-red-seqera](img/logo.svg#only-light) ![@seqera/node-red-seqera](img/logo-dark.svg#only-dark)
+# ![@seqera/node-red-seqera](img/logo.svg#only-light){width=650} ![@seqera/node-red-seqera](img/logo-dark.svg#only-dark){width=650}
 
 **A set of Node-RED nodes for interacting with Seqera Platform.**
 

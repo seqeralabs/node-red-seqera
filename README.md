@@ -8,10 +8,10 @@
 
 **A set of Node-RED nodes for interacting with Seqera Platform.**
 
--   📚 Documentation: <https://seqeralabs.github.io/node-red-seqera/>
+-   📚 Documentation: [https://seqeralabs.github.io/node-red-seqera/](https://seqeralabs.github.io/node-red-seqera/)
 -   <img alt="Node-RED icon" src="docs/img/node-red-icon.svg" width=15> Node-RED Flows library: [@seqera/node-red-seqera](https://flows.nodered.org/node/@seqera/node-red-seqera)
 -   <img alt="npm icon" src="docs/img/npm-icon.svg" width=15> npm package: [@seqera/node-red-seqera](https://www.npmjs.com/package/@seqera/node-red-seqera)
--   <img alt="npm icon" src="docs/img/favicon.svg" width=15> Seqera Platform: <https://seqera.io/platform/>
+-   <img alt="npm icon" src="docs/img/favicon.svg" width=15> Seqera Platform: [https://seqera.io/platform/](https://seqera.io/platform/)
 
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
@@ -35,7 +35,25 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 -   🔗 Chain workflows, launching downstream automatically
 -   🪩 (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office go into disco mode when a pipeline completes 🕺🏻 🎉
 
-This package includes several example flows which you can import and repurpose. See the [example docs](./docs/README.md) for more information.
+## Examples
+
+This package includes several example flows which you can import and repurpose:
+
+-   💡 **Simple launch & monitor**
+    -   Chan your first workflow Launch and Monitor nodes
+-   📂 **Launch on file upload**
+    -   Launch a pipeline run when new files are detected using Data Link polling
+-   ♻️ **Auto-resume on workflow failure**
+    -   Automatically resume failed workflows to recover from transient errors
+-   🔗 **Pipeline chaining**
+    -   Chain nf-core/rnaseq and nf-core/differentialabundance pipelines together
+-   🐛 👩🏻‍💻 **Studio on pipeline fail + Slack webhook**
+    -   Create a debugging Studio and send Slack notifications on workflow failure
+
+![pipeline chaining](docs/img/example_flow_04.png)
+
+Use via the Node-RED menu under _Import_ > _Examples_ > _@seqera/node-red-seqera_.
+See the [example docs](https://seqeralabs.github.io/node-red-seqera/examples/) for more information.
 
 # Quick start
 
@@ -61,11 +79,6 @@ Your new Studio should launch with a complete Node-RED instance that's ready for
 Alternatively Node-RED can be installed just about anywhere. Once installed, grab the Seqera nodes by going to _File_ > _Manage Palette_, then the _Install_ tab.
 
 Search for `@seqera/node-red-seqera` (or just "seqera") and you should find this package. Click _Install_ and the nodes will be available.
-
-## Example Flows
-
-Once installed, example flows are available in the Node-RED import menu under _Import_ > _Examples_ > _@seqera/node-red-seqera_.
-See the [example docs](./docs/README.md) for more information.
 
 # Contributing
 
