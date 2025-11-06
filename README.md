@@ -8,6 +8,8 @@
 
 A set of Node-RED nodes for interacting with Seqera Platform.
 
+### Documentation: https://seqeralabs.github.io/node-red-seqera/
+
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
 <picture>
@@ -16,13 +18,13 @@ Gives new Node-RED node types for your automation workflows, which are designed 
   <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
 </picture>
 
--   [Launch a workflow](#launch-a-workflow)
--   [Monitor a workflow](#monitor-a-workflow)
--   [Add Dataset](#add-a-dataset)
--   [List Files from Data Explorer](#list-data-link-files)
--   [Poll Data Link Files](#poll-data-link-files)
--   [Add a Seqera Studio](#add-studio)
--   [Monitor a Seqera Studio](#monitor-studio)
+-   [Launch a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/launch_workflow/)
+-   [Monitor a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/monitor_workflow/)
+-   [Add Dataset](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/add_dataset/)
+-   [List Files from Data Explorer](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/list_files/)
+-   [Poll Data Link Files](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/poll_files/)
+-   [Add a Seqera Studio](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/add_studio/)
+-   [Monitor a Seqera Studio](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/monitor_studio/)
 
 > [!IMPORTANT]
 > This is an open-source project for community benefit. It is provided as-is and is not part of Seqera's officially supported toolset.
