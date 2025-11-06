@@ -45,13 +45,19 @@ All Seqera nodes depend on a `seqera-config` node that stores:
 
 This config is referenced via `node.seqeraConfig = RED.nodes.getNode(config.seqera)`.
 
-### Shared Utilities ([nodes/\_utils.js](nodes/_utils.js))
+### Shared Utilities
 
-**Core helpers:**
+**[nodes/\_utils.js](nodes/_utils.js) - Core API helpers:**
 
 -   `buildHeaders(node, extraHeaders)` - Constructs headers with Bearer token from seqera-config
 -   `apiCall(node, method, url, options)` - Axios wrapper that merges auth headers, logs failures, and re-throws errors
 -   `handleDatalinkAutoComplete(RED, req, res)` - HTTP endpoint handler for Data Link name autocomplete (used by datalink-list and datalink-poll nodes)
+
+**[nodes/datalink-utils.js](nodes/datalink-utils.js) - Data Link specific utilities:**
+
+-   `evalProp(RED, node, msg, value, type)` - Property evaluation helper supporting JSONata expressions
+-   `resolveDataLink(RED, node, msg, dataLinkName, options)` - Resolves Data Link by name, returns IDs and metadata
+-   `listDataLink(RED, node, msg)` - Core implementation for listing files/folders from Data Links with filtering and recursion
 
 ### Property Evaluation Pattern
 
@@ -170,7 +176,9 @@ send(outputMsg);
 -   Three outputs: All checks (every poll), Ready (running), Terminated (stopped/errored/buildFailed)
 -   Stops polling when Studio reaches terminal state or `keepPolling` is false
 -   Status mapping: `starting|building|stopping` → yellow, `running` → blue, `stopped` → green, `errored|buildFailed` → red
--   Output 1 fires every poll, Output 2 fires **once** on transition to `running`, Output 3 fires on termination
+-   Output 1 fires every poll
+-   Output 2 fires **only once** on transition to `running` (not on every poll while running) - uses state transition detection
+-   Output 3 fires on termination
 -   Tracks `previousStatus` to detect state transitions and prevent duplicate ready notifications
 
 ### HTTP Admin Endpoints
@@ -225,21 +233,23 @@ For full automation, use **Maintain** role token.
 
 ## Example Flows
 
-Located in [examples/](examples/) directory. Available via Node-RED's Import > Examples menu. See [docs/README.md](docs/README.md) for detailed descriptions.
+Located in [examples/](examples/) directory. Available via Node-RED's Import > Examples menu. See [docs/examples/](docs/examples/) for detailed descriptions.
 
 ## File Organization
 
 ```
-nodes/           - Node implementation files (.js + .html pairs)
-  _utils.js      - Shared helper functions
-  config.js      - Seqera configuration node
-  workflow-*.js  - Workflow launch/monitor nodes
-  dataset-*.js   - Dataset addition node
-  datalink-*.js  - Data Link list/poll nodes + shared utils
-  studios-*.js   - Studio addition node
-examples/        - Example flows (.json) and test data
-docker/          - Dockerfiles and Node-RED config for containers
-docs/            - Documentation and images
+nodes/              - Node implementation files (.js + .html pairs)
+  _utils.js         - Core API helper functions (buildHeaders, apiCall, etc.)
+  datalink-utils.js - Data Link specific utilities (listDataLink, resolveDataLink)
+  config.js         - Seqera configuration node
+  workflow-*.js     - Workflow launch/monitor nodes
+  dataset-*.js      - Dataset addition node
+  datalink-*.js     - Data Link list/poll nodes
+  studios-*.js      - Studio addition/monitor nodes
+examples/           - Example flows (.json)
+docker/             - Dockerfiles and Node-RED config for containers
+docs/               - Documentation and images
+  examples/         - Example flow documentation
 ```
 
 ## Common Patterns When Adding New Nodes
@@ -248,7 +258,7 @@ docs/            - Documentation and images
 2. In `.js`: export function receiving `RED`, define node constructor, register with `RED.nodes.registerType`
 3. Reference `seqera-config` node via `node.seqeraConfig = RED.nodes.getNode(config.seqera)`
 4. Use `apiCall` from `_utils.js` for all API requests
-5. Implement `evalProp` helper for typedInput property evaluation
+5. Implement `evalProp` helper for typedInput property evaluation (or import from `datalink-utils.js` for Data Link nodes)
 6. Handle `node.on("input", async function(msg, send, done))` for message-triggered nodes
 7. Use `node.status()` to update visual state in editor
 8. Register node in [package.json](package.json) under `node-red.nodes`
