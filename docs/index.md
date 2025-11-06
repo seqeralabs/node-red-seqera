@@ -1,14 +1,10 @@
-<h1>
-<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo.svg" alt="@seqera/node-red-seqera" class="only-light" width="90%">
-<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/logo-dark.svg" alt="@seqera/node-red-seqera" class="only-dark" width="90%">
-</h1>
+# ![@seqera/node-red-seqera](img/logo.svg#only-light){ width=650 } ![@seqera/node-red-seqera](img/logo-dark.svg#only-dark){ width=650 }
 
 **A set of Node-RED nodes for interacting with Seqera Platform.**
 
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
-<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" class="only-light">
-<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes-dark.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" class="only-dark">
+![@seqera/node-red-seqera nodes](img/nodes.png){ width=400 align=right}
 
 -   [Launch a workflow](seqera_nodes/launch_workflow.md)
 -   [Monitor a workflow](seqera_nodes/monitor_workflow.md)
@@ -24,10 +20,10 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 # Typical Use cases
 
--   Integration with events _coming from_ and _going to_ **third-party services** (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
--   Link triggers and actions to build automation logic using a **graphical builder**
--   **Chain workflows**, launching downstream automatically
--   _(Bonus)_ Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
+-   🛠️ Integration with events _coming from_ and _going to_ **third-party services** (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
+-   🎨 Link triggers and actions to build automation logic using a **graphical builder**
+-   🔗 **Chain workflows**, launching downstream automatically
+-   🪩 _(Bonus)_ Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🕺🏻 🎉
 
 !!! tip
 

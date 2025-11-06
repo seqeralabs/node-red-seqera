@@ -12,11 +12,7 @@ A set of Node-RED nodes for interacting with Seqera Platform.
 
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png">
-  <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
-</picture>
+<img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
 
 -   [Launch a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/launch_workflow/)
 -   [Monitor a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/monitor_workflow/)
@@ -31,18 +27,16 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 # Typical Use cases
 
--   Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
--   Link triggers and actions to build automation logic using a graphical builder
--   Chain workflows, launching downstream automatically
--   (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🪩 🕺🏻 🎉
+-   🛠️ Integration with events _coming from_ and _going to_ third-party services (AWS, Slack, and [>5000 others](https://flows.nodered.org/search?type=node) supported by Node-RED)
+-   🎨 Link triggers and actions to build automation logic using a graphical builder
+-   🔗 Chain workflows, launching downstream automatically
+-   🪩 (Bonus) Use with [Home Assistant](https://community.home-assistant.io/t/home-assistant-community-add-on-node-red/55023) to make your office lights go into disco mode when a pipeline completes 🕺🏻 🎉
 
-> [!TIP]
-> This package includes several example flows which you can import and repurpose.
-> **See the [example docs](./docs/README.md) for more information.**
+This package includes several example flows which you can import and repurpose. See the [example docs](./docs/README.md) for more information.
 
 # Quick start
 
-> [!INFO]
+> [!NOTE]
 > For more information, please read the [installation docs](https://seqeralabs.github.io/node-red-seqera/installation)
 
 ## Seqera Studios
