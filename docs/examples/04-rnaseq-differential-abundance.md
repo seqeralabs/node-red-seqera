@@ -1,4 +1,8 @@
-# 04 - RNA-seq → Differential Abundance
+---
+title: Pipeline chaining
+---
+
+# Pipeline Chaining: RNA-seq → Differential Abundance
 
 `examples/04 - RNA-seq to DifferentialAbundance.json`
 

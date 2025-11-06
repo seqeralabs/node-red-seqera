@@ -1,6 +1,10 @@
-# 03 - Pipeline → Add Studio → Slack webhook
+---
+title: Studio + Slack webhook
+---
 
-`examples/03 - Studio on run fail + Slack webhook.json`
+# Pipeline → Add Studio → Slack webhook
+
+`examples/05 - Studio on run fail + Slack webhook.json`
 
 ![03 - Studio on run fail + Slack webhook.json](../img/example_flow_03.png)
 

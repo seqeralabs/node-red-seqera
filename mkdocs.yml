@@ -22,11 +22,11 @@ nav:
       - seqera_nodes/monitor_studio.md
   - Examples:
       - examples/index.md
-      - Simple launch & monitor: examples/01-simple-launch-monitor.md
-      - Launch on file upload: examples/02-launch-on-file-upload.md
-      - Auto-resume on failure: examples/03-auto-resume-on-failure.md
-      - Pipeline chaining: examples/04-rnaseq-differential-abundance.md
-      - Studio + Slack webhook: examples/05-studio-slack-webhook.md
+      - examples/01-simple-launch-monitor.md
+      - examples/02-launch-on-file-upload.md
+      - examples/03-auto-resume-on-failure.md
+      - examples/04-rnaseq-differential-abundance.md
+      - examples/05-studio-slack-webhook.md
   - contributing.md
 
 theme:

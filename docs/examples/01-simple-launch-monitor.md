@@ -1,4 +1,4 @@
-# 01 - Simple launch & monitor
+# Simple launch & monitor
 
 `examples/01 - Simple launch + monitor.json`
 

@@ -1,4 +1,4 @@
-# 02 - Launch on file upload
+# Launch on file upload
 
 `examples/02 - Launch on file upload.json`
 

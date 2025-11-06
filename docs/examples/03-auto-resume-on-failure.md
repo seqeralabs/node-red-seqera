@@ -1,4 +1,6 @@
-# 05 - Auto-resume on workflow failure
+# Auto-resume on workflow failure
+
+`examples/03 - Auto-resume on workflow failure.json`
 
 `examples/05 - Auto-resume on workflow failure.json`
 
