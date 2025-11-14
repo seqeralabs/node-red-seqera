@@ -46,10 +46,109 @@ async function apiCall(node, method, url, options = {}) {
     node.warn({
       message: `Seqera API ${method.toUpperCase()} call to ${url} failed`,
       error: err,
+      response: err.response?.data, // Include API error response
       request: { method: method.toUpperCase(), url, ...finalOpts },
     });
     throw err;
   }
+}
+
+/**
+ * Generic resource resolver for Seqera Platform API.
+ * Resolves a resource name to its ID by querying the appropriate endpoint.
+ *
+ * Supported resource types:
+ * - credentials: /credentials → credentials[].id
+ * - data-links: /data-links → dataLinks[].id
+ * - pipelines: /pipelines → pipelines[].pipelineId
+ * - compute-envs: /compute-envs → computeEnvs[].id
+ * - datasets: /datasets → datasets[].id
+ *
+ * @param {object} RED - Node-RED runtime
+ * @param {object} node - Node-RED node instance
+ * @param {object} msg - Message object (for JSONata context)
+ * @param {string} resourceType - Type of resource (e.g., 'credentials', 'data-links', 'pipelines')
+ * @param {string} resourceName - Name of the resource to resolve
+ * @param {object} options - Options object with baseUrl and workspaceId
+ * @returns {Promise<string|null>} The resource ID, or null if resourceName is empty
+ */
+async function resolveResource(RED, node, msg, resourceType, resourceName, { baseUrl, workspaceId = null } = {}) {
+  if (!resourceName || resourceName.trim() === "") {
+    return null; // No resource specified
+  }
+
+  // Define metadata for each resource type
+  const resourceConfig = {
+    credentials: {
+      endpoint: "/credentials",
+      responseKey: "credentials",
+      idField: "id",
+      nameField: "name",
+      queryParams: { pageSize: "100" },
+    },
+    "data-links": {
+      endpoint: "/data-links",
+      responseKey: "dataLinks",
+      idField: "id",
+      nameField: "name",
+      queryParams: { pageSize: "100", search: resourceName },
+    },
+    pipelines: {
+      endpoint: "/pipelines",
+      responseKey: "pipelines",
+      idField: "pipelineId",
+      nameField: "name",
+      queryParams: { max: "50", offset: "0", search: resourceName, visibility: "all" },
+    },
+    "compute-envs": {
+      endpoint: "/compute-envs",
+      responseKey: "computeEnvs",
+      idField: "id",
+      nameField: "name",
+      queryParams: { max: "100" },
+    },
+    datasets: {
+      endpoint: "/datasets",
+      responseKey: "datasets",
+      idField: "id",
+      nameField: "name",
+      queryParams: { max: "100" },
+    },
+  };
+
+  const config = resourceConfig[resourceType];
+  if (!config) {
+    throw new Error(`Unsupported resource type: ${resourceType}`);
+  }
+
+  // Build query string
+  const qs = new URLSearchParams();
+  if (workspaceId != null) qs.append("workspaceId", workspaceId);
+  for (const [key, value] of Object.entries(config.queryParams)) {
+    qs.append(key, value);
+  }
+
+  const searchUrl = `${baseUrl.replace(/\/$/, "")}${config.endpoint}?${qs.toString()}`;
+
+  const searchResp = await apiCall(node, "get", searchUrl, { headers: { Accept: "application/json" } });
+  const items = searchResp.data?.[config.responseKey] || [];
+
+  // Find exact match by name
+  const matchingItems = items.filter((item) => item[config.nameField] === resourceName);
+
+  if (!matchingItems.length) {
+    throw new Error(`Could not find ${resourceType.replace("-", " ")} with name '${resourceName}'`);
+  }
+  if (matchingItems.length > 1) {
+    throw new Error(
+      `Found ${matchingItems.length} ${resourceType.replace(
+        "-",
+        " ",
+      )}s with name '${resourceName}'. Please use a unique name.`,
+    );
+  }
+
+  return matchingItems[0][config.idField];
 }
 
 /**
@@ -137,4 +236,4 @@ async function handleDatalinkAutoComplete(RED, req, res) {
   }
 }
 
-module.exports = { buildHeaders, apiCall, handleDatalinkAutoComplete };
+module.exports = { buildHeaders, apiCall, resolveResource, handleDatalinkAutoComplete };
