@@ -8,6 +8,10 @@ title: Pipeline chaining
 
 ![04 - RNA-seq to DifferentialAbundance.json](../img/example_flow_04.png)
 
+<div class="video-wrapper">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/C0_JzIfzBUs?si=v9buvPV00BhZPdXV&amp;start=235" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
 This workflow demonstrates chaining nf-core/rnaseq and nf-core/differentialabundance pipelines together.
 
 The workflow launches nf-core/rnaseq with a user-provided samplesheet and monitors its execution. When RNA-seq completes successfully, it automatically constructs file paths to the output count matrices (`salmon.merged.gene_counts.tsv` and `salmon.merged.gene_lengths.tsv`) and launches nf-core/differentialabundance with these files as inputs.

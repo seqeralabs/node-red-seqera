@@ -4,6 +4,10 @@
 
 ![03 - Auto-resume on workflow failure.json](../img/example_flow_03.png)
 
+<div class="video-wrapper">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/C0_JzIfzBUs?si=7y-dHMzXeyUPjvUW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
 This workflow demonstrates how to automatically resume a failed Nextflow workflow using the workflow ID from the failed run. This pattern is useful for recovering from transient errors without re-running successfully completed tasks.
 
 The flow implements an automatic resume pattern:

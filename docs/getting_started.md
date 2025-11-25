@@ -10,6 +10,10 @@ This guide introduces the basics of working with Node-RED.
 
     This guide assumes you have already installed Node-RED with the Seqera nodes. If not, see the [Installation](installation.md) guide.
 
+<div class="video-wrapper">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/gqdccKWLLzM?si=dqq0N9g70VEJozD5" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
 Node-RED is an event-driven automation platform that uses a visual flow-based programming model. You build automation workflows by dragging _nodes_ onto a canvas and wiring them together.
 
 Each node performs a specific task - triggering on events, transforming data, calling APIs, or taking actions. When a message passes through a node, it can be modified and passed to the next node in the chain.
