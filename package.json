@@ -33,6 +33,7 @@
       "seqera-config": "nodes/config.js",
       "seqera-workflow-launch": "nodes/workflow-launch.js",
       "seqera-workflow-monitor": "nodes/workflow-monitor.js",
+      "seqera-workflow-poll": "nodes/workflow-poll.js",
       "seqera-dataset-add": "nodes/dataset-add.js",
       "seqera-datalink-list": "nodes/datalink-list.js",
       "seqera-datalink-poll": "nodes/datalink-poll.js",

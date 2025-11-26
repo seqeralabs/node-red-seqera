@@ -19,6 +19,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 -   [Launch a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/launch_workflow/)
 -   [Monitor a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/monitor_workflow/)
+-   [Poll Workflows](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/poll_workflows/)
 -   [Add Dataset](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/add_dataset/)
 -   [List Files from Data Explorer](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/list_files/)
 -   [Poll Data Link Files](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/poll_files/)
