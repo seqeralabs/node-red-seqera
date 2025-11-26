@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] - 2025-11-26
+
+-   New node: _Poll workflows_ [#21](https://github.com/seqeralabs/node-red-seqera/pull/21)
+-   Docker image image updates
+    -   Updates to the starter flow, including comments
+    -   Enable Node-RED telemetry to avoid annoying pop-up on first launch
+
 ## [1.3.0] - 2025-11-06
 
 -   💥 Breaking change! Renamed `create` to `add` to match Seqera Platform terminology

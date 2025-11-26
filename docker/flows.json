@@ -44,12 +44,13 @@
       "767870dfc9296cf3",
       "bf13bdde1ae5a326",
       "cf0d89173f4a7a19",
-      "fc630486d3370917"
+      "fc630486d3370917",
+      "d02a10054509db60"
     ],
     "x": 74,
     "y": 259,
     "w": 452,
-    "h": 549.5
+    "h": 589.5
   },
   {
     "id": "9da7ad3ef289bd95",
@@ -127,7 +128,7 @@
     "z": "dae5714e049c0d25",
     "g": "2b76ac110625033d",
     "name": "Workflows",
-    "info": "Central to Seqera Platform are workflows.\n\nThese nodes allow you to first launch and then monitor a workflow.\n\nThey're designed to work together: the _Launch_ node emits `msg.workflowId` and the _Monitor_ node defaults to using this for the workflow ID to monitor.",
+    "info": "Central to Seqera Platform are workflows.\n\nThese nodes allow you to launch and then monitor a workflow.\n\nThe _Poll workflows_ checks Platform for pipelines launched outside of Node-RED and sends events for new runs, which can then be monitored.\n\nThese nodes are designed to work together: the _Launch_ and _Poll workflows_ nodes emit `msg.workflowId` and the _Monitor_ node defaults to using this for the workflow ID to monitor.",
     "x": 160,
     "y": 380,
     "wires": []
@@ -151,7 +152,7 @@
     "name": "Files (Data Explorer)",
     "info": "The _List files_ and _Poll files_ work with Seqera Platform's _Data Explorer_ **Data Links**.\n\nThey work in a similar way, except that _Poll files_ repeatedly checks a location to look for any new files.",
     "x": 190,
-    "y": 500,
+    "y": 540,
     "wires": []
   },
   {
@@ -177,7 +178,7 @@
     "workspaceIdType": "str",
     "returnType": "files",
     "x": 160,
-    "y": 540,
+    "y": 580,
     "wires": [[]]
   },
   {
@@ -205,7 +206,7 @@
     "pollUnits": "minutes",
     "returnType": "files",
     "x": 380,
-    "y": 540,
+    "y": 580,
     "wires": [[], []]
   },
   {
@@ -216,7 +217,7 @@
     "name": "Datasets",
     "info": "This node adds a _Dataset_ in Seqera Platform for you.\n\nIt takes a CSV as input (which can be created dynamically in Node-RED) and returns the API response.\nThis includes the resolved CSV URL of the dataset (`payload.version.url`), which can be used to populate a workflow parameter.",
     "x": 160,
-    "y": 620,
+    "y": 660,
     "wires": []
   },
   {
@@ -236,7 +237,7 @@
     "descriptionType": "str",
     "fileType": "csv",
     "x": 170,
-    "y": 660,
+    "y": 700,
     "wires": [[]]
   },
   {
@@ -247,7 +248,7 @@
     "name": "Studios",
     "info": "Seqera Studios let you run interactive analysis sessions on your compute environments.\n\nThese nodes allow you to first add and then monitor a studio.\nThe central monitoring node output emits a message when a studio is in a _Running_ state and ready to use.\n\nThey're designed to work together: the _Add_ node emits `msg.studioId` and the _Monitor_ node defaults to using this for the Studio ID to monitor.",
     "x": 150,
-    "y": 720,
+    "y": 760,
     "wires": []
   },
   {
@@ -286,7 +287,7 @@
     "workspaceId": "",
     "workspaceIdType": "str",
     "x": 170,
-    "y": 760,
+    "y": 800,
     "wires": [["fc630486d3370917"]]
   },
   {
@@ -304,7 +305,7 @@
     "poll": 5,
     "pollUnits": "seconds",
     "x": 400,
-    "y": 760,
+    "y": 800,
     "wires": [[], [], []]
   },
   {
@@ -319,11 +320,30 @@
     "wires": []
   },
   {
-    "id": "c9871911d5978997",
+    "id": "d02a10054509db60",
+    "type": "seqera-workflow-poll",
+    "z": "dae5714e049c0d25",
+    "g": "2b76ac110625033d",
+    "name": "",
+    "seqera": "",
+    "search": "",
+    "searchType": "str",
+    "maxResults": "50",
+    "maxResultsType": "num",
+    "workspaceId": "",
+    "workspaceIdType": "str",
+    "pollFrequency": "1",
+    "pollUnits": "minutes",
+    "x": 180,
+    "y": 460,
+    "wires": [[], ["d881e2dd19406725"]]
+  },
+  {
+    "id": "4a6f4ab534631dfe",
     "type": "global-config",
     "env": [],
     "modules": {
-      "@seqera/node-red-seqera": "1.3.0"
+      "@seqera/node-red-seqera": "1.4.0"
     }
   }
 ]
