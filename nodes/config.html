@@ -143,7 +143,7 @@
             queryParams.set("token", token);
           }
 
-          const response = await fetch(`/seqera-config/workspaces?${queryParams}`, {
+          const response = await fetch(`seqera-config/workspaces?${queryParams}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -229,7 +229,7 @@
             queryParams.set("token", token);
           }
 
-          const response = await fetch(`/seqera-config/connectivity-check?${queryParams}`, {
+          const response = await fetch(`seqera-config/connectivity-check?${queryParams}`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -253,7 +253,13 @@
               }
             }
           } else {
-            updateConnectivityStatus("Server error occurred", false);
+            const errorText = await response.text();
+            console.error("Server error response:", {
+              status: response.status,
+              statusText: response.statusText,
+              body: errorText,
+            });
+            updateConnectivityStatus(`Server error (${response.status}): ${response.statusText}`, false);
             clearWorkspaceDropdown("Server error");
           }
         } catch (error) {
