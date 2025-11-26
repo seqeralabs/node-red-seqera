@@ -1,0 +1,159 @@
+<script type="text/html" data-template-name="seqera-workflow-poll">
+  <!-- Seqera config and node name -->
+  <div class="form-row">
+    <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+    <input type="text" id="node-input-seqera" data-type="seqera-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Node Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+
+  <!-- Polling specific -->
+  <div class="form-row">
+    <label for="node-input-pollFrequency"><i class="fa fa-clock-o"></i> Poll frequency</label>
+    <input type="text" id="node-input-pollFrequency" style="text-align:end; width:50px !important" />
+    <select id="node-input-pollUnits" style="width:120px !important">
+      <option value="seconds">Seconds</option>
+      <option value="minutes">Minutes</option>
+      <option value="hours">Hours</option>
+      <option value="days">Days</option>
+    </select>
+  </div>
+
+  <!-- Workflow filter parameters -->
+  <div class="form-row">
+    <label for="node-input-search"><i class="fa fa-search"></i> Search</label>
+    <input type="text" id="node-input-search" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-maxResults"><i class="fa fa-sort-numeric-asc"></i> Max results</label>
+    <input type="text" id="node-input-maxResults" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+</script>
+
+<!-- prettier-ignore -->
+<script type="text/markdown" data-help-name="seqera-workflow-poll">
+Polls Seqera Platform for workflow runs at a fixed interval and emits messages when new workflows are detected.
+
+### Inputs
+
+This node has no inputs – it starts polling automatically when the flow is deployed.
+
+: pollFrequency (number) : Poll frequency (default `1 minute`). Can be configured in seconds, minutes, hours, or days.
+: search (string) : Optional search filter for workflow names. Leave blank to include all workflows.
+: maxResults (number) : Maximum number of workflow runs to fetch per poll (default 50).
+: workspaceId (string) : Override the workspace ID from the config node.
+
+All input properties support msg._, flow._, global.\*, env, or JSONata expressions via the **typedInput**.
+
+### Outputs
+
+The node has two outputs that fire at different times:
+
+1. **All results** – Emitted every poll with the full list of workflows.
+2. **New workflows** – Emitted once per new workflow detected since the previous poll.
+
+**Output 1 (All results):**
+
+: payload.workflows (array) : Full list of workflow objects from the API.
+: payload.nextPoll (string) : ISO timestamp of the next scheduled poll.
+: workflowIds (array) : Convenience array of workflow IDs (strings).
+
+**Output 2 (New workflows - one message per workflow):**
+
+: payload.workflow (object) : Single workflow object from the API.
+: workflowId (string) : The workflow ID.
+
+If 3 new workflows are detected, output 2 will fire 3 separate times with 3 individual messages.
+
+### Details
+
+The node tracks seen workflow IDs in its context storage. On each poll:
+
+1. Fetch the current list of workflows from Seqera Platform
+2. Compare against the list from the previous poll
+3. For each new workflow ID, emit a separate message on output 2
+4. Update the stored list for the next comparison
+
+The comparison is based on the workflow ID. The very first poll after the node is created does not emit new results (it initializes the tracking state).
+
+### Required permissions
+
+Minimum required role: **View**
+
+See the [configuration documentation](configuration.md#required-token-permissions) for a full table of required permissions for all nodes.
+
+### Example usage
+
+See the [Poll Workflows documentation](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/poll_workflows/) for detailed examples.
+
+### Notes
+
+- The first poll after deployment/restart does **not** emit to the "New workflows" output
+- The tracking is reset on each Node-RED restart or flow redeployment
+- Very frequent polling (< 30 seconds) may impact API rate limits
+- Custom message properties are preserved in outputs (e.g., `msg._context`)
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("seqera-workflow-poll", {
+    category: "seqera",
+    color: "#A9A1C6",
+    inputs: 0,
+    outputs: 2,
+    icon: "icons/pipeline.svg",
+    align: "left",
+    paletteLabel: "Poll wfs",
+    label: function () {
+      return this.name || "Poll workflows";
+    },
+    outputLabels: ["All workflows", "New workflows"],
+    defaults: {
+      name: { value: "" },
+      seqera: { value: "", type: "seqera-config" },
+      search: { value: "" },
+      searchType: { value: "str" },
+      maxResults: { value: "50" },
+      maxResultsType: { value: "num" },
+      workspaceId: { value: "" },
+      workspaceIdType: { value: "str" },
+      pollFrequency: { value: "1" },
+      pollUnits: { value: "minutes" },
+    },
+    oneditprepare: function () {
+      function ti(id, val, type, def = "str") {
+        const types = ["str", "msg", "flow", "global", "env", "jsonata"];
+        if (def === "num") types.splice(0, 1, "num");
+        $(id).typedInput({ default: def, types });
+        $(id).typedInput("value", val);
+        $(id).typedInput("type", type);
+      }
+
+      ti("#node-input-search", this.search || "", this.searchType || "str");
+      ti("#node-input-maxResults", this.maxResults || "50", this.maxResultsType || "num", "num");
+      ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+
+      // Poll frequency – simple number input with units
+      $("#node-input-pollFrequency").val(this.pollFrequency || "1");
+      $("#node-input-pollUnits").val(this.pollUnits || "minutes");
+    },
+    oneditsave: function () {
+      function save(id, prop, propType) {
+        this[prop] = $(id).typedInput("value");
+        this[propType] = $(id).typedInput("type");
+      }
+      save.call(this, "#node-input-search", "search", "searchType");
+      save.call(this, "#node-input-maxResults", "maxResults", "maxResultsType");
+      save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+
+      // Save poll frequency and units
+      this.pollFrequency = $("#node-input-pollFrequency").val();
+      this.pollUnits = $("#node-input-pollUnits").val();
+    },
+  });
+</script>

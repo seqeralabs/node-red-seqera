@@ -13,6 +13,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 -   [Launch a workflow](seqera_nodes/launch_workflow.md)
 -   [Monitor a workflow](seqera_nodes/monitor_workflow.md)
+-   [Poll Workflows](seqera_nodes/poll_workflows.md)
 -   [Add Dataset](seqera_nodes/add_dataset.md)
 -   [List Files from Data Explorer](seqera_nodes/list_files.md)
 -   [Poll Data Link Files](seqera_nodes/poll_files.md)
