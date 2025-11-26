@@ -56,6 +56,12 @@ This package includes several example flows which you can import and repurpose:
 Use via the Node-RED menu under _Import_ > _Examples_ > _@seqera/node-red-seqera_.
 See the [example docs](https://seqeralabs.github.io/node-red-seqera/examples/) for more information.
 
+## Video tutorials
+
+Prefer video to text? Check out the [YouTube Playlist of tutorial videos](https://youtube.com/playlist?list=PL_mgzF8qwHud1pOSurWKO8eDJIqE-_NHi&si=StMNRsyMa9JOjBa8), taking you through installation, Node-RED fundamentals and the different examples!
+
+[![YouTube tutorial playlist](docs/img/youtube-tutorials-introduction.png)](https://youtube.com/playlist?list=PL_mgzF8qwHud1pOSurWKO8eDJIqE-_NHi&si=StMNRsyMa9JOjBa8)
+
 # Quick start
 
 > [!NOTE]
