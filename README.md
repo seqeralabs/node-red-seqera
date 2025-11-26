@@ -60,7 +60,11 @@ See the [example docs](https://seqeralabs.github.io/node-red-seqera/examples/) f
 
 Prefer video to text? Check out the [YouTube Playlist of tutorial videos](https://youtube.com/playlist?list=PL_mgzF8qwHud1pOSurWKO8eDJIqE-_NHi&si=StMNRsyMa9JOjBa8), taking you through installation, Node-RED fundamentals and the different examples!
 
+<div align="center">
+
 [![YouTube tutorial playlist](docs/img/youtube-tutorials-introduction.png)](https://youtube.com/playlist?list=PL_mgzF8qwHud1pOSurWKO8eDJIqE-_NHi&si=StMNRsyMa9JOjBa8)
+
+</div>
 
 # Quick start
 
