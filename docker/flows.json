@@ -343,7 +343,7 @@
     "type": "global-config",
     "env": [],
     "modules": {
-      "@seqera/node-red-seqera": "1.4.0"
+      "@seqera/node-red-seqera": "1.4.1"
     }
   }
 ]

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.1] - 2025-11-16
+
+-   Bugfix: Don't use absolute paths for internal API calls for config setup
+    -   Fixes 404 errors when running Node-RED on a sub-path
+
 ## [1.4.0] - 2025-11-26
 
 -   New node: _Poll workflows_ [#21](https://github.com/seqeralabs/node-red-seqera/pull/21)
