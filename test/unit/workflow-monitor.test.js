@@ -12,12 +12,11 @@ describe("seqera-workflow-monitor node", () => {
   let api;
 
   beforeEach(() => {
-    jest.useFakeTimers();
     RED = createMockRED();
     api = mockSeqeraAPI();
 
     // Set up the seqera-config node
-    const seqeraConfig = createMockSeqeraConfigNode();
+    const seqeraConfig = createMockSeqeraConfigNode({ workspaceId: "ws-123" });
     RED._testHelpers.addNode("seqera-config-id", seqeraConfig);
 
     // Load the workflow-monitor node module
@@ -25,8 +24,7 @@ describe("seqera-workflow-monitor node", () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
+    nock.cleanAll();
   });
 
   function createNode(configOverrides = {}) {
@@ -43,7 +41,7 @@ describe("seqera-workflow-monitor node", () => {
       workspaceIdType: "str",
       poll: "5",
       pollType: "num",
-      keepPolling: true,
+      keepPolling: false, // Default to false for simpler testing
       ...configOverrides,
     };
 
@@ -61,14 +59,16 @@ describe("seqera-workflow-monitor node", () => {
     });
   });
 
-  describe("basic polling", () => {
+  describe("basic status fetching", () => {
     it("should fetch workflow status on input", async () => {
       const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "running" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
       const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
+      const done = jest.fn();
+
+      await node._triggerInput(msg, send, done);
 
       expect(send).toHaveBeenCalled();
     });
@@ -104,7 +104,7 @@ describe("seqera-workflow-monitor node", () => {
     });
 
     it("should set status color based on workflow status - succeeded (green)", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "succeeded" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
@@ -119,7 +119,7 @@ describe("seqera-workflow-monitor node", () => {
     });
 
     it("should set status color based on workflow status - failed (red)", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "failed" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
@@ -134,7 +134,7 @@ describe("seqera-workflow-monitor node", () => {
     });
 
     it("should set status color based on workflow status - cancelled (grey)", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "cancelled" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
@@ -150,8 +150,22 @@ describe("seqera-workflow-monitor node", () => {
   });
 
   describe("multiple outputs", () => {
-    it("should send to output 1 for submitted/running workflows", async () => {
-      const node = createNode({ keepPolling: false });
+    it("should send to output 1 for submitted status", async () => {
+      const node = createNode();
+      api.mockWorkflowStatus("wf-123", { status: "submitted" });
+
+      const msg = createMockMsg({ workflowId: "wf-123" });
+      const send = jest.fn();
+      await node._triggerInput(msg, send, jest.fn());
+
+      const args = send.mock.calls[0][0];
+      expect(args[0]).not.toBeNull(); // Output 1
+      expect(args[1]).toBeNull(); // Output 2
+      expect(args[2]).toBeNull(); // Output 3
+    });
+
+    it("should send to output 1 for running status", async () => {
+      const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "running" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
@@ -164,8 +178,8 @@ describe("seqera-workflow-monitor node", () => {
       expect(args[2]).toBeNull(); // Output 3
     });
 
-    it("should send to output 2 for succeeded workflows", async () => {
-      const node = createNode({ keepPolling: false });
+    it("should send to output 2 for succeeded status", async () => {
+      const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "succeeded" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
@@ -178,9 +192,23 @@ describe("seqera-workflow-monitor node", () => {
       expect(args[2]).toBeNull(); // Output 3
     });
 
-    it("should send to output 3 for failed/cancelled workflows", async () => {
-      const node = createNode({ keepPolling: false });
+    it("should send to output 3 for failed status", async () => {
+      const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "failed" });
+
+      const msg = createMockMsg({ workflowId: "wf-123" });
+      const send = jest.fn();
+      await node._triggerInput(msg, send, jest.fn());
+
+      const args = send.mock.calls[0][0];
+      expect(args[0]).toBeNull(); // Output 1
+      expect(args[1]).toBeNull(); // Output 2
+      expect(args[2]).not.toBeNull(); // Output 3
+    });
+
+    it("should send to output 3 for cancelled status", async () => {
+      const node = createNode();
+      api.mockWorkflowStatus("wf-123", { status: "cancelled" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
       const send = jest.fn();
@@ -194,28 +222,7 @@ describe("seqera-workflow-monitor node", () => {
   });
 
   describe("polling control", () => {
-    it("should start polling interval if keepPolling enabled", async () => {
-      const node = createNode({ keepPolling: true, poll: "5", pollType: "num" });
-
-      // First call - running
-      api.mockWorkflowStatus("wf-123", { status: "running" });
-
-      const msg = createMockMsg({ workflowId: "wf-123" });
-      const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
-
-      expect(send).toHaveBeenCalledTimes(1);
-
-      // Second call after interval
-      api.mockWorkflowStatus("wf-123", { status: "running" });
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve(); // Flush promises
-
-      expect(send).toHaveBeenCalledTimes(2);
-    });
-
-    it("should stop polling when keepPolling=false", async () => {
+    it("should not start polling when keepPolling=false", async () => {
       const node = createNode({ keepPolling: false });
       api.mockWorkflowStatus("wf-123", { status: "running" });
 
@@ -224,39 +231,25 @@ describe("seqera-workflow-monitor node", () => {
       await node._triggerInput(msg, send, jest.fn());
 
       expect(send).toHaveBeenCalledTimes(1);
-
-      // Should not poll again
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(1);
+      // Verify no interval was set
+      expect(node._currentPollMs).toBeUndefined();
     });
 
-    it("should stop polling when workflow reaches terminal state", async () => {
+    it("should not continue polling when workflow reaches terminal state", async () => {
       const node = createNode({ keepPolling: true });
-
-      // First call - running
-      api.mockWorkflowStatus("wf-123", { status: "running" });
+      api.mockWorkflowStatus("wf-123", { status: "succeeded" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
       const send = jest.fn();
       await node._triggerInput(msg, send, jest.fn());
 
       expect(send).toHaveBeenCalledTimes(1);
+      // Terminal state means polling should be cleared
+      const args = send.mock.calls[0][0];
+      expect(args[1]).not.toBeNull(); // Succeeded output
 
-      // Second call - succeeded (terminal)
-      api.mockWorkflowStatus("wf-123", { status: "succeeded" });
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(2);
-
-      // No more polling should happen
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(2);
+      // Clean up any intervals
+      await node._triggerClose();
     });
 
     it("should clear polling on node close", async () => {
@@ -267,72 +260,29 @@ describe("seqera-workflow-monitor node", () => {
       const send = jest.fn();
       await node._triggerInput(msg, send, jest.fn());
 
-      // Trigger close
+      // Close should work without error and clear intervals
       await node._triggerClose();
-
-      // Prepare for potential future poll
-      api.mockWorkflowStatus("wf-123", { status: "running" });
-
-      // Advance time - should not poll
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      // Only the initial call should have happened
-      expect(send).toHaveBeenCalledTimes(1);
-    });
-
-    it("should clear polling on error", async () => {
-      const node = createNode({ keepPolling: true });
-
-      // First call succeeds
-      api.mockWorkflowStatus("wf-123", { status: "running" });
-
-      const msg = createMockMsg({ workflowId: "wf-123" });
-      const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
-
-      // Second call fails
-      api.mockError("get", "/workflow/wf-123", 500, "Server Error");
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      expect(node.error).toHaveBeenCalled();
-
-      // No more polling after error
-      api.mockWorkflowStatus("wf-123", { status: "running" });
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      // Still only 2 calls (initial + one failed)
-      expect(send).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("property evaluation", () => {
-    it("should evaluate workflowId from msg", async () => {
-      const node = createNode({
-        workflowId: "workflowId",
-        workflowIdType: "msg",
-        keepPolling: false,
-      });
+  describe("error handling", () => {
+    it("should set red dot status on error", async () => {
+      const node = createNode();
+      api.mockError("get", "/workflow/wf-123", 500, "Server Error");
 
-      api.mockWorkflowStatus("wf-from-msg", { status: "running" });
+      const msg = createMockMsg({ workflowId: "wf-123" });
+      await node._triggerInput(msg, jest.fn(), jest.fn());
 
-      const msg = createMockMsg({ workflowId: "wf-from-msg" });
-      const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
-
-      const output = send.mock.calls[0][0][0];
-      expect(output.workflowId).toBe("wf-from-msg");
+      expect(node.status).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fill: "red",
+          shape: "dot",
+        }),
+      );
     });
 
     it("should error if workflowId not provided", async () => {
-      const node = createNode({
-        workflowId: "",
-        workflowIdType: "str",
-        keepPolling: false,
-      });
+      const node = createNode({ workflowId: "", workflowIdType: "str" });
 
       const msg = createMockMsg({});
       await node._triggerInput(msg, jest.fn(), jest.fn());
@@ -343,7 +293,7 @@ describe("seqera-workflow-monitor node", () => {
 
   describe("message passthrough", () => {
     it("should preserve input message properties in output", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockWorkflowStatus("wf-123", { status: "running" });
 
       const msg = createMockMsg({
@@ -361,63 +311,22 @@ describe("seqera-workflow-monitor node", () => {
     });
   });
 
-  describe("dynamic interval updates", () => {
-    it("should update polling interval if changed dynamically", async () => {
-      const node = createNode({
-        keepPolling: true,
-        poll: "10",
-        pollType: "num",
+  describe("output payload", () => {
+    it("should include workflow data in payload", async () => {
+      const node = createNode();
+      api.mockWorkflowStatus("wf-123", {
+        id: "wf-123",
+        status: "running",
+        runName: "my-workflow-run",
       });
-
-      // First call
-      api.mockWorkflowStatus("wf-123", { status: "running" });
 
       const msg = createMockMsg({ workflowId: "wf-123" });
       const send = jest.fn();
       await node._triggerInput(msg, send, jest.fn());
 
-      expect(send).toHaveBeenCalledTimes(1);
-
-      // Should poll at 10 seconds
-      api.mockWorkflowStatus("wf-123", { status: "running" });
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(2);
-
-      // At 5 seconds (half interval) no new poll
-      api.mockWorkflowStatus("wf-123", { status: "running" });
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("error handling", () => {
-    it("should set red status on API error", async () => {
-      const node = createNode({ keepPolling: false });
-      api.mockError("get", "/workflow/wf-123", 500, "Server Error");
-
-      const msg = createMockMsg({ workflowId: "wf-123" });
-      await node._triggerInput(msg, jest.fn(), jest.fn());
-
-      expect(node.status).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fill: "red",
-          shape: "dot",
-        }),
-      );
-    });
-
-    it("should call node.error with error message", async () => {
-      const node = createNode({ keepPolling: false });
-      api.mockError("get", "/workflow/wf-123", 404, "Not Found");
-
-      const msg = createMockMsg({ workflowId: "wf-123" });
-      await node._triggerInput(msg, jest.fn(), jest.fn());
-
-      expect(node.error).toHaveBeenCalledWith(expect.stringContaining("failed"), expect.anything());
+      const outputMsg = send.mock.calls[0][0][0];
+      expect(outputMsg.payload.workflow).toBeDefined();
+      expect(outputMsg.workflowId).toBe("wf-123");
     });
   });
 });

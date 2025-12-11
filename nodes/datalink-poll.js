@@ -107,15 +107,18 @@ module.exports = function (RED) {
     };
 
     // Start the polling interval
+    let intervalId = null;
     if (node.seqeraConfig && config.dataLinkName && config.dataLinkName.trim() !== "") {
       const intervalMs = node.pollFrequencySec * 1000;
-      const intervalId = setInterval(executePoll, intervalMs);
+      intervalId = setInterval(executePoll, intervalMs);
       // run once immediately
       executePoll();
     }
 
     node.on("close", () => {
-      clearInterval(intervalId);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     });
   }
 

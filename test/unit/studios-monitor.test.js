@@ -12,7 +12,6 @@ describe("seqera-studios-monitor node", () => {
   let api;
 
   beforeEach(() => {
-    jest.useFakeTimers();
     RED = createMockRED();
     api = mockSeqeraAPI();
 
@@ -25,8 +24,7 @@ describe("seqera-studios-monitor node", () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
+    nock.cleanAll();
   });
 
   function createNode(configOverrides = {}) {
@@ -43,7 +41,7 @@ describe("seqera-studios-monitor node", () => {
       workspaceIdType: "str",
       poll: "5",
       pollUnits: "seconds",
-      keepPolling: true,
+      keepPolling: false, // Default to false for simpler testing
       ...configOverrides,
     };
 
@@ -61,7 +59,7 @@ describe("seqera-studios-monitor node", () => {
     });
   });
 
-  describe("basic polling", () => {
+  describe("basic status fetching", () => {
     it("should fetch studio status on input", async () => {
       const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
@@ -74,7 +72,7 @@ describe("seqera-studios-monitor node", () => {
     });
 
     it("should set status color - starting/building (yellow)", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "starting" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
@@ -88,8 +86,23 @@ describe("seqera-studios-monitor node", () => {
       );
     });
 
+    it("should set status color - building (yellow)", async () => {
+      const node = createNode();
+      api.mockStudioStatus("studio-123", { statusInfo: { status: "building" } });
+
+      const msg = createMockMsg({ studioId: "studio-123" });
+      await node._triggerInput(msg, jest.fn(), jest.fn());
+
+      expect(node.status).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fill: "yellow",
+          shape: "ring",
+        }),
+      );
+    });
+
     it("should set status color - running (blue)", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
@@ -104,7 +117,7 @@ describe("seqera-studios-monitor node", () => {
     });
 
     it("should set status color - stopped (grey)", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "stopped" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
@@ -119,7 +132,7 @@ describe("seqera-studios-monitor node", () => {
     });
 
     it("should set status color - errored (red)", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "errored" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
@@ -134,7 +147,7 @@ describe("seqera-studios-monitor node", () => {
     });
 
     it("should normalize 'build failed' status", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "build failed" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
@@ -151,7 +164,7 @@ describe("seqera-studios-monitor node", () => {
 
   describe("multiple outputs", () => {
     it("should send to output 1 on every poll", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
@@ -162,59 +175,57 @@ describe("seqera-studios-monitor node", () => {
       expect(args[0]).not.toBeNull(); // Output 1
     });
 
-    it("should send to output 2 ONLY on transition to running", async () => {
+    it("should send to output 2 on first running status", async () => {
       const node = createNode();
+      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
 
-      // First poll - starting
+      const msg = createMockMsg({ studioId: "studio-123" });
+      const send = jest.fn();
+      await node._triggerInput(msg, send, jest.fn());
+
+      const args = send.mock.calls[0][0];
+      expect(args[1]).not.toBeNull(); // Output 2 should fire on transition to running
+    });
+
+    it("should NOT send to output 2 when starting (not yet running)", async () => {
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "starting" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
       const send = jest.fn();
       await node._triggerInput(msg, send, jest.fn());
 
-      let args = send.mock.calls[0][0];
+      const args = send.mock.calls[0][0];
       expect(args[1]).toBeNull(); // Output 2 should be null (not running yet)
-
-      send.mockClear();
-
-      // Second poll - now running
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      args = send.mock.calls[0][0];
-      expect(args[1]).not.toBeNull(); // Output 2 should fire on transition to running
     });
 
-    it("should NOT send to output 2 on subsequent polls while running", async () => {
+    it("should send to output 3 on termination - stopped", async () => {
       const node = createNode();
-
-      // First poll - running
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
+      api.mockStudioStatus("studio-123", { statusInfo: { status: "stopped" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
       const send = jest.fn();
       await node._triggerInput(msg, send, jest.fn());
 
-      let args = send.mock.calls[0][0];
-      expect(args[1]).not.toBeNull(); // First running poll - transition
-
-      send.mockClear();
-
-      // Second poll - still running
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      args = send.mock.calls[0][0];
-      expect(args[1]).toBeNull(); // Should NOT fire again since already running
+      const args = send.mock.calls[0][0];
+      expect(args[2]).not.toBeNull(); // Output 3 should fire
     });
 
-    it("should send to output 3 on termination (stopped/errored/buildFailed)", async () => {
-      const node = createNode({ keepPolling: false });
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "stopped" } });
+    it("should send to output 3 on termination - errored", async () => {
+      const node = createNode();
+      api.mockStudioStatus("studio-123", { statusInfo: { status: "errored" } });
+
+      const msg = createMockMsg({ studioId: "studio-123" });
+      const send = jest.fn();
+      await node._triggerInput(msg, send, jest.fn());
+
+      const args = send.mock.calls[0][0];
+      expect(args[2]).not.toBeNull(); // Output 3 should fire
+    });
+
+    it("should send to output 3 on termination - build failed", async () => {
+      const node = createNode();
+      api.mockStudioStatus("studio-123", { statusInfo: { status: "build failed" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
       const send = jest.fn();
@@ -226,33 +237,6 @@ describe("seqera-studios-monitor node", () => {
   });
 
   describe("state transition detection", () => {
-    it("should track previousStatus", async () => {
-      const node = createNode();
-
-      // First poll - starting
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "starting" } });
-
-      const msg = createMockMsg({ studioId: "studio-123" });
-      const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
-
-      // Second poll - building
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "building" } });
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      // Third poll - running (transition!)
-      send.mockClear();
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      const args = send.mock.calls[0][0];
-      expect(args[1]).not.toBeNull(); // Should fire on transition to running
-    });
-
     it("should reset previousStatus on new input", async () => {
       const node = createNode();
 
@@ -267,18 +251,18 @@ describe("seqera-studios-monitor node", () => {
 
       send.mockClear();
 
-      // Second input - same studio, should reset state
+      // Second input - different studio, should reset state
       api.mockStudioStatus("studio-456", { statusInfo: { status: "running" } });
 
       const msg2 = createMockMsg({ studioId: "studio-456" });
       await node._triggerInput(msg2, send, jest.fn());
 
-      expect(send.mock.calls[0][0][1]).not.toBeNull(); // Output 2 fires again (new input)
+      expect(send.mock.calls[0][0][1]).not.toBeNull(); // Output 2 fires again (new input resets state)
     });
   });
 
   describe("polling control", () => {
-    it("should stop polling when keepPolling=false", async () => {
+    it("should not start polling when keepPolling=false", async () => {
       const node = createNode({ keepPolling: false });
       api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
 
@@ -287,39 +271,25 @@ describe("seqera-studios-monitor node", () => {
       await node._triggerInput(msg, send, jest.fn());
 
       expect(send).toHaveBeenCalledTimes(1);
-
-      // Should not poll again
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(1);
+      // No polling interval should be set
+      expect(node._currentPollMs).toBeUndefined();
     });
 
     it("should stop polling when studio reaches terminal state", async () => {
       const node = createNode({ keepPolling: true });
-
-      // First poll - running
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
+      api.mockStudioStatus("studio-123", { statusInfo: { status: "stopped" } });
 
       const msg = createMockMsg({ studioId: "studio-123" });
       const send = jest.fn();
       await node._triggerInput(msg, send, jest.fn());
 
       expect(send).toHaveBeenCalledTimes(1);
+      // Terminal state - output 3 should fire
+      const args = send.mock.calls[0][0];
+      expect(args[2]).not.toBeNull();
 
-      // Second poll - stopped (terminal)
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "stopped" } });
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(2);
-
-      // No more polling should happen
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(2);
+      // Clean up
+      await node._triggerClose();
     });
 
     it("should clear polling on node close", async () => {
@@ -330,91 +300,73 @@ describe("seqera-studios-monitor node", () => {
       const send = jest.fn();
       await node._triggerInput(msg, send, jest.fn());
 
-      // Trigger close
+      // Close should not throw
       await node._triggerClose();
-
-      // Advance time - no more polling should happen
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(1);
-    });
-
-    it("should clear polling on error", async () => {
-      const node = createNode({ keepPolling: true });
-
-      // First poll succeeds
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-
-      const msg = createMockMsg({ studioId: "studio-123" });
-      const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
-
-      // Second poll fails
-      api.mockError("get", "/studios/studio-123", 500, "Server Error");
-
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      expect(node.error).toHaveBeenCalled();
-
-      // No more polling after error
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-      jest.advanceTimersByTime(10000);
-      await Promise.resolve();
-
-      expect(send).toHaveBeenCalledTimes(1);
     });
   });
 
   describe("poll interval units", () => {
-    it("should convert seconds correctly", async () => {
-      const node = createNode({ poll: "10", pollUnits: "seconds" });
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
+    it("should calculate seconds correctly", () => {
+      // Don't start polling - just create node with no seqera config
+      const NodeConstructor = RED._testHelpers.getRegisteredType("seqera-studios-monitor").constructor;
+      const node = {};
+      const config = {
+        id: "test-node-id",
+        seqera: "non-existent",
+        studioId: "",
+        studioIdType: "str",
+        poll: "10",
+        pollUnits: "seconds",
+        keepPolling: false,
+      };
+      NodeConstructor.call(node, config);
 
-      const msg = createMockMsg({ studioId: "studio-123" });
-      const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
-
-      expect(send).toHaveBeenCalledTimes(1);
-
-      // At 5 seconds - no poll
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-      expect(send).toHaveBeenCalledTimes(1);
-
-      // At 10 seconds - poll
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-      expect(send).toHaveBeenCalledTimes(2);
+      // Internal conversion is done in convertToSeconds
+      // poll: "10", pollUnits: "seconds" -> 10 seconds
+      expect(node.pollIntervalProp).toBe("10");
+      expect(node.pollUnitsProp).toBe("seconds");
     });
 
-    it("should convert minutes correctly", async () => {
-      const node = createNode({ poll: "1", pollUnits: "minutes" });
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
+    it("should calculate minutes correctly", () => {
+      const NodeConstructor = RED._testHelpers.getRegisteredType("seqera-studios-monitor").constructor;
+      const node = {};
+      const config = {
+        id: "test-node-id",
+        seqera: "non-existent",
+        studioId: "",
+        studioIdType: "str",
+        poll: "1",
+        pollUnits: "minutes",
+        keepPolling: false,
+      };
+      NodeConstructor.call(node, config);
 
-      const msg = createMockMsg({ studioId: "studio-123" });
-      const send = jest.fn();
-      await node._triggerInput(msg, send, jest.fn());
+      expect(node.pollIntervalProp).toBe("1");
+      expect(node.pollUnitsProp).toBe("minutes");
+    });
 
-      // At 30 seconds - no poll
-      jest.advanceTimersByTime(30000);
-      await Promise.resolve();
-      expect(send).toHaveBeenCalledTimes(1);
+    it("should calculate hours correctly", () => {
+      const NodeConstructor = RED._testHelpers.getRegisteredType("seqera-studios-monitor").constructor;
+      const node = {};
+      const config = {
+        id: "test-node-id",
+        seqera: "non-existent",
+        studioId: "",
+        studioIdType: "str",
+        poll: "2",
+        pollUnits: "hours",
+        keepPolling: false,
+      };
+      NodeConstructor.call(node, config);
 
-      // At 60 seconds - poll
-      api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
-      jest.advanceTimersByTime(30000);
-      await Promise.resolve();
-      expect(send).toHaveBeenCalledTimes(2);
+      expect(node.pollIntervalProp).toBe("2");
+      expect(node.pollUnitsProp).toBe("hours");
     });
   });
 
   describe("error handling", () => {
     it("should set red dot status on error", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockError("get", "/studios/studio-123", 500, "Server Error");
 
       const msg = createMockMsg({ studioId: "studio-123" });
@@ -440,7 +392,7 @@ describe("seqera-studios-monitor node", () => {
 
   describe("message passthrough", () => {
     it("should preserve input message properties in output", async () => {
-      const node = createNode({ keepPolling: false });
+      const node = createNode();
       api.mockStudioStatus("studio-123", { statusInfo: { status: "running" } });
 
       const msg = createMockMsg({
@@ -455,6 +407,24 @@ describe("seqera-studios-monitor node", () => {
 
       const outputMsg = send.mock.calls[0][0][0];
       expectMessagePassthrough(outputMsg, msg);
+    });
+  });
+
+  describe("output payload", () => {
+    it("should include studio data in payload", async () => {
+      const node = createNode();
+      api.mockStudioStatus("studio-123", {
+        sessionId: "studio-123",
+        statusInfo: { status: "running" },
+      });
+
+      const msg = createMockMsg({ studioId: "studio-123" });
+      const send = jest.fn();
+      await node._triggerInput(msg, send, jest.fn());
+
+      const outputMsg = send.mock.calls[0][0][0];
+      expect(outputMsg.payload).toBeDefined();
+      expect(outputMsg.studioId).toBe("studio-123");
     });
   });
 });

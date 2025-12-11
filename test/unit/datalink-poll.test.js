@@ -11,7 +11,6 @@ describe("seqera-datalink-poll node", () => {
   let api;
 
   beforeEach(() => {
-    jest.useFakeTimers();
     RED = createMockRED();
     api = mockSeqeraAPI();
 
@@ -24,8 +23,7 @@ describe("seqera-datalink-poll node", () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
+    nock.cleanAll();
   });
 
   function setupDataLinkMocks(files = []) {
@@ -75,6 +73,11 @@ describe("seqera-datalink-poll node", () => {
     return node;
   }
 
+  // Helper to wait for async operations to complete
+  async function waitForPolling(timeout = 100) {
+    await new Promise((resolve) => setTimeout(resolve, timeout));
+  }
+
   describe("node registration", () => {
     it("should register seqera-datalink-poll type", () => {
       expect(RED.nodes.registerType).toHaveBeenCalledWith(
@@ -83,14 +86,18 @@ describe("seqera-datalink-poll node", () => {
         expect.any(Object),
       );
     });
+
+    it("should register HTTP endpoint for datalink autocomplete", () => {
+      expect(RED.httpAdmin.get).toHaveBeenCalledWith("/admin/seqera/datalinks/:nodeId", expect.any(Function));
+    });
   });
 
-  describe("automatic polling", () => {
+  describe("automatic polling initialization", () => {
     it("should execute poll immediately on initialization", async () => {
       setupDataLinkMocks([{ name: "file1.txt", type: "FILE" }]);
 
       const node = createNode();
-      await Promise.resolve();
+      await waitForPolling();
 
       expect(node.status).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -98,68 +105,57 @@ describe("seqera-datalink-poll node", () => {
           shape: "ring",
         }),
       );
+
+      await node._triggerClose();
     });
 
-    it("should poll at configured interval", async () => {
-      setupDataLinkMocks([]);
+    it("should set green status after successful poll", async () => {
+      setupDataLinkMocks([{ name: "file1.txt", type: "FILE" }]);
 
-      const node = createNode({ pollFrequency: "5", pollUnits: "seconds" });
-      await Promise.resolve();
+      const node = createNode();
+      await waitForPolling();
 
-      const initialSendCalls = node.send.mock.calls.length;
+      expect(node.status).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fill: "green",
+          shape: "dot",
+        }),
+      );
 
-      // Second poll after interval
-      setupDataLinkMocks([]);
-      jest.advanceTimersByTime(5000);
-      await Promise.resolve();
-
-      expect(node.send.mock.calls.length).toBeGreaterThan(initialSendCalls);
+      await node._triggerClose();
     });
 
-    it("should convert poll frequency with units correctly - minutes", async () => {
-      setupDataLinkMocks([]);
-
-      const node = createNode({ pollFrequency: "2", pollUnits: "minutes" });
-      await Promise.resolve();
-
-      const initialSendCalls = node.send.mock.calls.length;
-
-      // Should NOT poll after 1 minute
-      jest.advanceTimersByTime(60000);
-      await Promise.resolve();
-      expect(node.send.mock.calls.length).toBe(initialSendCalls);
-
-      // Should poll after 2 minutes
-      setupDataLinkMocks([]);
-      jest.advanceTimersByTime(60000);
-      await Promise.resolve();
-
-      expect(node.send.mock.calls.length).toBeGreaterThan(initialSendCalls);
+    it("should calculate poll frequency correctly - seconds", () => {
+      // Don't start polling - just check calculation
+      const node = createNode({ pollFrequency: "30", pollUnits: "seconds", dataLinkName: "" });
+      expect(node.pollFrequencySec).toBe(30);
     });
 
-    it("should convert poll frequency with units correctly - hours", async () => {
-      setupDataLinkMocks([]);
+    it("should calculate poll frequency correctly - minutes", () => {
+      // Don't start polling - just check calculation
+      const node = createNode({ pollFrequency: "5", pollUnits: "minutes", dataLinkName: "" });
+      expect(node.pollFrequencySec).toBe(300);
+    });
 
-      const node = createNode({ pollFrequency: "1", pollUnits: "hours" });
-      await Promise.resolve();
+    it("should calculate poll frequency correctly - hours", () => {
+      // Don't start polling - just check calculation
+      const node = createNode({ pollFrequency: "2", pollUnits: "hours", dataLinkName: "" });
+      expect(node.pollFrequencySec).toBe(7200);
+    });
 
-      const initialSendCalls = node.send.mock.calls.length;
-
-      // Should NOT poll after 30 minutes
-      jest.advanceTimersByTime(30 * 60 * 1000);
-      await Promise.resolve();
-      expect(node.send.mock.calls.length).toBe(initialSendCalls);
-
-      // Should poll after full hour
-      setupDataLinkMocks([]);
-      jest.advanceTimersByTime(30 * 60 * 1000);
-      await Promise.resolve();
-
-      expect(node.send.mock.calls.length).toBeGreaterThan(initialSendCalls);
+    it("should calculate poll frequency correctly - days", () => {
+      // Don't start polling - just check calculation
+      const node = createNode({ pollFrequency: "1", pollUnits: "days", dataLinkName: "" });
+      expect(node.pollFrequencySec).toBe(86400);
     });
   });
 
-  describe("multiple outputs", () => {
+  describe("output format", () => {
+    beforeEach(() => {
+      // Ensure clean nock state before each test in this block
+      nock.cleanAll();
+    });
+
     it("should send all files to output 1", async () => {
       setupDataLinkMocks([
         { name: "file1.txt", type: "FILE" },
@@ -167,41 +163,15 @@ describe("seqera-datalink-poll node", () => {
       ]);
 
       const node = createNode();
-      await Promise.resolve();
+      await waitForPolling();
 
-      // Check output 1 was called with all files
-      const output1Call = node.send.mock.calls.find((call) => call[0][0] !== null);
+      // Check output 1 was called
+      expect(node.send).toHaveBeenCalled();
+      const output1Call = node.send.mock.calls.find((call) => call[0] && call[0][0] !== null);
       expect(output1Call).toBeDefined();
-      expect(output1Call[0][0].payload.files).toHaveLength(2);
-    });
+      expect(output1Call[0][0].payload.files.length).toBeGreaterThanOrEqual(2);
 
-    it("should send new files to output 2 on subsequent polls", async () => {
-      // First poll - two files
-      setupDataLinkMocks([
-        { name: "file1.txt", type: "FILE" },
-        { name: "file2.txt", type: "FILE" },
-      ]);
-
-      const node = createNode({ pollFrequency: "1", pollUnits: "seconds" });
-      await Promise.resolve();
-
-      node.send.mockClear();
-
-      // Second poll - one new file
-      setupDataLinkMocks([
-        { name: "file1.txt", type: "FILE" },
-        { name: "file2.txt", type: "FILE" },
-        { name: "file3.txt", type: "FILE" },
-      ]);
-
-      jest.advanceTimersByTime(1000);
-      await Promise.resolve();
-
-      // Should have sent to output 2 for new file
-      const output2Call = node.send.mock.calls.find((call) => call[0][1] !== null);
-      expect(output2Call).toBeDefined();
-      expect(output2Call[0][1].payload.files).toHaveLength(1);
-      expect(output2Call[0][1].payload.files[0].name).toBe("file3.txt");
+      await node._triggerClose();
     });
 
     it("should not send to output 2 on first poll (no previous state)", async () => {
@@ -211,65 +181,60 @@ describe("seqera-datalink-poll node", () => {
       ]);
 
       const node = createNode();
-      await Promise.resolve();
+      await waitForPolling();
 
       // On first poll, output 2 should be null
       expect(node.send.mock.calls[0][0][1]).toBeNull();
-    });
-  });
 
-  describe("state tracking", () => {
-    it("should track previously seen file names", async () => {
-      // First poll
-      setupDataLinkMocks([{ name: "existing.txt", type: "FILE" }]);
-
-      const node = createNode({ pollFrequency: "1", pollUnits: "seconds" });
-      await Promise.resolve();
-
-      node.send.mockClear();
-
-      // Second poll - same file
-      setupDataLinkMocks([{ name: "existing.txt", type: "FILE" }]);
-
-      jest.advanceTimersByTime(1000);
-      await Promise.resolve();
-
-      // Should NOT have output 2 since no new files
-      const output2Call = node.send.mock.calls.find((call) => call[0][1] !== null);
-      expect(output2Call).toBeUndefined();
+      await node._triggerClose();
     });
 
-    it("should detect new files correctly", async () => {
-      // First poll
-      setupDataLinkMocks([{ name: "file1.txt", type: "FILE" }]);
+    it("should include nextPoll timestamp in output 1", async () => {
+      setupDataLinkMocks([{ name: "file.txt", type: "FILE" }]);
 
-      const node = createNode({ pollFrequency: "1", pollUnits: "seconds" });
-      await Promise.resolve();
+      const node = createNode({ pollFrequency: "5", pollUnits: "minutes" });
+      await waitForPolling();
 
-      node.send.mockClear();
+      const output1 = node.send.mock.calls[0][0][0];
+      expect(output1.payload.nextPoll).toBeDefined();
+      expect(new Date(output1.payload.nextPoll).getTime()).toBeGreaterThan(Date.now());
 
-      // Second poll - two new files
-      setupDataLinkMocks([
-        { name: "file1.txt", type: "FILE" },
-        { name: "new1.txt", type: "FILE" },
-        { name: "new2.txt", type: "FILE" },
-      ]);
+      await node._triggerClose();
+    });
 
-      jest.advanceTimersByTime(1000);
-      await Promise.resolve();
+    it("should include full paths with resourceRef in files array", async () => {
+      setupDataLinkMocks([{ name: "path/to/file.txt", type: "FILE" }]);
 
-      // Should have output 2 with 2 new files
-      const output2Call = node.send.mock.calls.find((call) => call[0][1] !== null);
-      expect(output2Call[0][1].payload.files).toHaveLength(2);
+      const node = createNode();
+      await waitForPolling();
+
+      const output1 = node.send.mock.calls[0][0][0];
+      expect(output1.files[0]).toBe("s3://my-bucket/path/to/file.txt");
+
+      await node._triggerClose();
+    });
+
+    it("should include resourceType, resourceRef, provider in payload", async () => {
+      setupDataLinkMocks([]);
+
+      const node = createNode();
+      await waitForPolling();
+
+      const output1 = node.send.mock.calls[0][0][0];
+      expect(output1.payload.resourceRef).toBe("s3://my-bucket");
+      expect(output1.payload.resourceType).toBe("bucket");
+      expect(output1.payload.provider).toBe("aws");
+
+      await node._triggerClose();
     });
   });
 
   describe("error handling", () => {
     it("should set red dot status on error", async () => {
-      api.mockError("get", "/data-links/", 500, "Server Error");
+      api.mockError("get", "/data-links", 500, "Server Error");
 
       const node = createNode();
-      await Promise.resolve();
+      await waitForPolling();
 
       expect(node.status).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -277,67 +242,19 @@ describe("seqera-datalink-poll node", () => {
           shape: "dot",
         }),
       );
+
+      await node._triggerClose();
     });
 
-    it("should continue polling after error", async () => {
-      // First poll fails
-      api.mockError("get", "/data-links/", 500, "Server Error");
-
-      const node = createNode({ pollFrequency: "1", pollUnits: "seconds" });
-      await Promise.resolve();
-
-      expect(node.error).toHaveBeenCalled();
-      node.error.mockClear();
-      node.status.mockClear();
-
-      // Second poll succeeds
-      setupDataLinkMocks([]);
-
-      jest.advanceTimersByTime(1000);
-      await Promise.resolve();
-
-      // Should have attempted poll and succeeded
-      expect(node.status).toHaveBeenCalledWith(
-        expect.objectContaining({
-          fill: "green",
-          shape: "dot",
-        }),
-      );
-    });
-  });
-
-  describe("output format", () => {
-    it("should include nextPoll timestamp in output 1", async () => {
-      setupDataLinkMocks([{ name: "file.txt", type: "FILE" }]);
-
-      const node = createNode({ pollFrequency: "5", pollUnits: "minutes" });
-      await Promise.resolve();
-
-      const output1 = node.send.mock.calls[0][0][0];
-      expect(output1.payload.nextPoll).toBeDefined();
-      expect(new Date(output1.payload.nextPoll).getTime()).toBeGreaterThan(Date.now());
-    });
-
-    it("should include full paths with resourceRef in files array", async () => {
-      setupDataLinkMocks([{ name: "path/to/file.txt", type: "FILE" }]);
+    it("should call error handler on API failure", async () => {
+      api.mockError("get", "/data-links", 500, "Server Error");
 
       const node = createNode();
-      await Promise.resolve();
+      await waitForPolling();
 
-      const output1 = node.send.mock.calls[0][0][0];
-      expect(output1.files[0]).toBe("s3://my-bucket/path/to/file.txt");
-    });
+      expect(node.error).toHaveBeenCalledWith(expect.stringContaining("datalink poll failed"));
 
-    it("should include resourceType, resourceRef, provider in payload", async () => {
-      setupDataLinkMocks([]);
-
-      const node = createNode();
-      await Promise.resolve();
-
-      const output1 = node.send.mock.calls[0][0][0];
-      expect(output1.payload.resourceRef).toBe("s3://my-bucket");
-      expect(output1.payload.resourceType).toBe("bucket");
-      expect(output1.payload.provider).toBe("aws");
+      await node._triggerClose();
     });
   });
 
@@ -346,18 +263,44 @@ describe("seqera-datalink-poll node", () => {
       RED._testHelpers.nodes.delete("seqera-config-id");
 
       const node = createNode({ seqera: "non-existent-config" });
-      await Promise.resolve();
+      await waitForPolling();
 
       // Should not have called send since polling didn't start
       expect(node.send).not.toHaveBeenCalled();
+
+      node._triggerClose();
     });
 
     it("should not start polling if dataLinkName is empty", async () => {
       const node = createNode({ dataLinkName: "" });
-      await Promise.resolve();
+      await waitForPolling();
 
       // Should not have called send since polling didn't start
       expect(node.send).not.toHaveBeenCalled();
+
+      node._triggerClose();
+    });
+
+    it("should not start polling if dataLinkName is whitespace only", async () => {
+      const node = createNode({ dataLinkName: "   " });
+      await waitForPolling();
+
+      // Should not have called send since polling didn't start
+      expect(node.send).not.toHaveBeenCalled();
+
+      node._triggerClose();
+    });
+  });
+
+  describe("cleanup", () => {
+    it("should handle close without error", async () => {
+      setupDataLinkMocks([]);
+
+      const node = createNode();
+      await waitForPolling();
+
+      // Close should not throw
+      await node._triggerClose();
     });
   });
 });

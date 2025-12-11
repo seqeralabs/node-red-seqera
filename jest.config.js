@@ -3,26 +3,17 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/test/setup.js"],
   testMatch: ["**/test/**/*.test.js"],
   // Skip polling/monitor tests for now - they have complex async timing issues
-  testPathIgnorePatterns: [
-    "/node_modules/",
-    "workflow-poll.test.js",
-    "workflow-monitor.test.js",
-    "datalink-poll.test.js",
-    "studios-monitor.test.js",
-    "http-endpoints.test.js",
-  ],
+  testPathIgnorePatterns: ["/node_modules/"],
   collectCoverageFrom: ["nodes/**/*.js", "!nodes/**/*.html"],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "text-summary", "html", "lcov"],
-  // Coverage thresholds - these can be raised as more tests are stabilized
-  // Note: workflow-poll, workflow-monitor, datalink-poll, studios-monitor tests
-  // are skipped due to complex async timing issues with fake timers
+  // Coverage thresholds - raised to reflect comprehensive test coverage
   coverageThreshold: {
     global: {
-      branches: 40,
-      functions: 40,
-      lines: 50,
-      statements: 50,
+      branches: 70,
+      functions: 75,
+      lines: 85,
+      statements: 85,
     },
   },
   clearMocks: true,
