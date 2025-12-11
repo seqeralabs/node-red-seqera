@@ -79,15 +79,19 @@ All inputs support msg._, flow._, global.\*, env, or JSONata expressions via the
 
 ### Outputs
 
-The node has two outputs:
+The node has three outputs:
 
-1. All results on every poll.
-2. New objects since the previous poll (nothing sent if no new objects).
+1. **All results** - Fires on every poll with all current files.
+2. **New or modified** - Fires only when files are new or have changed (based on metadata: lastModified, size, or etag). Files with the same name but different timestamps are detected as new.
+3. **Deleted** - Fires only when files that were present in the previous poll are no longer found.
 
-Both outputs have the following properties:
+All outputs have the following properties:
 
-: payload (array) : Fle information aggregated from the API (array of objects).
-: files (array) : File names (array of strings).
+: payload.files (array) : File information aggregated from the API (array of objects).
+: payload.resourceType (string) : Type of the Data Link resource.
+: payload.resourceRef (string) : Resource reference path.
+: payload.provider (string) : Cloud provider name.
+: files (array) : File paths as strings (array).
 
 All typed-input fields are identical to the _List files_ node with the addition of **poll frequency**.
 </script>
@@ -97,14 +101,14 @@ All typed-input fields are identical to the _List files_ node with the addition 
     category: "seqera",
     color: "#A9A1C6",
     inputs: 0,
-    outputs: 2,
+    outputs: 3,
     icon: "icons/data-explorer.svg",
     align: "left",
     paletteLabel: "Poll files",
     label: function () {
       return this.name || "Poll files";
     },
-    outputLabels: ["All objects", "Only new objects"],
+    outputLabels: ["All objects", "New or modified", "Deleted"],
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },

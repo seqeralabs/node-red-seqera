@@ -54,8 +54,21 @@ module.exports = function (RED) {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
     };
 
-    // Internal cache of previously seen object names
-    let previousNamesSet = null;
+    // Helper to create unique identifier for a file based on name + metadata
+    // This ensures files with same name but different timestamps/size/etag are detected as new
+    const getFileIdentifier = (item) => {
+      const parts = [item.name];
+      if (item.lastModified) parts.push(item.lastModified);
+      if (item.size != null) parts.push(String(item.size));
+      if (item.etag) parts.push(item.etag);
+      return parts.join("|");
+    };
+
+    // Internal cache of previously seen objects
+    // Store both identifiers (for change detection) and a map by name (for deletion detection)
+    let previousIdentifiersSet = null;
+    let previousItemsMap = null;
+    let intervalId = null;
 
     // Polling function
     const executePoll = async () => {
@@ -78,28 +91,57 @@ module.exports = function (RED) {
           files: result.files.map((it) => `${result.resourceRef}/${it}`),
         };
 
-        // Second output: only new items since previous poll
+        // Build current state for comparison
+        const currentIdentifiers = new Set(result.items.map(getFileIdentifier));
+        const currentNameToItem = new Map(result.items.map((it) => [it.name, it]));
+
+        // Second output: new or modified items since previous poll
         let msgNew = null;
-        if (previousNamesSet) {
-          const newItems = result.items.filter((it) => !previousNamesSet.has(it.name));
-          if (newItems.length) {
+        if (previousIdentifiersSet) {
+          const newOrModified = result.items.filter((it) => !previousIdentifiersSet.has(getFileIdentifier(it)));
+          if (newOrModified.length) {
             msgNew = {
+              ...pollMsg,
               payload: {
-                files: newItems,
+                files: newOrModified,
                 resourceType: result.resourceType,
                 resourceRef: result.resourceRef,
                 provider: result.provider,
               },
-              files: newItems.map((it) => `${result.resourceRef}/${it.name}`),
+              files: newOrModified.map((it) => `${result.resourceRef}/${it.name}`),
+            };
+          }
+        }
+
+        // Third output: deleted items (present in previous poll but not current)
+        let msgDeleted = null;
+        if (previousItemsMap) {
+          const deletedItems = [];
+          for (const [name, item] of previousItemsMap.entries()) {
+            if (!currentNameToItem.has(name)) {
+              deletedItems.push(item);
+            }
+          }
+          if (deletedItems.length) {
+            msgDeleted = {
+              ...pollMsg,
+              payload: {
+                files: deletedItems,
+                resourceType: result.resourceType,
+                resourceRef: result.resourceRef,
+                provider: result.provider,
+              },
+              files: deletedItems.map((it) => `${result.resourceRef}/${it.name}`),
             };
           }
         }
 
         // Update cache
-        previousNamesSet = new Set(result.items.map((it) => it.name));
+        previousIdentifiersSet = currentIdentifiers;
+        previousItemsMap = currentNameToItem;
 
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
-        node.send([msgAll, msgNew]);
+        node.send([msgAll, msgNew, msgDeleted]);
       } catch (err) {
         node.error(`Seqera datalink poll failed: ${err.message}`);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
@@ -109,7 +151,7 @@ module.exports = function (RED) {
     // Start the polling interval
     if (node.seqeraConfig && config.dataLinkName && config.dataLinkName.trim() !== "") {
       const intervalMs = node.pollFrequencySec * 1000;
-      const intervalId = setInterval(executePoll, intervalMs);
+      intervalId = setInterval(executePoll, intervalMs);
       // run once immediately
       executePoll();
     }
