@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+-   Enhanced _Poll files_ node with configurable detection mode
+    -   **Name + metadata mode** (default): Detects files as new when name, lastModified, size, or etag changes. Use for files that are overwritten/replaced with same name (e.g., daily status files).
+    -   **Name only mode**: Only detects truly new filenames (original behavior)
+    -   Added third output for deleted files
+    -   Updated documentation with examples for both detection modes
+
 ## [1.4.1] - 2025-11-16
 
 -   Bugfix: Don't use absolute paths for internal API calls for config setup

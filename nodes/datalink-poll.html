@@ -20,6 +20,13 @@
       <option value="days">Days</option>
     </select>
   </div>
+  <div class="form-row">
+    <label for="node-input-detectionMode"><i class="fa fa-search"></i> Detection mode</label>
+    <select id="node-input-detectionMode">
+      <option value="metadata">Name + metadata (detect changes)</option>
+      <option value="name">Name only (detect new files)</option>
+    </select>
+  </div>
 
   <!-- Data link parameters (same as list node) -->
   <div class="form-row">
@@ -67,6 +74,7 @@ Polls a Seqera Platform Data Explorer link at a fixed interval.
 ### Inputs
 
 : pollFrequency (string) : Poll frequency (default `15 minutes`). Can be configured in seconds, minutes, hours, or days.
+: detectionMode (string) : Detection mode for new files (default `Name + metadata`). **Name + metadata** detects files as new when name, lastModified, size, or etag changes (use for files that are overwritten/replaced with same name). **Name only** detects only truly new filenames (original behavior).
 : dataLinkName (string) : The name of the data explorer link.
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
 : prefix (string) : Optional prefix filter for results (applies to folders and files)
@@ -82,7 +90,9 @@ All inputs support msg._, flow._, global.\*, env, or JSONata expressions via the
 The node has three outputs:
 
 1. **All results** - Fires on every poll with all current files.
-2. **New or modified** - Fires only when files are new or have changed (based on metadata: lastModified, size, or etag). Files with the same name but different timestamps are detected as new.
+2. **New or modified** - Behavior depends on detection mode:
+   - **Name + metadata**: Fires when files are new OR when existing files have changed metadata (lastModified, size, or etag). Files with the same name but different timestamps are detected as new.
+   - **Name only**: Fires only for truly new filenames that haven't been seen before.
 3. **Deleted** - Fires only when files that were present in the previous poll are no longer found.
 
 All outputs have the following properties:
@@ -132,6 +142,7 @@ All typed-input fields are identical to the _List files_ node with the addition 
       pollFrequency: { value: "15" },
       pollUnits: { value: "minutes" },
       returnType: { value: "files" },
+      detectionMode: { value: "metadata" },
     },
     oneditprepare: function () {
       function ti(id, val, type, def = "str") {
@@ -153,6 +164,7 @@ All typed-input fields are identical to the _List files_ node with the addition 
       $("#node-input-pollFrequency").val(this.pollFrequency || "15");
       $("#node-input-pollUnits").val(this.pollUnits || "minutes");
 
+      $("#node-input-detectionMode").val(this.detectionMode || "metadata");
       $("#node-input-returnType").val(this.returnType || "files");
 
       // Add auto-complete for datalink name when type is "str"
@@ -264,6 +276,7 @@ All typed-input fields are identical to the _List files_ node with the addition 
       this.pollFrequency = $("#node-input-pollFrequency").val();
       this.pollUnits = $("#node-input-pollUnits").val();
 
+      this.detectionMode = $("#node-input-detectionMode").val();
       this.returnType = $("#node-input-returnType").val();
     },
   });

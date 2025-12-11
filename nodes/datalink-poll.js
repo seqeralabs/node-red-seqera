@@ -30,6 +30,7 @@ module.exports = function (RED) {
     node.depthProp = config.depth;
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
+    node.detectionMode = config.detectionMode || "metadata"; // name|metadata
 
     // Poll frequency configuration
     const unitMultipliers = {
@@ -54,9 +55,14 @@ module.exports = function (RED) {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
     };
 
-    // Helper to create unique identifier for a file based on name + metadata
-    // This ensures files with same name but different timestamps/size/etag are detected as new
+    // Helper to create unique identifier for a file
+    // Mode "name": Only uses filename (original behavior - only detect truly new files)
+    // Mode "metadata": Uses name + lastModified/size/etag (detect changes to existing files)
     const getFileIdentifier = (item) => {
+      if (node.detectionMode === "name") {
+        return item.name;
+      }
+      // metadata mode (default)
       const parts = [item.name];
       if (item.lastModified) parts.push(item.lastModified);
       if (item.size != null) parts.push(String(item.size));
@@ -188,6 +194,7 @@ module.exports = function (RED) {
       returnType: { value: "files" },
       // poll specific
       pollFrequency: { value: "15" },
+      detectionMode: { value: "metadata" },
     },
   });
 };
