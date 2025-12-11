@@ -15,6 +15,15 @@ This is a Node-RED extension providing custom nodes for interacting with the Seq
 ## Development Commands
 
 ```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
 # Linting (uses pre-commit hooks)
 pre-commit run --all-files
 
@@ -246,6 +255,9 @@ nodes/              - Node implementation files (.js + .html pairs)
   dataset-*.js      - Dataset addition node
   datalink-*.js     - Data Link list/poll nodes
   studios-*.js      - Studio addition/monitor nodes
+test/               - Mocha test files
+  helper.js         - Shared test utilities and mock factories
+  *_spec.js         - Test files for each node
 examples/           - Example flows (.json)
 docker/             - Dockerfiles and Node-RED config for containers
 docs/               - Documentation and images
@@ -263,3 +275,4 @@ docs/               - Documentation and images
 7. Use `node.status()` to update visual state in editor
 8. Register node in [package.json](package.json) under `node-red.nodes`
 9. Create corresponding HTML with `<script type="text/html" data-template-name="...">` for editor UI
+10. Add tests in `test/<node-name>_spec.js` using shared helpers from `test/helper.js`
