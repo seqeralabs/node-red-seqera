@@ -86,8 +86,13 @@ The node has two outputs:
 
 Both outputs have the following properties:
 
-: payload (array) : Fle information aggregated from the API (array of objects).
+: payload (array) : File information aggregated from the API (array of objects).
 : files (array) : File names (array of strings).
+
+The "All results" output also includes:
+
+: payload.nextPoll (string) : ISO timestamp of the next scheduled poll.
+: payload.pollIntervalSeconds (number) : Poll interval duration in seconds.
 
 All typed-input fields are identical to the _List files_ node with the addition of **poll frequency**.
 </script>

@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+-   Poll files node: Added `pollIntervalSeconds` field to output payload alongside `nextPoll`
+
 ## [1.4.1] - 2025-11-16
 
 -   Bugfix: Don't use absolute paths for internal API calls for config setup

@@ -74,6 +74,7 @@ module.exports = function (RED) {
             resourceRef: result.resourceRef,
             provider: result.provider,
             nextPoll: new Date(Date.now() + node.pollFrequencySec * 1000).toISOString(),
+            pollIntervalSeconds: node.pollFrequencySec,
           },
           files: result.files.map((it) => `${result.resourceRef}/${it}`),
         };

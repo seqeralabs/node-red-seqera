@@ -46,6 +46,7 @@ Both messages include the same properties:
 -   `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Data Link metadata.
 -   `msg.files` – Convenience array of fully-qualified object names (strings).
 -   `msg.payload.nextPoll` (only on **All results** output) – ISO timestamp of the next scheduled poll.
+-   `msg.payload.pollIntervalSeconds` (only on **All results** output) – Poll interval duration in seconds.
 
 ## How new files are detected
 
