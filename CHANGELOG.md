@@ -4,6 +4,7 @@
 
 -   Poll files node: Added `pollIntervalSeconds` field to output payload alongside `nextPoll`
 -   Poll files node: "All results" output is now hidden by default, with a checkbox option to enable it
+-   Poll files node: Added new "Deleted results" output that fires when files are removed from the Data Link
 
 ## [1.4.1] - 2025-11-16
 

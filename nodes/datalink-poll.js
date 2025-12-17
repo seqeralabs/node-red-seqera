@@ -80,7 +80,10 @@ module.exports = function (RED) {
           files: result.files.map((it) => `${result.resourceRef}/${it}`),
         };
 
-        // Second output: only new items since previous poll
+        // Build set of current names for comparison
+        const currentNamesSet = new Set(result.items.map((it) => it.name));
+
+        // New items since previous poll
         let msgNew = null;
         if (previousNamesSet) {
           const newItems = result.items.filter((it) => !previousNamesSet.has(it.name));
@@ -97,18 +100,35 @@ module.exports = function (RED) {
           }
         }
 
+        // Deleted items since previous poll
+        let msgDeleted = null;
+        if (previousNamesSet) {
+          const deletedNames = [...previousNamesSet].filter((name) => !currentNamesSet.has(name));
+          if (deletedNames.length) {
+            msgDeleted = {
+              payload: {
+                files: deletedNames.map((name) => ({ name })),
+                resourceType: result.resourceType,
+                resourceRef: result.resourceRef,
+                provider: result.provider,
+              },
+              files: deletedNames.map((name) => `${result.resourceRef}/${name}`),
+            };
+          }
+        }
+
         // Update cache
-        previousNamesSet = new Set(result.items.map((it) => it.name));
+        previousNamesSet = currentNamesSet;
 
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
 
         // Send to outputs based on configuration
         if (node.outputAllPolls) {
-          // Two outputs: [All results, New results]
-          node.send([msgAll, msgNew]);
+          // Three outputs: [All results, New results, Deleted results]
+          node.send([msgAll, msgNew, msgDeleted]);
         } else {
-          // Single output: [New results only]
-          node.send([msgNew]);
+          // Two outputs: [New results, Deleted results]
+          node.send([msgNew, msgDeleted]);
         }
       } catch (err) {
         node.error(`Seqera datalink poll failed: ${err.message}`);

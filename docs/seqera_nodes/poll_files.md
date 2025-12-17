@@ -1,8 +1,8 @@
 # Poll files
 
-**Periodically list a Seqera Data Explorer Data Link and emit messages when new objects appear.**
+**Periodically list a Seqera Data Explorer Data Link and emit messages when objects are added or deleted.**
 
-This node automatically monitors a Data Link for _changes_, making it perfect for event-driven workflows that trigger when new files are uploaded.
+This node automatically monitors a Data Link for _changes_, making it perfect for event-driven workflows that trigger when files are uploaded or removed.
 
 !!! note
 
@@ -29,23 +29,25 @@ This node automatically monitors a Data Link for _changes_, making it perfect fo
 -   **Max results** (default **100**): Maximum number of objects to return per poll.
 -   **Depth** (default **0**): Folder recursion depth.
 -   **Poll frequency** (default **15 min**): Interval between polls.
--   **Output all results on every poll** (default **off**): When enabled, adds a second output that emits all files on every poll.
+-   **Output all results on every poll** (default **off**): When enabled, adds an extra output that emits all files on every poll.
 -   **Workspace ID**: Override the workspace ID from the Config node.
 
 All properties work the same as the [list files](list_files.md) node, plus automatic polling.
 
 ## Outputs
 
-By default, the node has a single output:
+By default, the node has two outputs:
 
 1. **New results** – Emitted only when one or more _new_ objects are detected since the last poll.
+2. **Deleted results** – Emitted only when one or more objects are _deleted_ since the last poll.
 
-When **Output all results on every poll** is enabled, the node has two outputs:
+When **Output all results on every poll** is enabled, the node has three outputs:
 
 1. **All results** – Emitted every poll with the full, filtered list of files.
 2. **New results** – Emitted only when one or more _new_ objects are detected since the last poll.
+3. **Deleted results** – Emitted only when one or more objects are _deleted_ since the last poll.
 
-Both outputs include the same properties:
+All outputs include the same properties:
 
 -   `msg.payload.files` – Array of file objects from the API.
 -   `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Data Link metadata.
@@ -53,20 +55,21 @@ Both outputs include the same properties:
 -   `msg.payload.nextPoll` (only on **All results** output) – ISO timestamp of the next scheduled poll.
 -   `msg.payload.pollIntervalSeconds` (only on **All results** output) – Poll interval duration in seconds.
 
-## How new files are detected
+## How changes are detected
 
 The node tracks seen files in its context storage. On each poll:
 
 1. Fetch the current list of files from the Data Link
 2. Compare against the list from the previous poll
 3. If new files are found, emit them on the "New results" output
-4. Update the stored list for the next comparison
+4. If files are missing (deleted), emit them on the "Deleted results" output
+5. Update the stored list for the next comparison
 
-The comparison is based on the full file path. Files that are deleted and re-uploaded will be detected as "new".
+The comparison is based on the full file path. Files that are deleted and re-uploaded will be detected as "deleted" then "new" on subsequent polls.
 
 !!! info
 
-    The very first poll after the node is created sees everything as new and is handled as a special case. It does not output new results.
+    The very first poll after the node is created sees everything as new and is handled as a special case. It does not output new or deleted results.
 
 ## Required permissions
 
@@ -94,7 +97,7 @@ Now every time a new file appears in the Data Link, a workflow will automaticall
 
 ## Notes
 
--   The first poll after deployment/restart does **not** emit to the "New results" output (it initializes the tracking state)
+-   The first poll after deployment/restart does **not** emit to the "New results" or "Deleted results" outputs (it initializes the tracking state)
 -   The tracking is reset on each Node-RED restart or flow redeployment
 -   Very frequent polling (< 30 seconds) may impact API rate limits
 -   Custom message properties are preserved in outputs (e.g., `msg._context`)

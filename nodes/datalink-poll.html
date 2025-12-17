@@ -85,12 +85,13 @@ All inputs support msg._, flow._, global.\*, env, or JSONata expressions via the
 
 ### Outputs
 
-The node has one or two outputs depending on configuration:
+The node has two or three outputs depending on configuration:
 
 1. **All results** (optional, disabled by default) – Emitted every poll with the full list of files.
 2. **New results** – Emitted only when new objects are detected since the previous poll.
+3. **Deleted results** – Emitted only when objects are deleted since the previous poll.
 
-Both outputs have the following properties:
+All outputs have the following properties:
 
 : payload (array) : File information aggregated from the API (array of objects).
 : files (array) : File names (array of strings).
@@ -108,7 +109,7 @@ All typed-input fields are identical to the _List files_ node with the addition 
     category: "seqera",
     color: "#A9A1C6",
     inputs: 0,
-    outputs: 1,
+    outputs: 2,
     icon: "icons/data-explorer.svg",
     align: "left",
     paletteLabel: "Poll files",
@@ -117,9 +118,11 @@ All typed-input fields are identical to the _List files_ node with the addition 
     },
     outputLabels: function (index) {
       if (this.outputAllPolls) {
-        return index === 0 ? "All objects" : "Only new objects";
+        // 3 outputs: All, New, Deleted
+        return ["All objects", "New objects", "Deleted objects"][index];
       }
-      return "Only new objects";
+      // 2 outputs: New, Deleted
+      return ["New objects", "Deleted objects"][index];
     },
     defaults: {
       name: { value: "" },
@@ -282,7 +285,7 @@ All typed-input fields are identical to the _List files_ node with the addition 
 
       // Save output all polls checkbox and update outputs count
       this.outputAllPolls = $("#node-input-outputAllPolls").prop("checked");
-      this.outputs = this.outputAllPolls ? 2 : 1;
+      this.outputs = this.outputAllPolls ? 3 : 2;
 
       this.returnType = $("#node-input-returnType").val();
     },
