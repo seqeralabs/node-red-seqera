@@ -30,6 +30,7 @@ module.exports = function (RED) {
     node.depthProp = config.depth;
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
+    node.outputAllPolls = config.outputAllPolls || false;
 
     // Poll frequency configuration
     const unitMultipliers = {
@@ -100,7 +101,15 @@ module.exports = function (RED) {
         previousNamesSet = new Set(result.items.map((it) => it.name));
 
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
-        node.send([msgAll, msgNew]);
+
+        // Send to outputs based on configuration
+        if (node.outputAllPolls) {
+          // Two outputs: [All results, New results]
+          node.send([msgAll, msgNew]);
+        } else {
+          // Single output: [New results only]
+          node.send([msgNew]);
+        }
       } catch (err) {
         node.error(`Seqera datalink poll failed: ${err.message}`);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });

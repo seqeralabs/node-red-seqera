@@ -20,6 +20,11 @@
       <option value="days">Days</option>
     </select>
   </div>
+  <div class="form-row">
+    <label for="node-input-outputAllPolls">&nbsp;</label>
+    <input type="checkbox" id="node-input-outputAllPolls" style="width:auto; vertical-align:middle" />
+    <span style="margin-left:5px">Output all results on every poll</span>
+  </div>
 
   <!-- Data link parameters (same as list node) -->
   <div class="form-row">
@@ -67,6 +72,7 @@ Polls a Seqera Platform Data Explorer link at a fixed interval.
 ### Inputs
 
 : pollFrequency (string) : Poll frequency (default `15 minutes`). Can be configured in seconds, minutes, hours, or days.
+: outputAllPolls (boolean) : Enable the "All results" output (disabled by default).
 : dataLinkName (string) : The name of the data explorer link.
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
 : prefix (string) : Optional prefix filter for results (applies to folders and files)
@@ -79,10 +85,10 @@ All inputs support msg._, flow._, global.\*, env, or JSONata expressions via the
 
 ### Outputs
 
-The node has two outputs:
+The node has one or two outputs depending on configuration:
 
-1. All results on every poll.
-2. New objects since the previous poll (nothing sent if no new objects).
+1. **All results** (optional, disabled by default) – Emitted every poll with the full list of files.
+2. **New results** – Emitted only when new objects are detected since the previous poll.
 
 Both outputs have the following properties:
 
@@ -102,14 +108,19 @@ All typed-input fields are identical to the _List files_ node with the addition 
     category: "seqera",
     color: "#A9A1C6",
     inputs: 0,
-    outputs: 2,
+    outputs: 1,
     icon: "icons/data-explorer.svg",
     align: "left",
     paletteLabel: "Poll files",
     label: function () {
       return this.name || "Poll files";
     },
-    outputLabels: ["All objects", "Only new objects"],
+    outputLabels: function (index) {
+      if (this.outputAllPolls) {
+        return index === 0 ? "All objects" : "Only new objects";
+      }
+      return "Only new objects";
+    },
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
@@ -133,6 +144,7 @@ All typed-input fields are identical to the _List files_ node with the addition 
       pollFrequency: { value: "15" },
       pollUnits: { value: "minutes" },
       returnType: { value: "files" },
+      outputAllPolls: { value: false },
     },
     oneditprepare: function () {
       function ti(id, val, type, def = "str") {
@@ -153,6 +165,9 @@ All typed-input fields are identical to the _List files_ node with the addition 
       // Poll frequency – simple number input with units
       $("#node-input-pollFrequency").val(this.pollFrequency || "15");
       $("#node-input-pollUnits").val(this.pollUnits || "minutes");
+
+      // Output all polls checkbox
+      $("#node-input-outputAllPolls").prop("checked", this.outputAllPolls || false);
 
       $("#node-input-returnType").val(this.returnType || "files");
 
@@ -264,6 +279,10 @@ All typed-input fields are identical to the _List files_ node with the addition 
       // Save poll frequency and units
       this.pollFrequency = $("#node-input-pollFrequency").val();
       this.pollUnits = $("#node-input-pollUnits").val();
+
+      // Save output all polls checkbox and update outputs count
+      this.outputAllPolls = $("#node-input-outputAllPolls").prop("checked");
+      this.outputs = this.outputAllPolls ? 2 : 1;
 
       this.returnType = $("#node-input-returnType").val();
     },

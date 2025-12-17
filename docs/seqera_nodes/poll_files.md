@@ -29,18 +29,23 @@ This node automatically monitors a Data Link for _changes_, making it perfect fo
 -   **Max results** (default **100**): Maximum number of objects to return per poll.
 -   **Depth** (default **0**): Folder recursion depth.
 -   **Poll frequency** (default **15 min**): Interval between polls.
+-   **Output all results on every poll** (default **off**): When enabled, adds a second output that emits all files on every poll.
 -   **Workspace ID**: Override the workspace ID from the Config node.
 
 All properties work the same as the [list files](list_files.md) node, plus automatic polling.
 
-## Outputs (two)
+## Outputs
 
-The node has two outputs that fire at different times:
+By default, the node has a single output:
+
+1. **New results** – Emitted only when one or more _new_ objects are detected since the last poll.
+
+When **Output all results on every poll** is enabled, the node has two outputs:
 
 1. **All results** – Emitted every poll with the full, filtered list of files.
 2. **New results** – Emitted only when one or more _new_ objects are detected since the last poll.
 
-Both messages include the same properties:
+Both outputs include the same properties:
 
 -   `msg.payload.files` – Array of file objects from the API.
 -   `msg.payload.resourceType`, `msg.payload.resourceRef`, `msg.payload.provider` – Data Link metadata.
@@ -54,7 +59,7 @@ The node tracks seen files in its context storage. On each poll:
 
 1. Fetch the current list of files from the Data Link
 2. Compare against the list from the previous poll
-3. If new files are found, emit them on output 2
+3. If new files are found, emit them on the "New results" output
 4. Update the stored list for the next comparison
 
 The comparison is based on the full file path. Files that are deleted and re-uploaded will be detected as "new".
@@ -75,7 +80,7 @@ See the [configuration documentation](configuration.md#required-token-permission
 
 1. Add a **poll-files** node and configure the Data Link
 2. Set **pollFrequency** to your desired interval (e.g., `5:00` for 5 minutes)
-3. Connect output 2 (New results) to a **workflow-launch** node
+3. Connect the output (New results) to a **workflow-launch** node
 4. Configure the launch node to use the file paths from `msg.files`
 5. Deploy
 
@@ -84,7 +89,7 @@ Now every time a new file appears in the Data Link, a workflow will automaticall
 ### Trigger only on specific file types
 
 1. Set **pattern**: `.*\.bam$` to only detect BAM files
-2. Connect output 2 to your processing logic
+2. Connect the output to your processing logic
 3. The node will only emit when new BAM files appear
 
 ## Notes
