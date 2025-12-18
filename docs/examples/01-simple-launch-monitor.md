@@ -4,6 +4,10 @@
 
 ![01 - Simple launch + monitor.json](../img/example_flow_01.png)
 
+<div class="video-wrapper">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/7ieTV3fhV4Y?si=ETb-0S4G-W7MEC1T" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
 This is the most basic example workflow that demonstrates the core _Launch workflow_ and _Monitor workflow_ nodes.
 
 The flow consists of a simple sequence:

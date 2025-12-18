@@ -9,6 +9,20 @@
     <input type="text" id="node-input-name" />
   </div>
 
+  <!-- Data link parameters (same as list node) -->
+  <div class="form-row">
+    <label for="node-input-dataLinkName"><i class="fa fa-link"></i> Data link</label>
+    <input type="text" id="node-input-dataLinkName" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-returnType"><i class="fa fa-filter"></i> Return type</label>
+    <select id="node-input-returnType">
+      <option value="files">Files only</option>
+      <option value="folders">Folders only</option>
+      <option value="all">Everything</option>
+    </select>
+  </div>
+
   <!-- Polling specific -->
   <div class="form-row">
     <label for="node-input-pollFrequency"><i class="fa fa-clock-o"></i> Poll frequency</label>
@@ -20,20 +34,23 @@
       <option value="days">Days</option>
     </select>
   </div>
+  <div class="form-row">
+    <label for="node-input-outputAllPolls">
+      <i class="fa fa-refresh" aria-hidden="true"></i>
+      Every poll
+    </label>
+    <label for="node-input-outputAllPolls" style="width:70%">
+      <input
+        type="checkbox"
+        id="node-input-outputAllPolls"
+        style="display:inline-block; width:22px; vertical-align:top;"
+        autocomplete="off"
+      />
+      Show output port
+    </label>
+  </div>
 
-  <!-- Data link parameters (same as list node) -->
-  <div class="form-row">
-    <label for="node-input-dataLinkName"><i class="fa fa-link"></i> Data link name</label>
-    <input type="text" id="node-input-dataLinkName" />
-  </div>
-  <div class="form-row">
-    <label for="node-input-returnType"><i class="fa fa-filter"></i> Return type</label>
-    <select id="node-input-returnType">
-      <option value="files">Files only</option>
-      <option value="folders">Folders only</option>
-      <option value="all">Everything</option>
-    </select>
-  </div>
+  <!-- More specifics -->
   <div class="form-row">
     <label for="node-input-basePath"><i class="fa fa-folder-open-o"></i> Base path</label>
     <input type="text" id="node-input-basePath" />
@@ -66,30 +83,37 @@ Polls a Seqera Platform Data Explorer link at a fixed interval.
 
 ### Inputs
 
-: pollFrequency (string) : Poll frequency (default `15 minutes`). Can be configured in seconds, minutes, hours, or days.
 : dataLinkName (string) : The name of the data explorer link.
+: returnType (string) : Select whether to return files, folders or everything.
+: pollFrequency (string) : Poll frequency (default `15 minutes`). Can be configured in seconds, minutes, hours, or days.
+: outputAllPolls (boolean) : Show the "every poll" output port. Emits an output file listing on every poll event, irrespective of changes (disabled by default).
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
 : prefix (string) : Optional prefix filter for results (applies to folders and files)
 : pattern (string) : Optional regex pattern filter for results (applies to files only)
-: returnType (string) : Select whether to return files, folders or everything.
 : maxResults (number) : Maximum number of results to return (default 100).
+: depth (number) : Folder recursion depth (default 0).
 : workspaceId (string) : Override the workspace ID from the config node.
 
-All inputs support msg._, flow._, global.\*, env, or JSONata expressions via the **typedInput**.
+All inputs support `msg`, `flow`, `global`, `env`, or JSONata expressions via the **typedInput**.
 
 ### Outputs
 
-The node has two outputs:
+The node has two or three outputs depending on configuration:
 
-1. All results on every poll.
-2. New objects since the previous poll (nothing sent if no new objects).
+1. **All results** (optional, disabled by default) - Emitted every poll with the full list of files.
+2. **New results** - Emitted only when new objects are detected since the previous poll.
+3. **Deleted results** - Emitted only when objects are deleted since the previous poll.
 
-Both outputs have the following properties:
+All outputs have the following properties:
 
-: payload (array) : Fle information aggregated from the API (array of objects).
+: payload (array) : File information aggregated from the API (array of objects).
 : files (array) : File names (array of strings).
 
-All typed-input fields are identical to the _List files_ node with the addition of **poll frequency**.
+The "All results" output also includes:
+
+: payload.nextPoll (string) : ISO timestamp of the next scheduled poll.
+: payload.pollIntervalSeconds (number) : Poll interval duration in seconds.
+
 </script>
 
 <script type="text/javascript">
@@ -104,7 +128,14 @@ All typed-input fields are identical to the _List files_ node with the addition 
     label: function () {
       return this.name || "Poll files";
     },
-    outputLabels: ["All objects", "Only new objects"],
+    outputLabels: function (index) {
+      if (this.outputAllPolls) {
+        // 3 outputs: All, New, Deleted
+        return ["All objects", "New objects", "Deleted objects"][index];
+      }
+      // 2 outputs: New, Deleted
+      return ["New objects", "Deleted objects"][index];
+    },
     defaults: {
       name: { value: "" },
       seqera: { value: "", type: "seqera-config" },
@@ -128,6 +159,7 @@ All typed-input fields are identical to the _List files_ node with the addition 
       pollFrequency: { value: "15" },
       pollUnits: { value: "minutes" },
       returnType: { value: "files" },
+      outputAllPolls: { value: false },
     },
     oneditprepare: function () {
       function ti(id, val, type, def = "str") {
@@ -148,6 +180,9 @@ All typed-input fields are identical to the _List files_ node with the addition 
       // Poll frequency – simple number input with units
       $("#node-input-pollFrequency").val(this.pollFrequency || "15");
       $("#node-input-pollUnits").val(this.pollUnits || "minutes");
+
+      // Output all polls checkbox
+      $("#node-input-outputAllPolls").prop("checked", this.outputAllPolls || false);
 
       $("#node-input-returnType").val(this.returnType || "files");
 
@@ -259,6 +294,10 @@ All typed-input fields are identical to the _List files_ node with the addition 
       // Save poll frequency and units
       this.pollFrequency = $("#node-input-pollFrequency").val();
       this.pollUnits = $("#node-input-pollUnits").val();
+
+      // Save output all polls checkbox and update outputs count
+      this.outputAllPolls = $("#node-input-outputAllPolls").prop("checked");
+      this.outputs = this.outputAllPolls ? 3 : 2;
 
       this.returnType = $("#node-input-returnType").val();
     },

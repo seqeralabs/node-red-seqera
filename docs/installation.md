@@ -8,6 +8,10 @@ The Node-RED [Getting Started docs](https://nodered.org/docs/getting-started/) i
 
 ![Node-RED installation locations](img/node-red-install-icons.svg)
 
+<div class="video-wrapper">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/bSlNY9dMcQw?si=3J8DLX66E86ITCPz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
 ### Using Seqera Studios
 
 In addition to the base Docker image, the repo has an image specifically designed to run within [Seqera Studios](https://seqera.io/platform/studios/), called `ghcr.io/seqeralabs/node-red-seqera-studios` (note `-studios` suffix).

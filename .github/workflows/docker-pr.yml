@@ -1,0 +1,235 @@
+name: "Docker PR Build"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths-ignore: ["**/*.{md,svg,png}"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BASE: ${{ github.repository }}
+  IMAGE_NAME_STUDIOS: ${{ github.repository }}-studios
+
+jobs:
+  # Post initial "Building..." comment
+  pr-comment-start:
+    if: |
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- node-red-seqera-docker-pr-build -->"
+
+      - name: Post or update comment (building)
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- node-red-seqera-docker-pr-build -->
+            ## 🐳 Docker PR Build
+
+            |            |               |
+            |------------|---------------|
+            | **Status** | 🔄 Building... |
+            | **Commit** | `${{ github.event.pull_request.head.sha }}` |
+
+  # Build both Docker images in parallel
+  build:
+    if: |
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action != 'closed'
+    needs: pr-comment-start
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - dockerfile: docker/Dockerfile
+            image_name: ghcr.io/${{ github.repository }}
+            artifact_name: build-metadata-standard
+          - dockerfile: docker/studios.Dockerfile
+            image_name: ghcr.io/${{ github.repository }}-studios
+            artifact_name: build-metadata-studios
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    outputs:
+      pr-tag: pr-${{ github.event.pull_request.number }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ matrix.image_name }}
+          tags: |
+            type=raw,value=pr-${{ github.event.pull_request.number }}
+            type=raw,value=pr-${{ github.event.pull_request.number }}-${{ github.sha }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            CONNECT_CLIENT_VERSION=0.8
+
+      - name: Create build metadata
+        run: |
+          mkdir -p metadata
+          cat > metadata/build-info.json << EOF
+          {
+            "image_name": "${{ matrix.image_name }}",
+            "tags": "${{ steps.meta.outputs.tags }}",
+            "dockerfile": "${{ matrix.dockerfile }}",
+            "digest": "${{ steps.push.outputs.digest }}",
+            "success": true
+          }
+          EOF
+
+      - name: Upload build metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: metadata/build-info.json
+          retention-days: 1
+
+  # Update comment with build results
+  pr-comment-update:
+    if: |
+      always() &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action != 'closed'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download standard build metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: build-metadata-standard
+          path: metadata-standard
+        continue-on-error: true
+
+      - name: Download studios build metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: build-metadata-studios
+          path: metadata-studios
+        continue-on-error: true
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- node-red-seqera-docker-pr-build -->"
+
+      - name: Update comment (success)
+        if: needs.build.result == 'success'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- node-red-seqera-docker-pr-build -->
+            ## 🐳 Docker PR Build
+
+            |              |                      |
+            |--------------|----------------------|
+            | **Status**   | ✅ Built successfully |
+            | **Commit**   | `${{ github.event.pull_request.head.sha }}` |
+            | **Standard** | `ghcr.io/${{ github.repository }}:pr-${{ github.event.pull_request.number }}` |
+            | **Studios**  | `ghcr.io/${{ github.repository }}-studios:pr-${{ github.event.pull_request.number }}` |
+
+            [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Update comment (failure)
+        if: needs.build.result != 'success'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- node-red-seqera-docker-pr-build -->
+            ## 🐳 Docker PR Build
+
+            |            |                |
+            |------------|----------------|
+            | **Status** | ❌ Build failed |
+            | **Commit** | `${{ github.event.pull_request.head.sha }}` |
+
+            One or more Docker image builds failed. Check the workflow logs for details.
+
+            [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+  # Cleanup PR images when PR is closed
+  cleanup:
+    if: |
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Delete PR images
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const packages = ['node-red-seqera', 'node-red-seqera-studios'];
+            const pr_number = context.payload.pull_request.number;
+            const pr_prefix = `pr-${pr_number}`;
+
+            for (const package_name of packages) {
+              try {
+                const versions = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                  package_type: 'container',
+                  package_name: package_name,
+                  org: context.repo.owner,
+                  per_page: 100
+                });
+
+                for (const version of versions.data) {
+                  const tags = version.metadata?.container?.tags || [];
+                  if (tags.some(tag => tag === pr_prefix || tag.startsWith(`${pr_prefix}-`))) {
+                    console.log(`Deleting ${package_name} version ${version.id} with tags: ${tags.join(', ')}`);
+                    await github.rest.packages.deletePackageVersionForOrg({
+                      package_type: 'container',
+                      package_name: package_name,
+                      org: context.repo.owner,
+                      package_version_id: version.id
+                    });
+                  }
+                }
+              } catch (error) {
+                console.log(`Error processing ${package_name}: ${error.message}`);
+              }
+            }

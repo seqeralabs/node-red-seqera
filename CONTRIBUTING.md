@@ -86,6 +86,53 @@ After making code changes:
 -   **JavaScript files (`.js`)**: Restart Node-RED
 -   **HTML files (`.html`)**: Refresh your browser (Ctrl+Shift+R / Cmd+Shift+R)
 
+## Running Tests
+
+This project uses [Mocha](https://mochajs.org/) for testing with [node-red-node-test-helper](https://github.com/node-red/node-red-node-test-helper) for Node-RED integration testing.
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests with lcov output (for CI)
+npm run test:ci
+```
+
+### Test Structure
+
+Tests are located in the `test/` directory:
+
+-   `test/helper.js` - Shared test utilities and mock factories
+-   `test/*_spec.js` - Test files for each node (following Node-RED naming convention)
+
+Each test file covers:
+
+-   Node loading and configuration
+-   Input message handling
+-   API call mocking (using [nock](https://github.com/nock/nock))
+-   Output message verification
+-   Error handling
+
+### Writing Tests
+
+When adding new nodes or modifying existing ones, please add or update tests accordingly. Tests should:
+
+1. Use the shared helper functions from `test/helper.js`
+2. Mock all external API calls with nock
+3. Test both success and error paths
+4. Verify message passthrough (custom properties preserved)
+
 ## Docker Development
 
 The project has two Docker images includeed, that bundle and customise a Node-RED installation and come with the Seqera nodes pre-installed.

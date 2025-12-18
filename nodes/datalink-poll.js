@@ -30,41 +30,18 @@ module.exports = function (RED) {
     node.depthProp = config.depth;
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
+    node.outputAllPolls = config.outputAllPolls || false;
 
-    // Poll-specific property (legacy minutes value retained for backward compatibility)
-    // This will be overridden by the new seconds-based duration parser below.
-
-    // Poll-specific property (seconds)
-    const parseDurationToSeconds = (value) => {
-      if (typeof value === "number") return value;
-      if (typeof value !== "string") return NaN;
-      const v = value.trim();
-      let m;
-      // DD-HH:MM:SS
-      if ((m = v.match(/^(\d+)-(\d{1,2}):(\d{1,2}):(\d{1,2})$/))) {
-        const [, dd, hh, mm, ss] = m.map(Number);
-        return dd * 86400 + hh * 3600 + mm * 60 + ss;
-      }
-      // HH:MM:SS
-      if ((m = v.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})$/))) {
-        const [, hh, mm, ss] = m.map(Number);
-        return hh * 3600 + mm * 60 + ss;
-      }
-      // MM:SS
-      if ((m = v.match(/^(\d{1,2}):(\d{1,2})$/))) {
-        const [, mm, ss] = m.map(Number);
-        return mm * 60 + ss;
-      }
-      // SS
-      if (/^\d+$/.test(v)) {
-        return parseInt(v, 10);
-      }
-      return NaN;
+    // Poll frequency configuration
+    const unitMultipliers = {
+      seconds: 1,
+      minutes: 60,
+      hours: 3600,
+      days: 86400,
     };
-
-    // Poll-specific property (seconds)
-    const pollSecs = parseDurationToSeconds(config.pollFrequency);
-    node.pollFrequencySec = !pollSecs || Number.isNaN(pollSecs) ? 15 * 60 : pollSecs;
+    const pollValue = parseInt(config.pollFrequency, 10) || 15;
+    const pollUnits = config.pollUnits || "minutes";
+    node.pollFrequencySec = pollValue * (unitMultipliers[pollUnits] || 60);
 
     // Reference config node & defaults
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
@@ -98,11 +75,15 @@ module.exports = function (RED) {
             resourceRef: result.resourceRef,
             provider: result.provider,
             nextPoll: new Date(Date.now() + node.pollFrequencySec * 1000).toISOString(),
+            pollIntervalSeconds: node.pollFrequencySec,
           },
           files: result.files.map((it) => `${result.resourceRef}/${it}`),
         };
 
-        // Second output: only new items since previous poll
+        // Build set of current names for comparison
+        const currentNamesSet = new Set(result.items.map((it) => it.name));
+
+        // New items since previous poll
         let msgNew = null;
         if (previousNamesSet) {
           const newItems = result.items.filter((it) => !previousNamesSet.has(it.name));
@@ -119,11 +100,36 @@ module.exports = function (RED) {
           }
         }
 
+        // Deleted items since previous poll
+        let msgDeleted = null;
+        if (previousNamesSet) {
+          const deletedNames = [...previousNamesSet].filter((name) => !currentNamesSet.has(name));
+          if (deletedNames.length) {
+            msgDeleted = {
+              payload: {
+                files: deletedNames.map((name) => ({ name })),
+                resourceType: result.resourceType,
+                resourceRef: result.resourceRef,
+                provider: result.provider,
+              },
+              files: deletedNames.map((name) => `${result.resourceRef}/${name}`),
+            };
+          }
+        }
+
         // Update cache
-        previousNamesSet = new Set(result.items.map((it) => it.name));
+        previousNamesSet = currentNamesSet;
 
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
-        node.send([msgAll, msgNew]);
+
+        // Send to outputs based on configuration
+        if (node.outputAllPolls) {
+          // Three outputs: [All results, New results, Deleted results]
+          node.send([msgAll, msgNew, msgDeleted]);
+        } else {
+          // Two outputs: [New results, Deleted results]
+          node.send([msgNew, msgDeleted]);
+        }
       } catch (err) {
         node.error(`Seqera datalink poll failed: ${err.message}`);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
@@ -131,15 +137,18 @@ module.exports = function (RED) {
     };
 
     // Start the polling interval
+    let intervalId = null;
     if (node.seqeraConfig && config.dataLinkName && config.dataLinkName.trim() !== "") {
       const intervalMs = node.pollFrequencySec * 1000;
-      const intervalId = setInterval(executePoll, intervalMs);
+      intervalId = setInterval(executePoll, intervalMs);
       // run once immediately
       executePoll();
     }
 
     node.on("close", () => {
-      clearInterval(intervalId);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     });
   }
 

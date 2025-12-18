@@ -4,6 +4,10 @@
 
 ![02 - Launch on file upload.json](../img/example_flow_02.png)
 
+<div class="video-wrapper">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/jGRM22J74UU?si=-yZqv1eEFEmYlUfI&amp;start=235" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
 This flow uses the _Poll files_ node to periodically check for the presence
 of a file called `RTAcomplete.txt` within a Seqera Data Link (eg. an s3 bucket).
 

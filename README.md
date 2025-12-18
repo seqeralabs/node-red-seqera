@@ -19,6 +19,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 
 -   [Launch a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/launch_workflow/)
 -   [Monitor a workflow](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/monitor_workflow/)
+-   [Poll Workflows](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/poll_workflows/)
 -   [Add Dataset](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/add_dataset/)
 -   [List Files from Data Explorer](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/list_files/)
 -   [Poll Data Link Files](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/poll_files/)
@@ -54,6 +55,16 @@ This package includes several example flows which you can import and repurpose:
 
 Use via the Node-RED menu under _Import_ > _Examples_ > _@seqera/node-red-seqera_.
 See the [example docs](https://seqeralabs.github.io/node-red-seqera/examples/) for more information.
+
+## Video tutorials
+
+Prefer video to text? Check out the [YouTube Playlist of tutorial videos](https://youtube.com/playlist?list=PL_mgzF8qwHud1pOSurWKO8eDJIqE-_NHi&si=StMNRsyMa9JOjBa8), taking you through installation, Node-RED fundamentals and the different examples!
+
+<div align="center">
+
+[![YouTube tutorial playlist](docs/img/youtube-tutorials-introduction.png)](https://youtube.com/playlist?list=PL_mgzF8qwHud1pOSurWKO8eDJIqE-_NHi&si=StMNRsyMa9JOjBa8)
+
+</div>
 
 # Quick start
 

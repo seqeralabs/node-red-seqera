@@ -15,6 +15,7 @@ nav:
       - seqera_nodes/configuration.md
       - seqera_nodes/launch_workflow.md
       - seqera_nodes/monitor_workflow.md
+      - seqera_nodes/poll_workflows.md
       - seqera_nodes/add_dataset.md
       - seqera_nodes/list_files.md
       - seqera_nodes/poll_files.md
