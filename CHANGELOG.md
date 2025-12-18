@@ -9,8 +9,7 @@
 -   Add GitHub Actions workflow for preview docker images for PRs [#28](https://github.com/seqeralabs/node-red-seqera/pull/28)
 -   Add CI testing with mocha [#26](https://github.com/seqeralabs/node-red-seqera/pull/26)
 
-**Warning**: The change in the available ports on this node could affect your workflows.
-Please update with care - make sure that the correct output ports are still connected!
+**Warning**: The change in the "Poll files" available ports on this node could affect your workflows. Please update with care - make sure that the correct output ports are still connected!
 
 ## [1.4.1] - 2025-11-16
 
