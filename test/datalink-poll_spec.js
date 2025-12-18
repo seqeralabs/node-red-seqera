@@ -299,7 +299,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -428,7 +429,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "1",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -504,7 +506,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -558,7 +561,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "1",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -631,7 +635,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], []],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], [], []],
         },
         { id: "helper1", type: "helper" },
       ];
@@ -670,7 +675,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], []],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], [], []],
         },
         { id: "helper1", type: "helper" },
       ];
@@ -781,7 +787,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "1",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], []],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], [], []],
         },
         { id: "helper1", type: "helper" },
       ];
