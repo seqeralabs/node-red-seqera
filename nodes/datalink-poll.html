@@ -83,25 +83,26 @@ Polls a Seqera Platform Data Explorer link at a fixed interval.
 
 ### Inputs
 
-: pollFrequency (string) : Poll frequency (default `15 minutes`). Can be configured in seconds, minutes, hours, or days.
-: outputAllPolls (boolean) : Enable the "All results" output (disabled by default).
 : dataLinkName (string) : The name of the data explorer link.
+: returnType (string) : Select whether to return files, folders or everything.
+: pollFrequency (string) : Poll frequency (default `15 minutes`). Can be configured in seconds, minutes, hours, or days.
+: outputAllPolls (boolean) : Show the "every poll" output port. Emits an output file listing on every poll event, irrespective of changes (disabled by default).
 : basePath (string) : Path within the data link to start browsing. Leave blank for the root.
 : prefix (string) : Optional prefix filter for results (applies to folders and files)
 : pattern (string) : Optional regex pattern filter for results (applies to files only)
-: returnType (string) : Select whether to return files, folders or everything.
 : maxResults (number) : Maximum number of results to return (default 100).
+: depth (number) : Folder recursion depth (default 0).
 : workspaceId (string) : Override the workspace ID from the config node.
 
-All inputs support msg._, flow._, global.\*, env, or JSONata expressions via the **typedInput**.
+All inputs support `msg`, `flow`, `global`, `env`, or JSONata expressions via the **typedInput**.
 
 ### Outputs
 
 The node has two or three outputs depending on configuration:
 
-1. **All results** (optional, disabled by default) – Emitted every poll with the full list of files.
-2. **New results** – Emitted only when new objects are detected since the previous poll.
-3. **Deleted results** – Emitted only when objects are deleted since the previous poll.
+1. **All results** (optional, disabled by default) - Emitted every poll with the full list of files.
+2. **New results** - Emitted only when new objects are detected since the previous poll.
+3. **Deleted results** - Emitted only when objects are deleted since the previous poll.
 
 All outputs have the following properties:
 
@@ -113,7 +114,6 @@ The "All results" output also includes:
 : payload.nextPoll (string) : ISO timestamp of the next scheduled poll.
 : payload.pollIntervalSeconds (number) : Poll interval duration in seconds.
 
-All typed-input fields are identical to the _List files_ node with the addition of **poll frequency**.
 </script>
 
 <script type="text/javascript">
