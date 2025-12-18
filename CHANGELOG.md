@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.0] - 2025-12-18
+
+-   💥 Breaking change: Poll files node
+    -   Added `pollIntervalSeconds` field to output payload alongside `nextPoll`
+    -   "Every poll" output port is now hidden by default, with a checkbox option to enable it
+    -   Added new "Deleted results" output that fires when files are removed from the Data Link
+
+**Warning**: The change in the available ports on this node could affect your workflows.
+Please update with care - make sure that the correct output ports are still connected!
+
 ## [1.4.1] - 2025-11-16
 
 -   Bugfix: Don't use absolute paths for internal API calls for config setup

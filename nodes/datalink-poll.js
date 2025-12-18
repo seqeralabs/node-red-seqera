@@ -30,6 +30,7 @@ module.exports = function (RED) {
     node.depthProp = config.depth;
     node.depthPropType = config.depthType;
     node.returnType = config.returnType || "files"; // files|folders|all
+    node.outputAllPolls = config.outputAllPolls || false;
 
     // Poll frequency configuration
     const unitMultipliers = {
@@ -74,11 +75,15 @@ module.exports = function (RED) {
             resourceRef: result.resourceRef,
             provider: result.provider,
             nextPoll: new Date(Date.now() + node.pollFrequencySec * 1000).toISOString(),
+            pollIntervalSeconds: node.pollFrequencySec,
           },
           files: result.files.map((it) => `${result.resourceRef}/${it}`),
         };
 
-        // Second output: only new items since previous poll
+        // Build set of current names for comparison
+        const currentNamesSet = new Set(result.items.map((it) => it.name));
+
+        // New items since previous poll
         let msgNew = null;
         if (previousNamesSet) {
           const newItems = result.items.filter((it) => !previousNamesSet.has(it.name));
@@ -95,11 +100,36 @@ module.exports = function (RED) {
           }
         }
 
+        // Deleted items since previous poll
+        let msgDeleted = null;
+        if (previousNamesSet) {
+          const deletedNames = [...previousNamesSet].filter((name) => !currentNamesSet.has(name));
+          if (deletedNames.length) {
+            msgDeleted = {
+              payload: {
+                files: deletedNames.map((name) => ({ name })),
+                resourceType: result.resourceType,
+                resourceRef: result.resourceRef,
+                provider: result.provider,
+              },
+              files: deletedNames.map((name) => `${result.resourceRef}/${name}`),
+            };
+          }
+        }
+
         // Update cache
-        previousNamesSet = new Set(result.items.map((it) => it.name));
+        previousNamesSet = currentNamesSet;
 
         node.status({ fill: "green", shape: "dot", text: `${result.items.length} items: ${formatDateTime()}` });
-        node.send([msgAll, msgNew]);
+
+        // Send to outputs based on configuration
+        if (node.outputAllPolls) {
+          // Three outputs: [All results, New results, Deleted results]
+          node.send([msgAll, msgNew, msgDeleted]);
+        } else {
+          // Two outputs: [New results, Deleted results]
+          node.send([msgNew, msgDeleted]);
+        }
       } catch (err) {
         node.error(`Seqera datalink poll failed: ${err.message}`);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });

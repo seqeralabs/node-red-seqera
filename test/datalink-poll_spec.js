@@ -3,7 +3,9 @@
  *
  * Tests the Data Link polling functionality including:
  * - Automatic polling at configurable intervals
- * - Two outputs: All items, New items (detected since last poll)
+ * - Configurable output modes: 2 outputs (New, Deleted) or 3 outputs (All, New, Deleted)
+ * - New file detection since last poll
+ * - Deleted file detection since last poll
  * - Filtering by prefix and pattern
  * - Poll frequency unit conversion (seconds, minutes, hours, days)
  */
@@ -29,9 +31,9 @@ describe("seqera-datalink-poll Node", function () {
   });
 
   afterEach(function (done) {
+    nock.cleanAll();
     helper.unload();
     helper.stopServer(done);
-    nock.cleanAll();
   });
 
   // Helper to set up standard datalink API mocks
@@ -299,7 +301,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -428,7 +431,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "1",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -504,7 +508,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -558,7 +563,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "1",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], ["helper2"]],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], ["helper2"], []],
         },
         { id: "helper1", type: "helper" },
         { id: "helper2", type: "helper" },
@@ -631,7 +637,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], []],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], [], []],
         },
         { id: "helper1", type: "helper" },
       ];
@@ -670,7 +677,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "60",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], []],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], [], []],
         },
         { id: "helper1", type: "helper" },
       ];
@@ -765,6 +773,368 @@ describe("seqera-datalink-poll Node", function () {
     });
   });
 
+  describe("deleted file detection", function () {
+    it("should detect deleted files on subsequent polls", function (done) {
+      this.timeout(5000);
+
+      const flow = [
+        createConfigNode(),
+        {
+          id: "poll1",
+          type: "seqera-datalink-poll",
+          name: "Test Datalink Poll",
+          seqera: "config-node-1",
+          dataLinkName: "my-datalink",
+          dataLinkNameType: "str",
+          pollFrequency: "1",
+          pollUnits: "seconds",
+          returnType: "all",
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [[], [], ["helper3"]],
+        },
+        { id: "helper3", type: "helper" },
+      ];
+
+      let pollCount = 0;
+
+      nock(DEFAULT_BASE_URL)
+        .get("/data-links/")
+        .query(true)
+        .reply(
+          200,
+          createDataLinksResponse([
+            { id: "dl-123", name: "my-datalink", provider: "aws", resourceRef: "s3://bucket/data", credentials: [] },
+          ]),
+        )
+        .persist();
+
+      // First poll: return 3 files
+      // Second poll: return 2 files (1 deleted)
+      nock(DEFAULT_BASE_URL)
+        .get(/\/data-links\/dl-123\/browse/)
+        .query(true)
+        .reply(200, function () {
+          pollCount++;
+          if (pollCount === 1) {
+            return createDataBrowserResponse([
+              { name: "file1.txt", type: "FILE", size: 1024 },
+              { name: "file2.csv", type: "FILE", size: 2048 },
+              { name: "file3.txt", type: "FILE", size: 512 },
+            ]);
+          }
+          // file2.csv is deleted
+          return createDataBrowserResponse([
+            { name: "file1.txt", type: "FILE", size: 1024 },
+            { name: "file3.txt", type: "FILE", size: 512 },
+          ]);
+        })
+        .persist();
+
+      helper.load([configNode, datalinkPollNode], flow, createCredentials(), function () {
+        const pollNode = helper.getNode("poll1");
+        const helper3 = helper.getNode("helper3");
+
+        helper3.on("input", function (msg) {
+          try {
+            // Output 3 should only contain the deleted file
+            expect(msg.payload.files).to.have.length(1);
+            expect(msg.payload.files[0].name).to.equal("file2.csv");
+            expect(msg.files).to.have.length(1);
+            expect(msg.files[0]).to.include("file2.csv");
+            pollNode.close();
+            done();
+          } catch (err) {
+            pollNode.close();
+            done(err);
+          }
+        });
+      });
+    });
+
+    it("should detect multiple deleted files", function (done) {
+      this.timeout(5000);
+
+      const flow = [
+        createConfigNode(),
+        {
+          id: "poll1",
+          type: "seqera-datalink-poll",
+          name: "Test Datalink Poll",
+          seqera: "config-node-1",
+          dataLinkName: "my-datalink",
+          dataLinkNameType: "str",
+          pollFrequency: "1",
+          pollUnits: "seconds",
+          returnType: "all",
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [[], [], ["helper3"]],
+        },
+        { id: "helper3", type: "helper" },
+      ];
+
+      let pollCount = 0;
+
+      nock(DEFAULT_BASE_URL)
+        .get("/data-links/")
+        .query(true)
+        .reply(
+          200,
+          createDataLinksResponse([
+            { id: "dl-123", name: "my-datalink", provider: "aws", resourceRef: "s3://bucket/data", credentials: [] },
+          ]),
+        )
+        .persist();
+
+      nock(DEFAULT_BASE_URL)
+        .get(/\/data-links\/dl-123\/browse/)
+        .query(true)
+        .reply(200, function () {
+          pollCount++;
+          if (pollCount === 1) {
+            return createDataBrowserResponse([
+              { name: "file1.txt", type: "FILE", size: 1024 },
+              { name: "file2.csv", type: "FILE", size: 2048 },
+              { name: "file3.txt", type: "FILE", size: 512 },
+              { name: "file4.txt", type: "FILE", size: 256 },
+            ]);
+          }
+          // Keep only file1.txt, delete the rest
+          return createDataBrowserResponse([{ name: "file1.txt", type: "FILE", size: 1024 }]);
+        })
+        .persist();
+
+      helper.load([configNode, datalinkPollNode], flow, createCredentials(), function () {
+        const pollNode = helper.getNode("poll1");
+        const helper3 = helper.getNode("helper3");
+
+        helper3.on("input", function (msg) {
+          try {
+            expect(msg.payload.files).to.have.length(3);
+            const names = msg.payload.files.map((f) => f.name);
+            expect(names).to.include("file2.csv");
+            expect(names).to.include("file3.txt");
+            expect(names).to.include("file4.txt");
+            pollNode.close();
+            done();
+          } catch (err) {
+            pollNode.close();
+            done(err);
+          }
+        });
+      });
+    });
+
+    it("should not send to deleted output on first poll", function (done) {
+      this.timeout(3000);
+
+      const flow = [
+        createConfigNode(),
+        {
+          id: "poll1",
+          type: "seqera-datalink-poll",
+          name: "Test Datalink Poll",
+          seqera: "config-node-1",
+          dataLinkName: "my-datalink",
+          dataLinkNameType: "str",
+          pollFrequency: "60",
+          pollUnits: "seconds",
+          returnType: "all",
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], [], ["helper3"]],
+        },
+        { id: "helper1", type: "helper" },
+        { id: "helper3", type: "helper" },
+      ];
+
+      setupDatalinkMocks();
+
+      helper.load([configNode, datalinkPollNode], flow, createCredentials(), function () {
+        const pollNode = helper.getNode("poll1");
+        const helper1 = helper.getNode("helper1");
+        const helper3 = helper.getNode("helper3");
+
+        let output1Received = false;
+        let output3Received = false;
+
+        helper1.on("input", function (msg) {
+          output1Received = true;
+        });
+
+        helper3.on("input", function (msg) {
+          output3Received = true;
+        });
+
+        // Wait a bit and verify output 3 was not triggered
+        setTimeout(function () {
+          try {
+            expect(output1Received).to.be.true;
+            expect(output3Received).to.be.false;
+            pollNode.close();
+            done();
+          } catch (err) {
+            pollNode.close();
+            done(err);
+          }
+        }, 1000);
+      });
+    });
+  });
+
+  describe("outputAllPolls configuration", function () {
+    it("should default outputAllPolls to false", function (done) {
+      const flow = [
+        createConfigNode(),
+        {
+          id: "poll1",
+          type: "seqera-datalink-poll",
+          name: "Test Datalink Poll",
+          seqera: "config-node-1",
+          dataLinkName: "my-datalink",
+          dataLinkNameType: "str",
+          pollFrequency: "15",
+          pollUnits: "minutes",
+          // outputAllPolls not specified
+          wires: [[], []],
+        },
+      ];
+
+      setupDatalinkMocks();
+
+      helper.load([configNode, datalinkPollNode], flow, createCredentials(), function () {
+        const n1 = helper.getNode("poll1");
+        try {
+          expect(n1.outputAllPolls).to.be.false;
+          n1.close();
+          done();
+        } catch (err) {
+          n1.close();
+          done(err);
+        }
+      });
+    });
+
+    it("should use 2-output mode when outputAllPolls is false", function (done) {
+      this.timeout(5000);
+
+      const flow = [
+        createConfigNode(),
+        {
+          id: "poll1",
+          type: "seqera-datalink-poll",
+          name: "Test Datalink Poll",
+          seqera: "config-node-1",
+          dataLinkName: "two-output-datalink", // Use unique name to avoid mock conflicts
+          dataLinkNameType: "str",
+          pollFrequency: "1",
+          pollUnits: "seconds",
+          returnType: "all",
+          outputAllPolls: false, // 2-output mode: [New, Deleted]
+          wires: [["helper1"], ["helper2"]],
+        },
+        { id: "helper1", type: "helper" },
+        { id: "helper2", type: "helper" },
+      ];
+
+      let pollCount = 0;
+
+      nock(DEFAULT_BASE_URL)
+        .get("/data-links/")
+        .query((query) => query.search === "two-output-datalink")
+        .reply(
+          200,
+          createDataLinksResponse([
+            {
+              id: "dl-two-output",
+              name: "two-output-datalink",
+              provider: "aws",
+              resourceRef: "s3://bucket/two-output",
+              credentials: [],
+            },
+          ]),
+        )
+        .persist();
+
+      // First poll: return 2 files
+      // Second poll: return 3 files (1 new)
+      nock(DEFAULT_BASE_URL)
+        .get(/\/data-links\/dl-two-output\/browse/)
+        .query(true)
+        .reply(200, function () {
+          pollCount++;
+          if (pollCount === 1) {
+            return createDataBrowserResponse([
+              { name: "file1.txt", type: "FILE", size: 1024 },
+              { name: "file2.csv", type: "FILE", size: 2048 },
+            ]);
+          }
+          // Add file3.txt as new
+          return createDataBrowserResponse([
+            { name: "file1.txt", type: "FILE", size: 1024 },
+            { name: "file2.csv", type: "FILE", size: 2048 },
+            { name: "file3-new.txt", type: "FILE", size: 512 },
+          ]);
+        })
+        .persist();
+
+      helper.load([configNode, datalinkPollNode], flow, createCredentials(), function () {
+        const pollNode = helper.getNode("poll1");
+        const helper1 = helper.getNode("helper1"); // New results (output 1 in 2-output mode)
+
+        helper1.on("input", function (msg) {
+          try {
+            // In 2-output mode, output 1 is "New results"
+            expect(msg.payload.files).to.have.length(1);
+            expect(msg.payload.files[0].name).to.equal("file3-new.txt");
+            pollNode.close();
+            done();
+          } catch (err) {
+            pollNode.close();
+            done(err);
+          }
+        });
+      });
+    });
+
+    it("should include pollIntervalSeconds in All results output", function (done) {
+      const flow = [
+        createConfigNode(),
+        {
+          id: "poll1",
+          type: "seqera-datalink-poll",
+          name: "Test Datalink Poll",
+          seqera: "config-node-1",
+          dataLinkName: "my-datalink",
+          dataLinkNameType: "str",
+          pollFrequency: "5",
+          pollUnits: "minutes",
+          returnType: "all",
+          outputAllPolls: true, // Enable 3-output mode to get All results output
+          wires: [["helper1"], [], []],
+        },
+        { id: "helper1", type: "helper" },
+      ];
+
+      setupDatalinkMocks();
+
+      helper.load([configNode, datalinkPollNode], flow, createCredentials(), function () {
+        const pollNode = helper.getNode("poll1");
+        const helper1 = helper.getNode("helper1");
+
+        helper1.on("input", function (msg) {
+          try {
+            expect(msg.payload.pollIntervalSeconds).to.equal(300); // 5 minutes = 300 seconds
+            expect(msg.payload.nextPoll).to.be.a("string");
+            pollNode.close();
+            done();
+          } catch (err) {
+            pollNode.close();
+            done(err);
+          }
+        });
+      });
+    });
+  });
+
   describe("cleanup on close", function () {
     it("should clear interval when node is closed", function (done) {
       this.timeout(5000);
@@ -781,7 +1151,8 @@ describe("seqera-datalink-poll Node", function () {
           pollFrequency: "1",
           pollUnits: "seconds",
           returnType: "all",
-          wires: [["helper1"], []],
+          outputAllPolls: true, // Enable 3-output mode: [All, New, Deleted]
+          wires: [["helper1"], [], []],
         },
         { id: "helper1", type: "helper" },
       ];
