@@ -200,20 +200,36 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Delete standard PR image
-        uses: actions/delete-package-versions@v5
+      - name: Delete PR images
+        uses: actions/github-script@v7
         with:
-          package-name: node-red-seqera
-          package-type: container
-          delete-only-untagged-versions: false
-          ignore-versions: "^(?!pr-${{ github.event.pull_request.number }}($|-)).*$"
-        continue-on-error: true
+          script: |
+            const packages = ['node-red-seqera', 'node-red-seqera-studios'];
+            const pr_number = context.payload.pull_request.number;
+            const pr_prefix = `pr-${pr_number}`;
 
-      - name: Delete studios PR image
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: node-red-seqera-studios
-          package-type: container
-          delete-only-untagged-versions: false
-          ignore-versions: "^(?!pr-${{ github.event.pull_request.number }}($|-)).*$"
-        continue-on-error: true
+            for (const package_name of packages) {
+              try {
+                const versions = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                  package_type: 'container',
+                  package_name: package_name,
+                  org: context.repo.owner,
+                  per_page: 100
+                });
+
+                for (const version of versions.data) {
+                  const tags = version.metadata?.container?.tags || [];
+                  if (tags.some(tag => tag === pr_prefix || tag.startsWith(`${pr_prefix}-`))) {
+                    console.log(`Deleting ${package_name} version ${version.id} with tags: ${tags.join(', ')}`);
+                    await github.rest.packages.deletePackageVersionForOrg({
+                      package_type: 'container',
+                      package_name: package_name,
+                      org: context.repo.owner,
+                      package_version_id: version.id
+                    });
+                  }
+                }
+              } catch (error) {
+                console.log(`Error processing ${package_name}: ${error.message}`);
+              }
+            }
