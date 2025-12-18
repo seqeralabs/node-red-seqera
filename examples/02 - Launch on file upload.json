@@ -31,7 +31,7 @@
     "returnType": "files",
     "x": 100,
     "y": 100,
-    "wires": [[], ["2b7682159053d63c"]]
+    "wires": [["2b7682159053d63c"], []]
   },
   {
     "id": "2b7682159053d63c",
@@ -127,5 +127,13 @@
     "x": 570,
     "y": 200,
     "wires": [[], [], []]
+  },
+  {
+    "id": "2801ba6dc68b2335",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@seqera/node-red-seqera": "1.4.1"
+    }
   }
 ]
