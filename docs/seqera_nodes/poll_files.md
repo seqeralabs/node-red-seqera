@@ -15,9 +15,17 @@ This node automatically monitors a Data Link for _changes_, making it perfect fo
 
 ## Configuration
 
-!!! info
+This node works much like the [list files node](list_files.md), but instead of triggering when recieving a message input, it polls repeatedly and outputs events when it detects a change.
 
-    This node works much like the [list files node](list_files.md), but instead of triggering when recieving a message input, it polls repeatedly and outputs events when it detects a change.
+!!! warning
+
+    File addition / deletion is only detected across poll events.
+    This means that if you delete a file and create a new one with the same name
+    _inbetween_ two poll events, the change **will not be detected**.
+
+    If this kind of activity is likely, make sure that you set the polling frequency
+    to be fast enough that the node will check the file listing between events
+    _(poll -> delete file -> poll -> add file -> poll)_.
 
 -   **Seqera config**: Reference to the seqera-config node containing API credentials and default workspace settings.
 -   **Node name**: Optional custom name for the node in the editor.
