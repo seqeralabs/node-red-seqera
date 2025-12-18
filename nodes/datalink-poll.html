@@ -9,6 +9,20 @@
     <input type="text" id="node-input-name" />
   </div>
 
+  <!-- Data link parameters (same as list node) -->
+  <div class="form-row">
+    <label for="node-input-dataLinkName"><i class="fa fa-link"></i> Data link</label>
+    <input type="text" id="node-input-dataLinkName" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-returnType"><i class="fa fa-filter"></i> Return type</label>
+    <select id="node-input-returnType">
+      <option value="files">Files only</option>
+      <option value="folders">Folders only</option>
+      <option value="all">Everything</option>
+    </select>
+  </div>
+
   <!-- Polling specific -->
   <div class="form-row">
     <label for="node-input-pollFrequency"><i class="fa fa-clock-o"></i> Poll frequency</label>
@@ -21,24 +35,22 @@
     </select>
   </div>
   <div class="form-row">
-    <label for="node-input-outputAllPolls">&nbsp;</label>
-    <input type="checkbox" id="node-input-outputAllPolls" style="width:auto; vertical-align:middle" />
-    <span style="margin-left:5px">Show output port output on every poll</span>
+    <label for="node-input-outputAllPolls">
+      <i class="fa fa-refresh" aria-hidden="true"></i>
+      Every poll
+    </label>
+    <label for="node-input-outputAllPolls" style="width:70%">
+      <input
+        type="checkbox"
+        id="node-input-outputAllPolls"
+        style="display:inline-block; width:22px; vertical-align:top;"
+        autocomplete="off"
+      />
+      Show output port
+    </label>
   </div>
 
-  <!-- Data link parameters (same as list node) -->
-  <div class="form-row">
-    <label for="node-input-dataLinkName"><i class="fa fa-link"></i> Data link name</label>
-    <input type="text" id="node-input-dataLinkName" />
-  </div>
-  <div class="form-row">
-    <label for="node-input-returnType"><i class="fa fa-filter"></i> Return type</label>
-    <select id="node-input-returnType">
-      <option value="files">Files only</option>
-      <option value="folders">Folders only</option>
-      <option value="all">Everything</option>
-    </select>
-  </div>
+  <!-- More specifics -->
   <div class="form-row">
     <label for="node-input-basePath"><i class="fa fa-folder-open-o"></i> Base path</label>
     <input type="text" id="node-input-basePath" />
