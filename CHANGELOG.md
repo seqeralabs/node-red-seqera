@@ -2,10 +2,12 @@
 
 ## [1.5.0] - 2025-12-18
 
--   💥 Breaking change: Poll files node
+-   💥 Breaking change: Poll files node updates [#27](https://github.com/seqeralabs/node-red-seqera/pull/27)
     -   Added `pollIntervalSeconds` field to output payload alongside `nextPoll`
     -   "Every poll" output port is now hidden by default, with a checkbox option to enable it
     -   Added new "Deleted results" output that fires when files are removed from the Data Link
+-   Add GitHub Actions workflow for preview docker images for PRs [#28](https://github.com/seqeralabs/node-red-seqera/pull/28)
+-   Add CI testing with mocha [#26](https://github.com/seqeralabs/node-red-seqera/pull/26)
 
 **Warning**: The change in the available ports on this node could affect your workflows.
 Please update with care - make sure that the correct output ports are still connected!
