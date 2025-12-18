@@ -29,7 +29,7 @@ This node automatically monitors a Data Link for _changes_, making it perfect fo
 -   **Max results** (default **100**): Maximum number of objects to return per poll.
 -   **Depth** (default **0**): Folder recursion depth.
 -   **Poll frequency** (default **15 min**): Interval between polls.
--   **Output all results on every poll** (default **off**): When enabled, adds an extra output that emits all files on every poll.
+-   **Show output port output on every poll** (default **off**): When enabled, adds an extra output that emits all files on every poll.
 -   **Workspace ID**: Override the workspace ID from the Config node.
 
 All properties work the same as the [list files](list_files.md) node, plus automatic polling.
@@ -41,7 +41,7 @@ By default, the node has two outputs:
 1. **New results** – Emitted only when one or more _new_ objects are detected since the last poll.
 2. **Deleted results** – Emitted only when one or more objects are _deleted_ since the last poll.
 
-When **Output all results on every poll** is enabled, the node has three outputs:
+When **Show output port output on every poll** is enabled, the node has three outputs:
 
 1. **All results** – Emitted every poll with the full, filtered list of files.
 2. **New results** – Emitted only when one or more _new_ objects are detected since the last poll.
