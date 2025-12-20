@@ -3,6 +3,7 @@
  */
 
 const axios = require("axios");
+const { name: packageName, version: packageVersion } = require("../package.json");
 
 /**
  * Build HTTP headers for Seqera Platform API calls.
@@ -22,6 +23,7 @@ function buildHeaders(node, extraHeaders = {}) {
   const headers = { ...extraHeaders };
   const token = node.seqeraConfig.credentials.token;
   headers["Authorization"] = `Bearer ${token}`;
+  headers["User-Agent"] = `${packageName}/${packageVersion}`;
   return headers;
 }
 
