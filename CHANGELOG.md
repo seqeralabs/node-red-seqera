@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2025-12-20
+
+-   Add User-Agent header to all API calls for traffic analytics [#32](https://github.com/seqeralabs/node-red-seqera/issues/32)
+
 ## [1.5.0] - 2025-12-18
 
 -   💥 Breaking change: Poll files node updates [#27](https://github.com/seqeralabs/node-red-seqera/pull/27)
