@@ -115,6 +115,74 @@ module.exports = function (RED) {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
     };
 
+    // Helper function to resolve label names to IDs, creating labels if needed
+    const resolveLabelIds = async (labelInput, workspaceId, baseUrl, msg) => {
+      if (!labelInput || !workspaceId) {
+        return [];
+      }
+
+      // Parse label names from comma-separated string (typedInput always returns string)
+      // Normalize to lowercase since platform treats labels as case-insensitive
+      const labelNames = String(labelInput)
+        .split(",")
+        .map((l) => l.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (labelNames.length === 0) {
+        return [];
+      }
+
+      const labelIds = [];
+
+      for (const labelName of labelNames) {
+        // Query for specific label by name using search parameter to avoid pagination issues
+        // Note: API search returns partial matches, so we use find() to ensure exact match
+        const searchUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}&search=${encodeURIComponent(
+          labelName,
+        )}`;
+        const searchResp = await apiCall(node, "get", searchUrl);
+        const labels = searchResp.data?.labels || [];
+        // Case-insensitive comparison since platform normalizes label names
+        let match = labels.find((l) => l.name.toLowerCase() === labelName);
+
+        if (!match) {
+          // Label doesn't exist, try to create it
+          try {
+            const createUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}`;
+            const createResp = await apiCall(node, "post", createUrl, {
+              data: { name: labelName },
+            });
+
+            if (createResp.data?.id) {
+              match = createResp.data;
+              node.log(`Created label '${labelName}' (ID: ${match.id})`);
+            } else {
+              throw new Error(`Failed to create label '${labelName}': API returned no ID`);
+            }
+          } catch (errCreate) {
+            const errorStatus = errCreate.response?.status;
+            const errorDetail = errCreate.response?.data?.message || errCreate.response?.data || errCreate.message;
+
+            if (errorStatus === 403) {
+              throw new Error(
+                `Cannot create label '${labelName}': API token missing 'label:write' permission. Add this permission or create labels manually in Seqera UI.`,
+              );
+            } else {
+              throw new Error(`Failed to create label '${labelName}': ${errorDetail}`);
+            }
+          }
+        }
+
+        if (match?.id) {
+          labelIds.push(String(match.id));
+        } else {
+          throw new Error(`Failed to resolve label '${labelName}': No ID found`);
+        }
+      }
+
+      return labelIds;
+    };
+
     node.on("input", async function (msg, send, done) {
       node.status({ fill: "blue", shape: "ring", text: `launching: ${formatDateTime()}` });
 
@@ -224,88 +292,15 @@ module.exports = function (RED) {
       // Resolve label names to IDs if provided, creating labels as needed
       if (labels) {
         body.launch = body.launch || {};
-
-        // Parse label names from input (array or comma-separated string)
-        let labelNames = [];
-        if (Array.isArray(labels)) {
-          labelNames = labels.map((l) => String(l).trim()).filter(Boolean);
-        } else if (typeof labels === "string" && labels.trim()) {
-          labelNames = labels
-            .split(",")
-            .map((l) => l.trim())
-            .filter(Boolean);
-        }
-
-        // Fetch labels from API to resolve names to IDs
-        if (labelNames.length > 0) {
-          try {
-            const labelsUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}`;
-            const labelsResp = await apiCall(node, "get", labelsUrl, { headers: { Accept: "application/json" } });
-            let availableLabels = labelsResp.data?.labels || [];
-
-            // Map label names to IDs, creating missing labels
-            const labelIds = [];
-            for (const labelName of labelNames) {
-              let match = availableLabels.find((l) => l.name === labelName);
-
-              if (!match) {
-                // Label doesn't exist, try to create it
-                try {
-                  // workspaceId goes as query param, NOT in request body
-                  const createLabelUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}`;
-                  node.log(`Attempting to create label '${labelName}'...`);
-                  const createResp = await apiCall(node, "post", createLabelUrl, {
-                    headers: { "Content-Type": "application/json", Accept: "application/json" },
-                    data: {
-                      name: labelName,
-                      // Only include value and resource for resource labels
-                    },
-                  });
-
-                  node.log(`Label creation response: ${JSON.stringify(createResp.data)}`);
-
-                  if (createResp.data?.id) {
-                    match = createResp.data;
-                    node.log(`Created label '${labelName}' (ID: ${match.id})`);
-                  } else {
-                    node.warn(
-                      `Label creation returned unexpected structure for '${labelName}': ${JSON.stringify(
-                        createResp.data,
-                      )}`,
-                    );
-                  }
-                } catch (errCreate) {
-                  const errorStatus = errCreate.response?.status;
-                  const errorDetail =
-                    errCreate.response?.data?.message || errCreate.response?.data || errCreate.message;
-
-                  if (errorStatus === 403) {
-                    node.error(
-                      `Cannot create label '${labelName}': API token missing 'label:write' permission. ` +
-                        `Add this permission or create labels manually in Seqera UI.`,
-                      msg,
-                    );
-                  } else {
-                    node.warn(`Failed to create label '${labelName}': ${errorDetail}`);
-                  }
-                }
-              }
-
-              if (match && match.id) {
-                // Convert to string - API expects string array
-                labelIds.push(String(match.id));
-              }
-            }
-
-            if (labelIds.length > 0) {
-              body.launch.labelIds = labelIds;
-              node.log(`Final labelIds for launch: ${JSON.stringify(labelIds)}`);
-            } else {
-              node.warn(`No valid labels found to apply to workflow. Requested: ${labelNames.join(", ")}`);
-            }
-          } catch (errLabels) {
-            node.warn(`Failed to resolve label names: ${errLabels.message}. Labels will not be applied.`);
+        try {
+          const labelIds = await resolveLabelIds(labels, workspaceId, baseUrl, msg);
+          if (labelIds.length > 0) {
+            body.launch.labelIds = labelIds;
           }
+        } catch (errLabels) {
+          node.error(`Failed to resolve labels: ${errLabels.message}`, msg);
+          node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
+          return;
         }
       }
 
@@ -375,81 +370,17 @@ module.exports = function (RED) {
             resumeLaunch.runName = runName.trim();
           }
 
-          // Resolve label names to IDs for resume workflow, creating labels as needed
+          // Resolve label names to IDs if provided, creating labels as needed
           if (labels) {
-            let labelNames = [];
-            if (Array.isArray(labels)) {
-              labelNames = labels.map((l) => String(l).trim()).filter(Boolean);
-            } else if (typeof labels === "string" && labels.trim()) {
-              labelNames = labels
-                .split(",")
-                .map((l) => l.trim())
-                .filter(Boolean);
-            }
-
-            if (labelNames.length > 0) {
-              try {
-                const labelsUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}`;
-                const labelsResp = await apiCall(node, "get", labelsUrl, { headers: { Accept: "application/json" } });
-                let availableLabels = labelsResp.data?.labels || [];
-
-                const labelIds = [];
-                for (const labelName of labelNames) {
-                  let match = availableLabels.find((l) => l.name === labelName);
-
-                  if (!match) {
-                    try {
-                      // workspaceId goes as query param, NOT in request body
-                      const createLabelUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}`;
-                      node.log(`Attempting to create label '${labelName}'...`);
-                      const createResp = await apiCall(node, "post", createLabelUrl, {
-                        headers: { "Content-Type": "application/json", Accept: "application/json" },
-                        data: {
-                          name: labelName,
-                        },
-                      });
-
-                      node.log(`Label creation response: ${JSON.stringify(createResp.data)}`);
-
-                      if (createResp.data?.id) {
-                        match = createResp.data;
-                        node.log(`Created label '${labelName}' (ID: ${match.id})`);
-                      } else {
-                        node.warn(
-                          `Label creation returned unexpected structure for '${labelName}': ${JSON.stringify(
-                            createResp.data,
-                          )}`,
-                        );
-                      }
-                    } catch (errCreate) {
-                      const errorStatus = errCreate.response?.status;
-                      const errorDetail =
-                        errCreate.response?.data?.message || errCreate.response?.data || errCreate.message;
-
-                      if (errorStatus === 403) {
-                        node.error(
-                          `Cannot create label '${labelName}': API token missing 'label:write' permission. ` +
-                            `Add this permission or create labels manually in Seqera UI.`,
-                          msg,
-                        );
-                      } else {
-                        node.warn(`Failed to create label '${labelName}': ${errorDetail}`);
-                      }
-                    }
-                  }
-
-                  if (match && match.id) {
-                    // Convert to string - API expects string array
-                    labelIds.push(String(match.id));
-                  }
-                }
-
-                if (labelIds.length > 0) {
-                  resumeLaunch.labelIds = labelIds;
-                }
-              } catch (errLabels) {
-                node.warn(`Failed to resolve label names: ${errLabels.message}. Labels will not be applied.`);
+            try {
+              const labelIds = await resolveLabelIds(labels, workspaceId, baseUrl, msg);
+              if (labelIds.length > 0) {
+                resumeLaunch.labelIds = labelIds;
               }
+            } catch (errLabels) {
+              node.error(`Failed to resolve labels for resume: ${errLabels.message}`, msg);
+              node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
+              return;
             }
           }
 
