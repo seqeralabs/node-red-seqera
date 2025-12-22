@@ -66,7 +66,7 @@ Launches a workflow using the Seqera Platform API.
 : Launchpad (string) : The human-readable name of a pipeline in the launchpad to launch. Supports autocomplete.
 : Run name (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
 : Resume from (string) : Workflow ID from a previous run to resume (optional). Can be extracted from workflow monitor output using `msg.workflowId`.
-: Labels (string) : Comma-separated label names to assign to the workflow run (optional), e.g., `production,rnaseq,urgent`. Labels are automatically created if they don't exist (requires API token with `label:write` permission). The node resolves names to IDs automatically.
+: Labels (string) : Comma-separated label names to assign to the workflow run (optional), e.g., `production,rnaseq,urgent`. Labels are automatically created if they don't exist (requires API token with Maintain role or higher). The node resolves names to IDs automatically.
 : Parameters (array) : Individual parameter key-value pairs added via the editable list. Each parameter can be configured with a name and a value of any type (string, number, boolean, JSON, etc.). These take highest precedence when merging.
 : Params JSON (object) : A JSON object containing multiple parameters to merge with the launchpad's default parameters. Merged before individual parameters.
 : Workspace ID (string) : Override the workspace ID from the Seqera config node (optional).
@@ -107,10 +107,10 @@ The resumed workflow must use the same work directory as the original run, so en
 Labels help organize and track workflow runs in your workspace. Simply provide comma-separated label names (e.g., `production,rnaseq,urgent`) and the node will:
 
 1. Check if labels exist in the workspace
-2. Automatically create missing labels (requires `label:write` permission)
+2. Automatically create missing labels (requires Maintain role or higher)
 3. Resolve names to IDs and apply them to the workflow run
 
-**Token permissions:** Your API token needs `label:write` permission to create labels automatically. Without this permission, you'll need to create labels manually in the Seqera UI first.
+**Token permissions:** Your API token needs Maintain role or higher to create labels automatically. Without sufficient permissions, you'll need to create labels manually in the Seqera UI first.
 
 ### References
 

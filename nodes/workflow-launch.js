@@ -165,7 +165,7 @@ module.exports = function (RED) {
 
             if (errorStatus === 403) {
               throw new Error(
-                `Cannot create label '${labelName}': API token missing 'label:write' permission. Add this permission or create labels manually in Seqera UI.`,
+                `Cannot create label '${labelName}': API token requires 'Maintain' role or higher. Use a token with sufficient permissions or create labels manually in Seqera UI.`,
               );
             } else {
               throw new Error(`Failed to create label '${labelName}': ${errorDetail}`);
@@ -289,21 +289,6 @@ module.exports = function (RED) {
         body.launch.runName = runName.trim();
       }
 
-      // Resolve label names to IDs if provided, creating labels as needed
-      if (labels) {
-        body.launch = body.launch || {};
-        try {
-          const labelIds = await resolveLabelIds(labels, workspaceId, baseUrl, msg);
-          if (labelIds.length > 0) {
-            body.launch.labelIds = labelIds;
-          }
-        } catch (errLabels) {
-          node.error(`Failed to resolve labels: ${errLabels.message}`, msg);
-          node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
-          return;
-        }
-      }
-
       // Resume from a previous workflow if workflow ID is provided
       // This fetches the workflow's launch config and sessionId, then relaunches with resume enabled
       if (resumeWorkflowId && resumeWorkflowId.trim && resumeWorkflowId.trim()) {
@@ -370,23 +355,25 @@ module.exports = function (RED) {
             resumeLaunch.runName = runName.trim();
           }
 
-          // Resolve label names to IDs if provided, creating labels as needed
-          if (labels) {
-            try {
-              const labelIds = await resolveLabelIds(labels, workspaceId, baseUrl, msg);
-              if (labelIds.length > 0) {
-                resumeLaunch.labelIds = labelIds;
-              }
-            } catch (errLabels) {
-              node.error(`Failed to resolve labels for resume: ${errLabels.message}`, msg);
-              node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
-              return;
-            }
-          }
-
           body.launch = resumeLaunch;
         } catch (errResume) {
           node.error(`Failed to fetch workflow launch config for resume: ${errResume.message}`, msg);
+          node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
+          return;
+        }
+      }
+
+      // Resolve label names to IDs if provided, creating labels as needed
+      // Applied after both regular launch and resume paths have set up body.launch
+      if (labels) {
+        body.launch = body.launch || {};
+        try {
+          const labelIds = await resolveLabelIds(labels, workspaceId, baseUrl, msg);
+          if (labelIds.length > 0) {
+            body.launch.labelIds = labelIds;
+          }
+        } catch (errLabels) {
+          node.error(`Failed to resolve labels: ${errLabels.message}`, msg);
           node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
           return;
         }
