@@ -845,7 +845,8 @@ describe("seqera-workflow-monitor Node", function () {
 
         monitorNode.on("call:error", function (call) {
           try {
-            expect(call.firstArg).to.include("Seqera API request failed");
+            expect(call.firstArg).to.include("Workflow wf-123:");
+            expect(call.firstArg).to.include("Request failed");
             done();
           } catch (err) {
             done(err);

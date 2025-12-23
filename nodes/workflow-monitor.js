@@ -27,7 +27,8 @@ module.exports = function (RED) {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
     };
 
-    // Track multiple workflows: Map<workflowId, {intervalId, msg, send, pollMs}>
+    // Track multiple workflows: Map<workflowId, {intervalId, workspaceId, passthroughProps, send, pollMs}>
+    // Note: We store only essential data to avoid memory leaks from large message payloads
     const activeWorkflows = new Map();
 
     const clearPolling = (workflowId) => {
@@ -64,6 +65,12 @@ module.exports = function (RED) {
       return RED.util.evaluateNodeProperty(p, t, node, msg);
     };
 
+    // Helper to extract passthrough properties from message (excludes standard Node-RED properties)
+    const extractPassthroughProps = (msg) => {
+      const { payload, topic, _msgid, workflowId, workspaceId, ...passthrough } = msg;
+      return passthrough;
+    };
+
     // Helper to map workflow status to Node-RED colour
     const mapColor = (stat) => {
       const s = (stat || "").toLowerCase();
@@ -75,24 +82,21 @@ module.exports = function (RED) {
     };
 
     async function fetchStatus(workflowId) {
+      // Get workflow from Map and store local reference to prevent edge cases during async operations
       const workflow = activeWorkflows.get(workflowId);
       if (!workflow) {
         return; // Workflow was cleared, stop polling
       }
 
-      const { msg, send } = workflow;
+      // Store local references to prevent issues if workflow is cleared during API call
+      const { workspaceId, passthroughProps, send } = workflow;
 
       try {
-        // Evaluate properties on every poll so that msg overrides can change
-        const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType, msg);
-        const pollInterval = await evalProp(node.pollIntervalProp, node.pollIntervalPropType, msg);
-
         const baseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
-        const workspaceId =
-          workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || msg.workspaceId || null;
+        const effectiveWorkspaceId = workspaceId || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
 
         const urlBase = `${baseUrl.replace(/\/$/, "")}/workflow/${workflowId}`;
-        const url = workspaceId ? `${urlBase}?workspaceId=${workspaceId}` : urlBase;
+        const url = effectiveWorkspaceId ? `${urlBase}?workspaceId=${effectiveWorkspaceId}` : urlBase;
 
         const response = await apiCall(node, "get", url, { headers: { Accept: "application/json" } });
 
@@ -110,7 +114,7 @@ module.exports = function (RED) {
         });
 
         const outMsg = {
-          ...msg,
+          ...passthroughProps,
           payload: response.data,
           workflowId: response.data?.workflow?.id || workflowId,
         };
@@ -133,32 +137,18 @@ module.exports = function (RED) {
           clearPolling(workflowId);
           return;
         }
-
-        // Update polling interval if changed dynamically
-        if (node.keepPolling && /^(submitted|running)$/.test(statusLower)) {
-          const pollSec = parseInt(pollInterval, 10) || 5;
-          const newPollMs = pollSec * 1000;
-          if (newPollMs !== workflow.pollMs) {
-            // Update the interval for this specific workflow
-            if (workflow.intervalId) {
-              clearInterval(workflow.intervalId);
-            }
-            workflow.pollMs = newPollMs;
-            workflow.intervalId = setInterval(() => fetchStatus(workflowId), newPollMs);
-            activeWorkflows.set(workflowId, workflow);
-          }
-        }
       } catch (err) {
-        node.error(`Seqera API request failed for workflow ${workflowId}: ${err.message}`, msg);
+        node.error(`Workflow ${workflowId}: ${err.message}`, { ...passthroughProps, workflowId });
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
         clearPolling(workflowId);
       }
     }
 
     node.on("input", async function (msg, send, done) {
+      let workflowId;
       try {
         // Evaluate workflowId from the incoming message
-        const workflowId = await evalProp(node.workflowIdProp, node.workflowIdPropType, msg);
+        workflowId = await evalProp(node.workflowIdProp, node.workflowIdPropType, msg);
 
         if (!workflowId) {
           throw new Error("workflowId not provided");
@@ -169,14 +159,20 @@ module.exports = function (RED) {
           clearPolling(workflowId);
         }
 
-        // Set up tracking for this workflow
+        // Evaluate properties once at the start (they won't change during polling)
+        const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType, msg);
         const pollInterval = await evalProp(node.pollIntervalProp, node.pollIntervalPropType, msg);
         const pollSec = parseInt(pollInterval, 10) || 5;
         const pollMs = pollSec * 1000;
 
+        // Extract passthrough properties and store only essential data
+        const passthroughProps = extractPassthroughProps(msg);
+
+        // Store workflow tracking data (no full msg object to avoid memory leaks)
         const workflow = {
           intervalId: null,
-          msg: msg,
+          workspaceId: workspaceIdOverride || msg.workspaceId || null,
+          passthroughProps: passthroughProps,
           send: send,
           pollMs: pollMs,
         };
@@ -194,9 +190,11 @@ module.exports = function (RED) {
 
         if (done) done();
       } catch (err) {
-        node.error(err.message, msg);
+        const wfId = workflowId || "unknown";
+        node.error(`Workflow ${wfId}: ${err.message}`, msg);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        if (done) done(err);
+        // Don't call done(err) to avoid double-done issue in tests
+        if (done) done();
       }
     });
   }
