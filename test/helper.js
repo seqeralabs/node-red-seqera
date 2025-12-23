@@ -273,6 +273,44 @@ function createWorkspacesResponse(workspaces = []) {
 }
 
 /**
+ * Creates a mock labels response object.
+ *
+ * @param {Array} labels - Labels to include
+ * @returns {Object} A labels response object
+ */
+function createLabelsResponse(labels = []) {
+  const defaultLabels = [
+    {
+      id: "1",
+      name: "production",
+      resource: true,
+      isDefault: false,
+      lastUsed: "2024-01-01T00:00:00Z",
+    },
+  ];
+
+  return {
+    labels: labels.length > 0 ? labels : defaultLabels,
+  };
+}
+
+/**
+ * Creates a mock label creation response object.
+ *
+ * @param {Object} overrides - Properties to override
+ * @returns {Object} A label response object
+ */
+function createLabelResponse(overrides = {}) {
+  return {
+    id: "1",
+    name: "test-label",
+    resource: true,
+    isDefault: false,
+    ...overrides,
+  };
+}
+
+/**
  * Helper to wait for a node to emit a message.
  * Wraps the assertion in try/catch to properly report failures.
  *
@@ -334,6 +372,8 @@ module.exports = {
   createUserInfoResponse,
   createOrganizationsResponse,
   createWorkspacesResponse,
+  createLabelsResponse,
+  createLabelResponse,
   expectMessage,
   expectMessages,
 };
