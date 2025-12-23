@@ -27,17 +27,27 @@ module.exports = function (RED) {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
     };
 
-    let intervalId = null;
+    // Track multiple workflows: Map<workflowId, {intervalId, msg, send, pollMs}>
+    const activeWorkflows = new Map();
 
-    const clearPolling = () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
+    const clearPolling = (workflowId) => {
+      if (workflowId && activeWorkflows.has(workflowId)) {
+        const workflow = activeWorkflows.get(workflowId);
+        if (workflow.intervalId) {
+          clearInterval(workflow.intervalId);
+        }
+        activeWorkflows.delete(workflowId);
+      }
+    };
+
+    const clearAllPolling = () => {
+      for (const [workflowId] of activeWorkflows) {
+        clearPolling(workflowId);
       }
     };
 
     node.on("close", () => {
-      clearPolling();
+      clearAllPolling();
     });
 
     // Helper to evaluate typedInput properties (supports JSONata)
@@ -64,16 +74,18 @@ module.exports = function (RED) {
       return "grey"; // cancelled, unknown
     };
 
-    async function fetchStatus(msg, send) {
+    async function fetchStatus(workflowId) {
+      const workflow = activeWorkflows.get(workflowId);
+      if (!workflow) {
+        return; // Workflow was cleared, stop polling
+      }
+
+      const { msg, send } = workflow;
+
       try {
         // Evaluate properties on every poll so that msg overrides can change
-        const workflowId = await evalProp(node.workflowIdProp, node.workflowIdPropType, msg);
         const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType, msg);
         const pollInterval = await evalProp(node.pollIntervalProp, node.pollIntervalPropType, msg);
-
-        if (!workflowId) {
-          throw new Error("workflowId not provided");
-        }
 
         const baseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
         const workspaceId =
@@ -87,11 +99,14 @@ module.exports = function (RED) {
         const wfStatus = response.data?.workflow?.status || "unknown";
         const statusLower = wfStatus.toLowerCase();
 
-        // Set node status in editor
+        // Update node status showing count of active workflows
+        const activeCount = activeWorkflows.size;
+        const statusText = activeCount > 1 ? `${activeCount} workflows (latest: ${statusLower})` : `${statusLower}`;
+
         node.status({
           fill: mapColor(statusLower),
           shape: /^(submitted|running)$/.test(statusLower) ? "ring" : "dot",
-          text: `${statusLower}: ${formatDateTime()}`,
+          text: `${statusText}: ${formatDateTime()}`,
         });
 
         const outMsg = {
@@ -113,44 +128,74 @@ module.exports = function (RED) {
           send([null, null, outMsg]);
         }
 
-        // If keepPolling disabled OR workflow reached a final state, stop polling
+        // If keepPolling disabled OR workflow reached a final state, stop polling THIS workflow
         if (!node.keepPolling || !/^(submitted|running)$/.test(statusLower)) {
-          clearPolling();
+          clearPolling(workflowId);
+          return;
         }
 
         // Update polling interval if changed dynamically
         if (node.keepPolling && /^(submitted|running)$/.test(statusLower)) {
           const pollSec = parseInt(pollInterval, 10) || 5;
-          if (pollSec * 1000 !== node._currentPollMs) {
-            clearPolling();
-            node._currentPollMs = pollSec * 1000;
-            intervalId = setInterval(() => fetchStatus(msg, send), node._currentPollMs);
+          const newPollMs = pollSec * 1000;
+          if (newPollMs !== workflow.pollMs) {
+            // Update the interval for this specific workflow
+            if (workflow.intervalId) {
+              clearInterval(workflow.intervalId);
+            }
+            workflow.pollMs = newPollMs;
+            workflow.intervalId = setInterval(() => fetchStatus(workflowId), newPollMs);
+            activeWorkflows.set(workflowId, workflow);
           }
         }
       } catch (err) {
-        node.error(`Seqera API request failed: ${err.message}`, msg);
+        node.error(`Seqera API request failed for workflow ${workflowId}: ${err.message}`, msg);
         node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
-        clearPolling();
+        clearPolling(workflowId);
       }
     }
 
     node.on("input", async function (msg, send, done) {
-      clearPolling();
-
       try {
-        // Kick off status fetch (will set up interval if needed)
-        await fetchStatus(msg, send);
+        // Evaluate workflowId from the incoming message
+        const workflowId = await evalProp(node.workflowIdProp, node.workflowIdPropType, msg);
 
-        // Start polling loop if enabled and interval not yet set
-        if (node.keepPolling && !intervalId) {
-          const pollInterval = await evalProp(node.pollIntervalProp, node.pollIntervalPropType, msg);
-          const pollSec = parseInt(pollInterval, 10) || 5;
-          node._currentPollMs = pollSec * 1000;
-          intervalId = setInterval(() => fetchStatus(msg, send), node._currentPollMs);
+        if (!workflowId) {
+          throw new Error("workflowId not provided");
+        }
+
+        // If this workflow is already being monitored, clear its old interval
+        if (activeWorkflows.has(workflowId)) {
+          clearPolling(workflowId);
+        }
+
+        // Set up tracking for this workflow
+        const pollInterval = await evalProp(node.pollIntervalProp, node.pollIntervalPropType, msg);
+        const pollSec = parseInt(pollInterval, 10) || 5;
+        const pollMs = pollSec * 1000;
+
+        const workflow = {
+          intervalId: null,
+          msg: msg,
+          send: send,
+          pollMs: pollMs,
+        };
+        activeWorkflows.set(workflowId, workflow);
+
+        // Kick off initial status fetch
+        await fetchStatus(workflowId);
+
+        // Start polling loop if enabled and workflow is still active (fetchStatus might have removed it)
+        if (node.keepPolling && activeWorkflows.has(workflowId)) {
+          const updatedWorkflow = activeWorkflows.get(workflowId);
+          updatedWorkflow.intervalId = setInterval(() => fetchStatus(workflowId), pollMs);
+          activeWorkflows.set(workflowId, updatedWorkflow);
         }
 
         if (done) done();
       } catch (err) {
+        node.error(err.message, msg);
+        node.status({ fill: "red", shape: "dot", text: `error: ${formatDateTime()}` });
         if (done) done(err);
       }
     });
