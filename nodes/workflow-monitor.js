@@ -65,9 +65,11 @@ module.exports = function (RED) {
       return RED.util.evaluateNodeProperty(p, t, node, msg);
     };
 
-    // Helper to extract passthrough properties from message (excludes standard Node-RED properties)
+    // Helper to extract passthrough properties from message (excludes only payload to prevent memory leaks)
+    // Standard Node-RED properties like topic, _msgid pass through
+    // Output-specific properties like workflowId are explicitly set in output message
     const extractPassthroughProps = (msg) => {
-      const { payload, topic, _msgid, workflowId, workspaceId, ...passthrough } = msg;
+      const { payload, ...passthrough } = msg;
       return passthrough;
     };
 
