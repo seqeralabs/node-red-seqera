@@ -25,6 +25,12 @@
     <input type="text" id="node-input-resumeWorkflowId" />
   </div>
   <div class="form-row">
+    <label for="node-input-labels">
+      <i class="fa fa-tags"></i> <abbr title="Comma-separated label names">Labels</abbr>
+    </label>
+    <input type="text" id="node-input-labels" />
+  </div>
+  <div class="form-row">
     <label style="width: auto; margin-right: 10px;"><i class="fa fa-list"></i> Parameters</label>
     <ol id="node-input-params-container"></ol>
   </div>
@@ -60,6 +66,7 @@ Launches a workflow using the Seqera Platform API.
 : Launchpad (string) : The human-readable name of a pipeline in the launchpad to launch. Supports autocomplete.
 : Run name (string) : Custom name for the workflow run (optional, defaults to auto-generated name).
 : Resume from (string) : Workflow ID from a previous run to resume (optional). Can be extracted from workflow monitor output using `msg.workflowId`.
+: Labels (string) : Comma-separated label names to assign to the workflow run (optional), e.g., `production,rnaseq,urgent`. Labels are automatically created if they don't exist (requires API token with Maintain role or higher). The node resolves names to IDs automatically.
 : Parameters (array) : Individual parameter key-value pairs added via the editable list. Each parameter can be configured with a name and a value of any type (string, number, boolean, JSON, etc.). These take highest precedence when merging.
 : Params JSON (object) : A JSON object containing multiple parameters to merge with the launchpad's default parameters. Merged before individual parameters.
 : Workspace ID (string) : Override the workspace ID from the Seqera config node (optional).
@@ -95,6 +102,16 @@ To resume a failed workflow, provide the **workflow ID** from the previous run (
 
 The resumed workflow must use the same work directory as the original run, so ensure your compute environment has access to the cached results.
 
+#### Labels
+
+Labels help organize and track workflow runs in your workspace. Simply provide comma-separated label names (e.g., `production,rnaseq,urgent`) and the node will:
+
+1. Check if labels exist in the workspace
+2. Automatically create missing labels (requires Maintain role or higher)
+3. Resolve names to IDs and apply them to the workflow run
+
+**Token permissions:** Your API token needs Maintain role or higher to create labels automatically. Without sufficient permissions, you'll need to create labels manually in the Seqera UI first.
+
 ### References
 
 - [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - information about launching workflows
@@ -125,6 +142,8 @@ The resumed workflow must use the same work directory as the original run, so en
       runNameType: { value: "str" },
       resumeWorkflowId: { value: "" },
       resumeWorkflowIdType: { value: "str" },
+      labels: { value: "" },
+      labelsType: { value: "str" },
       workspaceId: { value: "" },
       workspaceIdType: { value: "str" },
       sourceWorkspaceId: { value: "" },
@@ -155,6 +174,14 @@ The resumed workflow must use the same work directory as the original run, so en
       });
       $("#node-input-resumeWorkflowId").typedInput("value", this.resumeWorkflowId || "");
       $("#node-input-resumeWorkflowId").typedInput("type", this.resumeWorkflowIdType || "str");
+
+      // Initialize labels typedInput (comma-separated string by default)
+      $("#node-input-labels").typedInput({
+        default: "str",
+        types: ["str", "msg", "flow", "global", "env", "jsonata", "json"],
+      });
+      $("#node-input-labels").typedInput("value", this.labels || "");
+      $("#node-input-labels").typedInput("type", this.labelsType || "str");
 
       ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
       ti("#node-input-sourceWorkspaceId", this.sourceWorkspaceId || "", this.sourceWorkspaceIdType || "str");
@@ -298,6 +325,7 @@ The resumed workflow must use the same work directory as the original run, so en
       save.call(this, "#node-input-paramsKey", "paramsKey", "paramsKeyType");
       save.call(this, "#node-input-runName", "runName", "runNameType");
       save.call(this, "#node-input-resumeWorkflowId", "resumeWorkflowId", "resumeWorkflowIdType");
+      save.call(this, "#node-input-labels", "labels", "labelsType");
       save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
       save.call(this, "#node-input-sourceWorkspaceId", "sourceWorkspaceId", "sourceWorkspaceIdType");
 

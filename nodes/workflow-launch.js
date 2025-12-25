@@ -97,6 +97,8 @@ module.exports = function (RED) {
     node.sourceWorkspaceIdPropType = config.sourceWorkspaceIdType;
     node.resumeWorkflowIdProp = config.resumeWorkflowId;
     node.resumeWorkflowIdPropType = config.resumeWorkflowIdType;
+    node.labelsProp = config.labels;
+    node.labelsPropType = config.labelsType;
 
     node.seqeraConfig = RED.nodes.getNode(config.seqera);
     node.defaultBaseUrl = (node.seqeraConfig && node.seqeraConfig.baseUrl) || "https://api.cloud.seqera.io";
@@ -111,6 +113,74 @@ module.exports = function (RED) {
       const d = new Date();
       const pad = (n) => n.toString().padStart(2, "0");
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${d.toLocaleTimeString()}`;
+    };
+
+    // Helper function to resolve label names to IDs, creating labels if needed
+    const resolveLabelIds = async (labelInput, workspaceId, baseUrl, msg) => {
+      if (!labelInput || !workspaceId) {
+        return [];
+      }
+
+      // Parse label names from comma-separated string (typedInput always returns string)
+      // Normalize to lowercase since platform treats labels as case-insensitive
+      const labelNames = String(labelInput)
+        .split(",")
+        .map((l) => l.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (labelNames.length === 0) {
+        return [];
+      }
+
+      const labelIds = [];
+
+      for (const labelName of labelNames) {
+        // Query for specific label by name using search parameter to avoid pagination issues
+        // Note: API search returns partial matches, so we use find() to ensure exact match
+        const searchUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}&search=${encodeURIComponent(
+          labelName,
+        )}`;
+        const searchResp = await apiCall(node, "get", searchUrl);
+        const labels = searchResp.data?.labels || [];
+        // Case-insensitive comparison since platform normalizes label names
+        let match = labels.find((l) => l.name.toLowerCase() === labelName);
+
+        if (!match) {
+          // Label doesn't exist, try to create it
+          try {
+            const createUrl = `${baseUrl.replace(/\/$/, "")}/labels?workspaceId=${workspaceId}`;
+            const createResp = await apiCall(node, "post", createUrl, {
+              data: { name: labelName },
+            });
+
+            if (createResp.data?.id) {
+              match = createResp.data;
+              node.log(`Created label '${labelName}' (ID: ${match.id})`);
+            } else {
+              throw new Error(`Failed to create label '${labelName}': API returned no ID`);
+            }
+          } catch (errCreate) {
+            const errorStatus = errCreate.response?.status;
+            const errorDetail = errCreate.response?.data?.message || errCreate.response?.data || errCreate.message;
+
+            if (errorStatus === 403) {
+              throw new Error(
+                `Cannot create label '${labelName}': API token requires 'Maintain' role or higher. Use a token with sufficient permissions or create labels manually in Seqera UI.`,
+              );
+            } else {
+              throw new Error(`Failed to create label '${labelName}': ${errorDetail}`);
+            }
+          }
+        }
+
+        if (match?.id) {
+          labelIds.push(String(match.id));
+        } else {
+          throw new Error(`Failed to resolve label '${labelName}': No ID found`);
+        }
+      }
+
+      return labelIds;
     };
 
     node.on("input", async function (msg, send, done) {
@@ -137,6 +207,7 @@ module.exports = function (RED) {
       const workspaceIdOverride = await evalProp(node.workspaceIdProp, node.workspaceIdPropType);
       const sourceWorkspaceIdOverride = await evalProp(node.sourceWorkspaceIdProp, node.sourceWorkspaceIdPropType);
       const resumeWorkflowId = await evalProp(node.resumeWorkflowIdProp, node.resumeWorkflowIdPropType);
+      const labels = await evalProp(node.labelsProp, node.labelsPropType);
 
       const baseUrl = baseUrlOverride || (node.seqeraConfig && node.seqeraConfig.baseUrl) || node.defaultBaseUrl;
       const workspaceId = workspaceIdOverride || (node.seqeraConfig && node.seqeraConfig.workspaceId) || null;
@@ -292,6 +363,22 @@ module.exports = function (RED) {
         }
       }
 
+      // Resolve label names to IDs if provided, creating labels as needed
+      // Applied after both regular launch and resume paths have set up body.launch
+      if (labels) {
+        body.launch = body.launch || {};
+        try {
+          const labelIds = await resolveLabelIds(labels, workspaceId, baseUrl, msg);
+          if (labelIds.length > 0) {
+            body.launch.labelIds = labelIds;
+          }
+        } catch (errLabels) {
+          node.error(`Failed to resolve labels: ${errLabels.message}`, msg);
+          node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
+          return;
+        }
+      }
+
       // Build URL with query params
       let url = `${baseUrl.replace(/\/$/, "")}/workflow/launch`;
       const qs = new URLSearchParams();
@@ -313,7 +400,15 @@ module.exports = function (RED) {
         send(outMsg);
         if (done) done();
       } catch (err) {
-        node.error(`Seqera API request failed: ${err.message}\nRequest: POST ${url}`, msg);
+        const errorDetail = err.response?.data?.message || err.response?.data || err.message;
+        const errorStatus = err.response?.status;
+        let errorMsg = `Seqera API request failed: ${errorDetail}\nRequest: POST ${url}`;
+
+        if (errorStatus === 403) {
+          errorMsg += `\n\nPermission denied. Please check:\n1. API token has 'Launch' or 'Maintain' role\n2. Workspace ID ${workspaceId} is correct\n3. Token has access to this workspace`;
+        }
+
+        node.error(errorMsg, msg);
         node.status({ fill: "red", shape: "ring", text: `error: ${formatDateTime()}` });
         return;
       }
@@ -341,6 +436,8 @@ module.exports = function (RED) {
       sourceWorkspaceIdType: { value: "str" },
       resumeWorkflowId: { value: "" },
       resumeWorkflowIdType: { value: "str" },
+      labels: { value: "" },
+      labelsType: { value: "str" },
       token: { value: "token" },
       tokenType: { value: "str" },
     },
