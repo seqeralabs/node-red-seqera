@@ -7,6 +7,10 @@
 -   <img alt="npm icon" src="img/npm-icon.svg" width=15> npm package: [@seqera/node-red-seqera](https://www.npmjs.com/package/@seqera/node-red-seqera)
 -   <img alt="npm icon" src="img/favicon.svg" width=15> Seqera Platform: <https://seqera.io/platform/>
 
+!!! danger "Important"
+
+    This project is currently in preview and is not covered by Seqera support. Please submit any problems or feature requests as [GitHub issues](https://github.com/seqeralabs/node-red-seqera/issues).
+
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
 ![@seqera/node-red-seqera nodes](img/nodes.png){ width=400 align=right}
@@ -18,11 +22,7 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 -   [List Files from Data Explorer](seqera_nodes/list_files.md)
 -   [Poll Data Link Files](seqera_nodes/poll_files.md)
 -   [Add a Seqera Studio](seqera_nodes/add_studio.md)
--   [Monitor a Seqera Studio](seqera_nodes/monitor_studio.md)
-
-!!! warning
-
-    This is an open-source project for community benefit. It is provided as-is and is not part of Seqera's officially supported toolset.
+-   [Monitor a Seqera Studio](seqera_nodes/monitor_studio.md
 
 ## Typical Use cases
 

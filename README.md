@@ -13,6 +13,9 @@
 -   <img alt="npm icon" src="docs/img/npm-icon.svg" width=15> npm package: [@seqera/node-red-seqera](https://www.npmjs.com/package/@seqera/node-red-seqera)
 -   <img alt="npm icon" src="docs/img/favicon.svg" width=15> Seqera Platform: [https://seqera.io/platform/](https://seqera.io/platform/)
 
+> [!IMPORTANT]
+> This project is currently in preview and is not covered by Seqera support. Please submit any problems or feature requests as [GitHub issues](https://github.com/seqeralabs/node-red-seqera/issues).
+
 Gives new Node-RED node types for your automation workflows, which are designed to work together:
 
 <img src="https://github.com/seqeralabs/node-red-seqera/raw/main/docs/img/nodes.png" alt="@seqera/node-red-seqera nodes" align="right" width="400" >
@@ -25,9 +28,6 @@ Gives new Node-RED node types for your automation workflows, which are designed 
 -   [Poll Data Link Files](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/poll_files/)
 -   [Add a Seqera Studio](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/add_studio/)
 -   [Monitor a Seqera Studio](https://seqeralabs.github.io/node-red-seqera/seqera_nodes/monitor_studio/)
-
-> [!IMPORTANT]
-> This is an open-source project for community benefit. It is provided as-is and is not part of Seqera's officially supported toolset.
 
 # Typical Use cases
 
