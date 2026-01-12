@@ -23,6 +23,11 @@ This image comes with Node-RED and the Seqera plugin pre-installed. It also has 
     Running within Seqera Studios means that you get authentication and workspace-level
     permissions for free! It's also super easy to get up and running.
 
+!!! warning
+
+    Node-RED for production usage needs to be _very_ stable. Any disruption in service will break your automation.
+    For now, we do not recommend using Seqera Studios for production usage of Node-RED.
+
 To use, add a new Studio with the _Template_ set to _Prebuilt container image_ and enter:
 
 ```
@@ -34,11 +39,6 @@ Make sure that the studio is set to _Always keep the session running_.
 ![Seqera Studios setup](img/seqera-studios.png)
 
 Your new Studio should launch with a complete Node-RED instance that's ready for you to customise and use with Seqera automation.
-
-!!! warning
-
-    Node-RED for production usage needs to be very stable, any disruption in service will break your automation.
-    For now, we do not recommend using Seqera Studios for production usage of Node-RED.
 
 ### Docker
 
