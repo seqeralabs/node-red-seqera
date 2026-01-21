@@ -122,16 +122,17 @@ module.exports = function (RED) {
         };
 
         // Decide which output to send to
-        // Output 1: Active (submitted, running)
-        // Output 2: Succeeded
-        // Output 3: Failed/Cancelled/Unknown
+        // Output 1: All status updates (always fires for tracking/monitoring)
+        // Output 2: Succeeded (terminal state, for flow control)
+        // Output 3: Failed/Cancelled/Unknown (terminal state, for flow control)
         if (/^(submitted|running)$/.test(statusLower)) {
           send([outMsg, null, null]);
         } else if (/^(succeeded)$/.test(statusLower)) {
-          send([null, outMsg, null]);
+          // Send to both output 1 (status tracking) and output 2 (success flow)
+          send([outMsg, outMsg, null]);
         } else {
-          // failed, cancelled, unknown
-          send([null, null, outMsg]);
+          // failed, cancelled, unknown - send to both output 1 (status tracking) and output 3 (failure flow)
+          send([outMsg, null, outMsg]);
         }
 
         // If keepPolling disabled OR workflow reached a final state, stop polling THIS workflow

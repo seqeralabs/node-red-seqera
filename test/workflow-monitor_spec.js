@@ -414,6 +414,204 @@ describe("seqera-workflow-monitor Node", function () {
         monitorNode.receive({ workflowId: "wf-123" });
       });
     });
+
+    it("should send to BOTH output 1 and output 2 when status is succeeded", function (done) {
+      const flow = [
+        createConfigNode(),
+        {
+          id: "monitor1",
+          type: "seqera-workflow-monitor",
+          name: "Test Monitor",
+          seqera: "config-node-1",
+          workflowId: "workflowId",
+          workflowIdType: "msg",
+          keepPolling: false,
+          wires: [["helper1"], ["helper2"], ["helper3"]],
+        },
+        { id: "helper1", type: "helper" },
+        { id: "helper2", type: "helper" },
+        { id: "helper3", type: "helper" },
+      ];
+
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-123")
+        .query(true)
+        .reply(200, createWorkflowResponse({ status: "succeeded" }));
+
+      helper.load([configNode, workflowMonitorNode], flow, createCredentials(), function () {
+        const monitorNode = helper.getNode("monitor1");
+        const helper1 = helper.getNode("helper1");
+        const helper2 = helper.getNode("helper2");
+        const helper3 = helper.getNode("helper3");
+
+        let output1Received = false;
+        let output2Received = false;
+
+        const checkDone = () => {
+          if (output1Received && output2Received) {
+            done();
+          }
+        };
+
+        helper1.on("input", function (msg) {
+          try {
+            expect(msg.payload.workflow.status).to.equal("succeeded");
+            output1Received = true;
+            checkDone();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        helper2.on("input", function (msg) {
+          try {
+            expect(msg.payload.workflow.status).to.equal("succeeded");
+            output2Received = true;
+            checkDone();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        helper3.on("input", function () {
+          done(new Error("Should not receive on output 3 for succeeded status"));
+        });
+
+        monitorNode.receive({ workflowId: "wf-123" });
+      });
+    });
+
+    it("should send to BOTH output 1 and output 3 when status is failed", function (done) {
+      const flow = [
+        createConfigNode(),
+        {
+          id: "monitor1",
+          type: "seqera-workflow-monitor",
+          name: "Test Monitor",
+          seqera: "config-node-1",
+          workflowId: "workflowId",
+          workflowIdType: "msg",
+          keepPolling: false,
+          wires: [["helper1"], ["helper2"], ["helper3"]],
+        },
+        { id: "helper1", type: "helper" },
+        { id: "helper2", type: "helper" },
+        { id: "helper3", type: "helper" },
+      ];
+
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-123")
+        .query(true)
+        .reply(200, createWorkflowResponse({ status: "failed" }));
+
+      helper.load([configNode, workflowMonitorNode], flow, createCredentials(), function () {
+        const monitorNode = helper.getNode("monitor1");
+        const helper1 = helper.getNode("helper1");
+        const helper2 = helper.getNode("helper2");
+        const helper3 = helper.getNode("helper3");
+
+        let output1Received = false;
+        let output3Received = false;
+
+        const checkDone = () => {
+          if (output1Received && output3Received) {
+            done();
+          }
+        };
+
+        helper1.on("input", function (msg) {
+          try {
+            expect(msg.payload.workflow.status).to.equal("failed");
+            output1Received = true;
+            checkDone();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        helper2.on("input", function () {
+          done(new Error("Should not receive on output 2 for failed status"));
+        });
+
+        helper3.on("input", function (msg) {
+          try {
+            expect(msg.payload.workflow.status).to.equal("failed");
+            output3Received = true;
+            checkDone();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        monitorNode.receive({ workflowId: "wf-123" });
+      });
+    });
+
+    it("should send to BOTH output 1 and output 3 when status is cancelled", function (done) {
+      const flow = [
+        createConfigNode(),
+        {
+          id: "monitor1",
+          type: "seqera-workflow-monitor",
+          name: "Test Monitor",
+          seqera: "config-node-1",
+          workflowId: "workflowId",
+          workflowIdType: "msg",
+          keepPolling: false,
+          wires: [["helper1"], ["helper2"], ["helper3"]],
+        },
+        { id: "helper1", type: "helper" },
+        { id: "helper2", type: "helper" },
+        { id: "helper3", type: "helper" },
+      ];
+
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-123")
+        .query(true)
+        .reply(200, createWorkflowResponse({ status: "cancelled" }));
+
+      helper.load([configNode, workflowMonitorNode], flow, createCredentials(), function () {
+        const monitorNode = helper.getNode("monitor1");
+        const helper1 = helper.getNode("helper1");
+        const helper2 = helper.getNode("helper2");
+        const helper3 = helper.getNode("helper3");
+
+        let output1Received = false;
+        let output3Received = false;
+
+        const checkDone = () => {
+          if (output1Received && output3Received) {
+            done();
+          }
+        };
+
+        helper1.on("input", function (msg) {
+          try {
+            expect(msg.payload.workflow.status).to.equal("cancelled");
+            output1Received = true;
+            checkDone();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        helper2.on("input", function () {
+          done(new Error("Should not receive on output 2 for cancelled status"));
+        });
+
+        helper3.on("input", function (msg) {
+          try {
+            expect(msg.payload.workflow.status).to.equal("cancelled");
+            output3Received = true;
+            checkDone();
+          } catch (err) {
+            done(err);
+          }
+        });
+
+        monitorNode.receive({ workflowId: "wf-123" });
+      });
+    });
   });
 
   describe("polling behavior", function () {
