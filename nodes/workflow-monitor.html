@@ -48,17 +48,19 @@ Monitors the status of an existing workflow in Seqera Platform.
 
 ### Outputs
 
-1. Status updates (active workflows)
-: payload (object) : The workflow details from the API, sent on every status poll while workflow is active.
+1. All status updates
+: payload (object) : The workflow details from the API, sent on **every** status poll including terminal states. Use this output for tracking/monitoring all workflow state changes.
 : workflowId (string) : The ID of the workflow.
 
 2. Success
-: payload (object) : The workflow details from the API, sent once when the workflow completes successfully.
+: payload (object) : The workflow details from the API, sent once when the workflow completes successfully. Use this output for flow control to trigger downstream success actions.
 : workflowId (string) : The ID of the workflow.
 
 3. Error
-: payload (object) : The workflow details from the API, sent once when the workflow fails or is cancelled.
+: payload (object) : The workflow details from the API, sent once when the workflow fails or is cancelled. Use this output for flow control to trigger downstream error handling.
 : workflowId (string) : The ID of the workflow.
+
+**Note:** When a workflow succeeds, both outputs 1 and 2 fire. When a workflow fails/cancels, both outputs 1 and 3 fire. This allows output 1 to be used for comprehensive status tracking while outputs 2 and 3 can be used for flow control.
 
 ### Details
 
