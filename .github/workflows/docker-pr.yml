@@ -130,14 +130,14 @@ jobs:
       pull-requests: write
     steps:
       - name: Download standard build metadata
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: build-metadata-standard
           path: metadata-standard
         continue-on-error: true
 
       - name: Download studios build metadata
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: build-metadata-studios
           path: metadata-studios
