@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { apiCall } = require("./_utils");
+const { apiCall, resolveResource } = require("./_utils");
 
 /**
  * Helper to evaluate a typed-input property value, supporting JSONata.
@@ -16,6 +16,14 @@ async function evalProp(RED, node, msg, value, type) {
     });
   }
   return RED.util.evaluateNodeProperty(value, type, node, msg);
+}
+
+/**
+ * Resolve Seqera Platform Credentials by name. Returns the credentials ID.
+ * Convenience wrapper around resolveResource from _utils.js.
+ */
+async function resolveCredentials(RED, node, msg, credentialsName, { baseUrl, workspaceId = null } = {}) {
+  return resolveResource(RED, node, msg, "credentials", credentialsName, { baseUrl, workspaceId });
 }
 
 /**
@@ -176,6 +184,8 @@ async function listDataLink(RED, node, msg = {}) {
 }
 
 module.exports = {
+  evalProp,
   listDataLink,
   resolveDataLink,
+  resolveCredentials,
 };

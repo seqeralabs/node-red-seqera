@@ -49,6 +49,7 @@
       "seqera-workflow-monitor": "nodes/workflow-monitor.js",
       "seqera-workflow-poll": "nodes/workflow-poll.js",
       "seqera-dataset-add": "nodes/dataset-add.js",
+      "seqera-datalink-add": "nodes/datalink-add.js",
       "seqera-datalink-list": "nodes/datalink-list.js",
       "seqera-datalink-poll": "nodes/datalink-poll.js",
       "seqera-studios-add": "nodes/studios-add.js",
@@ -57,5 +58,11 @@
     "examples": {
       "Seqera Platform": "examples"
     }
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "scripts": {
+    "dev": "nodemon --exec 'node-red -u ./test-instance' --watch nodes --ext js"
   }
 }

@@ -1,0 +1,230 @@
+<script type="text/html" data-template-name="seqera-datalink-add">
+  <div class="form-row">
+    <label for="node-input-seqera"><i class="icon-globe"></i> Seqera config</label>
+    <input type="text" id="node-input-seqera" data-type="seqera-config" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Node Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-dataLinkName"><i class="fa fa-link"></i> Data link name</label>
+    <input type="text" id="node-input-dataLinkName" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-description"><i class="fa fa-info-circle"></i> Description</label>
+    <input type="text" id="node-input-description" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-resourceRef"><i class="fa fa-folder"></i> Resource ref</label>
+    <input type="text" id="node-input-resourceRef" placeholder="s3://bucket/path or gs://bucket/path" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-provider"><i class="fa fa-cloud"></i> Provider</label>
+    <select id="node-input-provider-select" style="width: auto; margin-right: 5px;">
+      <option value="select">Select provider</option>
+      <option value="aws">AWS (S3)</option>
+      <option value="google">Google Cloud (GCS)</option>
+      <option value="azure">Azure Blob Storage</option>
+      <option value="custom">Custom / Expression</option>
+    </select>
+    <input type="text" id="node-input-provider" style="display: none;" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-credentialsName"><i class="fa fa-key"></i> Credentials name</label>
+    <input type="text" id="node-input-credentialsName" placeholder="Optional" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-resourceType"><i class="fa fa-cube"></i> Resource type</label>
+    <select id="node-input-resourceType">
+      <option value="bucket">Bucket</option>
+      <option value="folder">Folder</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-publicAccessible"><i class="fa fa-globe"></i> Public accessible</label>
+    <input
+      type="checkbox"
+      id="node-input-publicAccessible"
+      style="display: inline-block; width: auto; vertical-align: top;"
+    />
+  </div>
+  <div class="form-row">
+    <label for="node-input-workspaceId"><i class="icon-tasks"></i> Workspace ID</label>
+    <input type="text" id="node-input-workspaceId" />
+  </div>
+</script>
+
+<!-- prettier-ignore -->
+<script type="text/markdown" data-help-name="seqera-datalink-add">
+Creates a new Data Link in Seqera Platform.
+
+### Inputs
+
+: dataLinkName (string) : Name of the data link to create (required).
+: resourceRef (string) : Resource reference URL (e.g., `s3://bucket/path`, `gs://bucket/path`, `az://container/path`) (required).
+: provider (string) : Cloud provider type: `aws`, `google`, or `azure` (required).
+: description (string) : Optional description for the data link.
+: credentialsName (string) : Optional credentials name. The node will automatically resolve this to the credentials ID.
+: resourceType (string) : Type of resource - either `bucket` (default) or `folder`.
+: publicAccessible (boolean) : Whether the data link is publicly accessible without credentials (default: false).
+: workspaceId (string) : Override the workspace ID from the config node.
+
+All inputs support msg.*, flow.*, global.*, env, or JSONata expressions via the **typedInput**.
+
+### Outputs
+
+1. Standard output
+: payload (object) : The data link creation response from the API.
+: dataLinkId (string) : The ID of the created data link.
+: dataLinkName (string) : The name of the created data link.
+
+### Details
+
+This node creates a new Data Link in Seqera Platform that connects to cloud storage locations.
+Data Links allow you to reference and access data from S3, GCS, or Azure Blob Storage in your workflows.
+
+The node requires:
+- **Data link name**: A unique name for the data link
+- **Resource ref**: The full path to the cloud storage location (e.g., `s3://my-bucket/data/`)
+- **Provider**: The cloud provider type (`aws`, `google`, or `azure`)
+
+Optional fields:
+- **Description**: Human-readable description of the data link
+- **Credentials name**: If specified, the node will look up this credentials name in your workspace and use its ID to access the resource
+- **Resource type**: Either `bucket` (entire bucket) or `folder` (specific folder path). Default: `bucket`
+- **Public accessible**: Check this box if the data link should be publicly accessible without credentials. Leave unchecked for private resources
+
+The node uses the **Seqera config** node for the base URL, workspace ID, and API token.
+Any of these can be overridden using the corresponding input properties.
+
+### References
+
+- [Seqera Platform API docs](https://docs.seqera.io/platform/latest/api) - Data Links endpoints
+- [Seqera Data Links documentation](https://docs.seqera.io/platform/latest/data/data-links) - Information about Data Links
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("seqera-datalink-add", {
+    category: "seqera",
+    color: "#A9A1C6",
+    inputs: 1,
+    outputs: 1,
+    icon: "icons/data-explorer.svg",
+    align: "left",
+    paletteLabel: "Add data link",
+    label: function () {
+      return this.name || "Add data link";
+    },
+    outputLabels: ["success"],
+    defaults: {
+      name: { value: "" },
+      seqera: { value: "", type: "seqera-config" },
+      dataLinkName: { value: "", required: true },
+      dataLinkNameType: { value: "str" },
+      description: { value: "" },
+      descriptionType: { value: "str" },
+      resourceRef: { value: "", required: true },
+      resourceRefType: { value: "str" },
+      provider: { value: "aws", required: true },
+      providerType: { value: "str" },
+      credentialsName: { value: "" },
+      credentialsNameType: { value: "str" },
+      resourceType: { value: "bucket" },
+      publicAccessible: { value: false },
+      workspaceId: { value: "" },
+      workspaceIdType: { value: "str" },
+    },
+    oneditprepare: function () {
+      const node = this;
+
+      function ti(id, val, type, def = "str") {
+        $(id).typedInput({ default: def, types: ["str", "msg", "flow", "global", "env", "jsonata", "json"] });
+        $(id).typedInput("value", val);
+        $(id).typedInput("type", type);
+      }
+
+      ti("#node-input-dataLinkName", this.dataLinkName || "", this.dataLinkNameType || "str");
+      ti("#node-input-description", this.description || "", this.descriptionType || "str");
+      ti("#node-input-resourceRef", this.resourceRef || "", this.resourceRefType || "str");
+      ti("#node-input-credentialsName", this.credentialsName || "", this.credentialsNameType || "str");
+      ti("#node-input-workspaceId", this.workspaceId || "", this.workspaceIdType || "str");
+
+      // Set resource type and public accessible
+      $("#node-input-resourceType").val(this.resourceType || "bucket");
+      $("#node-input-publicAccessible").prop("checked", this.publicAccessible || false);
+
+      // Handle provider dropdown/typedInput hybrid
+      const providerSelect = $("#node-input-provider-select");
+      const providerInput = $("#node-input-provider");
+
+      // Initialize typedInput for custom provider
+      ti("#node-input-provider", this.provider || "aws", this.providerType || "str");
+
+      // Determine initial state
+      const currentProvider = this.provider || "aws";
+      const currentProviderType = this.providerType || "str";
+
+      if (currentProviderType !== "str" || !["aws", "google", "azure"].includes(currentProvider)) {
+        // Custom/expression mode
+        providerSelect.val("custom");
+        providerSelect.hide();
+        providerInput.show();
+      } else {
+        // Select mode
+        providerSelect.val(currentProvider);
+        providerSelect.show();
+        providerInput.hide();
+      }
+
+      // Handle provider dropdown changes
+      providerSelect.on("change", function () {
+        const selectedValue = $(this).val();
+        if (selectedValue === "custom") {
+          providerSelect.hide();
+          providerInput.show();
+        } else if (selectedValue !== "select") {
+          providerInput.typedInput("value", selectedValue);
+          providerInput.typedInput("type", "str");
+        }
+      });
+
+      // Handle switching back from custom to dropdown
+      providerInput.on("change", function () {
+        const currentType = providerInput.typedInput("type");
+        const currentValue = providerInput.typedInput("value");
+
+        if (currentType === "str" && ["aws", "google", "azure"].includes(currentValue)) {
+          providerSelect.val(currentValue);
+          providerSelect.show();
+          providerInput.hide();
+        }
+      });
+    },
+    oneditsave: function () {
+      function save(id, prop, propType) {
+        this[prop] = $(id).typedInput("value");
+        this[propType] = $(id).typedInput("type");
+      }
+
+      save.call(this, "#node-input-dataLinkName", "dataLinkName", "dataLinkNameType");
+      save.call(this, "#node-input-description", "description", "descriptionType");
+      save.call(this, "#node-input-resourceRef", "resourceRef", "resourceRefType");
+      save.call(this, "#node-input-credentialsName", "credentialsName", "credentialsNameType");
+      save.call(this, "#node-input-workspaceId", "workspaceId", "workspaceIdType");
+
+      // Save resource type and public accessible
+      this.resourceType = $("#node-input-resourceType").val();
+      this.publicAccessible = $("#node-input-publicAccessible").prop("checked");
+
+      // Handle provider save
+      const providerSelect = $("#node-input-provider-select");
+      if (providerSelect.is(":visible") && providerSelect.val() !== "custom" && providerSelect.val() !== "select") {
+        this.provider = providerSelect.val();
+        this.providerType = "str";
+      } else {
+        save.call(this, "#node-input-provider", "provider", "providerType");
+      }
+    },
+  });
+</script>

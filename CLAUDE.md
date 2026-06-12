@@ -60,11 +60,13 @@ This config is referenced via `node.seqeraConfig = RED.nodes.getNode(config.seqe
 
 -   `buildHeaders(node, extraHeaders)` - Constructs headers with Bearer token from seqera-config
 -   `apiCall(node, method, url, options)` - Axios wrapper that merges auth headers, logs failures, and re-throws errors
+-   `resolveResource(RED, node, msg, resourceType, resourceName, options)` - Generic resolver for Seqera resources (credentials, pipelines, compute-envs, datasets, data-links) from name to ID
 -   `handleDatalinkAutoComplete(RED, req, res)` - HTTP endpoint handler for Data Link name autocomplete (used by datalink-list and datalink-poll nodes)
 
 **[nodes/datalink-utils.js](nodes/datalink-utils.js) - Data Link specific utilities:**
 
 -   `evalProp(RED, node, msg, value, type)` - Property evaluation helper supporting JSONata expressions
+-   `resolveCredentials(RED, node, msg, credentialsName, options)` - Convenience wrapper around `resolveResource` for credentials
 -   `resolveDataLink(RED, node, msg, dataLinkName, options)` - Resolves Data Link by name, returns IDs and metadata
 -   `listDataLink(RED, node, msg)` - Core implementation for listing files/folders from Data Links with filtering and recursion
 
