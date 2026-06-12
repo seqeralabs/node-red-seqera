@@ -526,6 +526,256 @@ describe("seqera-workflow-monitor Node", function () {
     });
   });
 
+  describe("concurrent workflows", function () {
+    it("should monitor multiple workflows independently", function (done) {
+      this.timeout(5000);
+
+      const flow = [
+        createConfigNode(),
+        {
+          id: "monitor1",
+          type: "seqera-workflow-monitor",
+          name: "Test Monitor",
+          seqera: "config-node-1",
+          workflowId: "workflowId",
+          workflowIdType: "msg",
+          poll: 1,
+          pollType: "num",
+          keepPolling: true,
+          wires: [["helper1"], ["helper2"], ["helper3"]],
+        },
+        { id: "helper1", type: "helper" },
+        { id: "helper2", type: "helper" },
+        { id: "helper3", type: "helper" },
+      ];
+
+      const wf1Polls = [];
+      const wf2Polls = [];
+
+      // Workflow 1: running -> succeeded
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-123")
+        .query(true)
+        .reply(200, function () {
+          wf1Polls.push(Date.now());
+          if (wf1Polls.length === 1) {
+            return createWorkflowResponse({ id: "wf-123", status: "running" });
+          }
+          return createWorkflowResponse({ id: "wf-123", status: "succeeded" });
+        })
+        .persist();
+
+      // Workflow 2: running -> running -> succeeded
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-456")
+        .query(true)
+        .reply(200, function () {
+          wf2Polls.push(Date.now());
+          if (wf2Polls.length < 3) {
+            return createWorkflowResponse({ id: "wf-456", status: "running" });
+          }
+          return createWorkflowResponse({ id: "wf-456", status: "succeeded" });
+        })
+        .persist();
+
+      helper.load([configNode, workflowMonitorNode], flow, createCredentials(), function () {
+        const monitorNode = helper.getNode("monitor1");
+        const helper2 = helper.getNode("helper2");
+
+        let wf1Completed = false;
+        let wf2Completed = false;
+
+        helper2.on("input", function (msg) {
+          if (msg.workflowId === "wf-123") {
+            wf1Completed = true;
+          } else if (msg.workflowId === "wf-456") {
+            wf2Completed = true;
+          }
+
+          // Check if both workflows completed
+          if (wf1Completed && wf2Completed) {
+            setTimeout(function () {
+              try {
+                // Verify wf-123 was polled twice (running, succeeded)
+                expect(wf1Polls.length).to.equal(2);
+                // Verify wf-456 was polled at least 3 times (running, running, succeeded)
+                expect(wf2Polls.length).to.be.at.least(3);
+                // Verify both workflows completed
+                expect(wf1Completed).to.be.true;
+                expect(wf2Completed).to.be.true;
+                done();
+              } catch (err) {
+                done(err);
+              }
+            }, 500);
+          }
+        });
+
+        // Send two workflows in quick succession
+        monitorNode.receive({ workflowId: "wf-123" });
+        setTimeout(() => {
+          monitorNode.receive({ workflowId: "wf-456" });
+        }, 50);
+      });
+    });
+
+    it("should preserve message context for each workflow independently", function (done) {
+      this.timeout(5000);
+
+      const flow = [
+        createConfigNode(),
+        {
+          id: "monitor1",
+          type: "seqera-workflow-monitor",
+          name: "Test Monitor",
+          seqera: "config-node-1",
+          workflowId: "workflowId",
+          workflowIdType: "msg",
+          poll: 1,
+          pollType: "num",
+          keepPolling: true,
+          wires: [[], ["helper2"], []],
+        },
+        { id: "helper2", type: "helper" },
+      ];
+
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-123")
+        .query(true)
+        .reply(200, createWorkflowResponse({ id: "wf-123", status: "succeeded" }));
+
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-456")
+        .query(true)
+        .reply(200, createWorkflowResponse({ id: "wf-456", status: "succeeded" }));
+
+      helper.load([configNode, workflowMonitorNode], flow, createCredentials(), function () {
+        const monitorNode = helper.getNode("monitor1");
+        const helper2 = helper.getNode("helper2");
+
+        const receivedMessages = [];
+
+        helper2.on("input", function (msg) {
+          receivedMessages.push({
+            workflowId: msg.workflowId,
+            correlationId: msg.correlationId,
+            customProp: msg.customProp,
+          });
+
+          // Check if we received both workflows
+          if (receivedMessages.length === 2) {
+            try {
+              // Verify wf-123 kept its context
+              const wf1Msg = receivedMessages.find((m) => m.workflowId === "wf-123");
+              expect(wf1Msg).to.exist;
+              expect(wf1Msg.correlationId).to.equal("corr-123");
+              expect(wf1Msg.customProp).to.equal("context-1");
+
+              // Verify wf-456 kept its context
+              const wf2Msg = receivedMessages.find((m) => m.workflowId === "wf-456");
+              expect(wf2Msg).to.exist;
+              expect(wf2Msg.correlationId).to.equal("corr-456");
+              expect(wf2Msg.customProp).to.equal("context-2");
+
+              done();
+            } catch (err) {
+              done(err);
+            }
+          }
+        });
+
+        // Send two workflows with different contexts
+        monitorNode.receive({
+          workflowId: "wf-123",
+          correlationId: "corr-123",
+          customProp: "context-1",
+        });
+
+        setTimeout(() => {
+          monitorNode.receive({
+            workflowId: "wf-456",
+            correlationId: "corr-456",
+            customProp: "context-2",
+          });
+        }, 50);
+      });
+    });
+
+    it("should handle same workflowId triggered twice by replacing the old monitor", function (done) {
+      this.timeout(5000);
+
+      const flow = [
+        createConfigNode(),
+        {
+          id: "monitor1",
+          type: "seqera-workflow-monitor",
+          name: "Test Monitor",
+          seqera: "config-node-1",
+          workflowId: "workflowId",
+          workflowIdType: "msg",
+          poll: 1,
+          pollType: "num",
+          keepPolling: true,
+          wires: [[], ["helper2"], []],
+        },
+        { id: "helper2", type: "helper" },
+      ];
+
+      let pollCount = 0;
+
+      nock(DEFAULT_BASE_URL)
+        .get("/workflow/wf-123")
+        .query(true)
+        .reply(200, function () {
+          pollCount++;
+          if (pollCount < 3) {
+            return createWorkflowResponse({ id: "wf-123", status: "running" });
+          }
+          return createWorkflowResponse({ id: "wf-123", status: "succeeded" });
+        })
+        .persist();
+
+      helper.load([configNode, workflowMonitorNode], flow, createCredentials(), function () {
+        const monitorNode = helper.getNode("monitor1");
+        const helper2 = helper.getNode("helper2");
+
+        const receivedMessages = [];
+
+        helper2.on("input", function (msg) {
+          receivedMessages.push({
+            correlationId: msg.correlationId,
+          });
+
+          // When we get succeeded state
+          setTimeout(function () {
+            try {
+              // Should only receive the second context (first was replaced)
+              expect(receivedMessages.length).to.equal(1);
+              expect(receivedMessages[0].correlationId).to.equal("corr-second");
+              done();
+            } catch (err) {
+              done(err);
+            }
+          }, 500);
+        });
+
+        // Send same workflow twice with different contexts
+        monitorNode.receive({
+          workflowId: "wf-123",
+          correlationId: "corr-first",
+        });
+
+        // Immediately send again - should replace the first one
+        setTimeout(() => {
+          monitorNode.receive({
+            workflowId: "wf-123",
+            correlationId: "corr-second",
+          });
+        }, 100);
+      });
+    });
+  });
+
   describe("message passthrough", function () {
     it("should preserve custom message properties", function (done) {
       const flow = [
@@ -595,7 +845,8 @@ describe("seqera-workflow-monitor Node", function () {
 
         monitorNode.on("call:error", function (call) {
           try {
-            expect(call.firstArg).to.include("Seqera API request failed");
+            expect(call.firstArg).to.include("Workflow wf-123:");
+            expect(call.firstArg).to.include("Request failed");
             done();
           } catch (err) {
             done(err);
