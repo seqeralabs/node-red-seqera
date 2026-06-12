@@ -180,16 +180,25 @@ Any of these can be overridden using the corresponding input properties.
                   return;
                 }
 
+                // Get config node from editor (works for undeployed nodes)
+                const configNode = RED.nodes.node(seqeraConfigId);
+
                 const params = new URLSearchParams({
                   search: value,
                   seqeraConfig: seqeraConfigId,
                 });
 
-                // Add workspace ID override if configured
+                // Pass config values for undeployed nodes
+                if (configNode) {
+                  if (configNode.baseUrl) params.append("baseUrl", configNode.baseUrl);
+                  if (configNode.workspaceId) params.append("workspaceId", configNode.workspaceId);
+                }
+
+                // Add workspace ID override if configured (takes precedence)
                 const workspaceIdOverride = $("#node-input-workspaceId").typedInput("value");
                 const workspaceIdType = $("#node-input-workspaceId").typedInput("type");
                 if (workspaceIdType === "str" && workspaceIdOverride && workspaceIdOverride.trim()) {
-                  params.append("workspaceId", workspaceIdOverride);
+                  params.set("workspaceId", workspaceIdOverride);
                 }
 
                 $.ajax({

@@ -7,29 +7,35 @@ module.exports = function (RED) {
 
       // Try to get the node, but it might not exist yet if this is a new node
       let node = RED.nodes.getNode(nodeId);
-      let seqeraConfigId = null;
+      let seqeraConfigId = req.query.seqeraConfig || req.body?.seqeraConfig;
       let baseUrl = "https://api.cloud.seqera.io";
       let workspaceId = null;
+      let credentials = null;
 
       if (node && node.seqeraConfig) {
-        // Node exists and has config
+        // Node exists and has config - use deployed node's config
         seqeraConfigId = node.seqeraConfig.id;
         baseUrl = node.seqeraConfig.baseUrl || baseUrl;
         workspaceId = node.seqeraConfig.workspaceId;
+        credentials = node.seqeraConfig.credentials;
 
         // Check for workspace ID override in the node configuration
         if (node.workspaceIdProp && node.workspaceIdPropType === "str" && node.workspaceIdProp.trim()) {
           workspaceId = node.workspaceIdProp;
         }
-      } else {
-        // Try to get config ID from request body or query params
-        seqeraConfigId = req.query.seqeraConfig || req.body?.seqeraConfig;
-        if (seqeraConfigId) {
-          const configNode = RED.nodes.getNode(seqeraConfigId);
-          if (configNode) {
-            baseUrl = configNode.baseUrl || baseUrl;
-            workspaceId = configNode.workspaceId;
-          }
+      } else if (seqeraConfigId) {
+        // Try to get deployed config node
+        const configNode = RED.nodes.getNode(seqeraConfigId);
+        if (configNode) {
+          baseUrl = configNode.baseUrl || baseUrl;
+          workspaceId = configNode.workspaceId;
+          credentials = configNode.credentials;
+        } else {
+          // Config node not deployed - use query params for baseUrl/workspaceId
+          // and look up saved credentials by config node ID
+          baseUrl = req.query.baseUrl || baseUrl;
+          workspaceId = req.query.workspaceId || null;
+          credentials = RED.nodes.getCredentials(seqeraConfigId);
         }
       }
 
@@ -42,15 +48,15 @@ module.exports = function (RED) {
         return res.json([]); // Return empty array instead of error for better UX
       }
 
-      // Create a temporary node-like object for apiCall if we don't have a real node
-      const nodeForApi = node || {
-        seqeraConfig: RED.nodes.getNode(seqeraConfigId),
+      if (!credentials || !credentials.token) {
+        return res.json([]); // No credentials available
+      }
+
+      // Create a temporary node-like object for apiCall
+      const nodeForApi = {
+        seqeraConfig: { credentials },
         warn: () => {}, // Dummy warn function
       };
-
-      if (!nodeForApi.seqeraConfig) {
-        return res.json([]);
-      }
 
       const { apiCall } = require("./_utils");
 
